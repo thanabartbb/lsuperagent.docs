@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "surface": "claude_provider_status_v1",
+  "provider": "Claude / Anthropic",
+  "status": "ready_for_runtime_wire",
+  "ready": true,
+  "runtime_route": "/api/claude",
+  "runtime_output_enabled": false,
+  "model_configured": true,
+  "workspace_configured": false,
+  "advisor_model_configured": false,
+  "required_for_minimum_runtime": [
+    "ANTHROPIC_API_KEY",
+    "ANTHROPIC_MODEL"
+  ],
+  "optional_for_workspace": [
+    "ANTHROPIC_WORKSPACE_ID"
+  ],
+  "optional_for_advisor_tool": [
+    "ANTHROPIC_ADVISOR_MODEL"
+  ],
+  "security": {
+    "secret_values_exposed": false,
+    "public_runtime_locked": true,
+    "admin_gate_required_for_owner_actions": true
+  }
+}

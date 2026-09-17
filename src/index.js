@@ -178,7 +178,7 @@ async function handleChat(request, env) {
   }, 503, { 'x-lsuperagen-runtime': runtimeHeader });
 
   const requestId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
-  const model = env.OPENAI_MODEL || 'gpt-5-mini';
+  const model = env.OPENAI_MODEL || 'gpt-4o-mini';
   let providerResponse;
   try {
     providerResponse = await fetch('https://api.openai.com/v1/responses', {

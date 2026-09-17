@@ -2,7 +2,38 @@
 
 > Purpose: give Claude / Claude Code a clean, token-free handoff so it can continue work from this repository through its own GitHub remote, SSH key, or GitHub integration. Do not paste GitHub tokens, OpenAI keys, Cloudflare tokens, or any private secret into Claude chat.
 
-## 0. Project identity
+## 0. TARGET LOCK — READ THIS FIRST
+
+```txt
+TARGET PROJECT: lsuperagen.docs
+TARGET REPOSITORY: thanabartbb/lsuperagent.docs
+TARGET PUBLIC SITE: https://agents-sdk.space
+TARGET CLOUDFLARE WORKER: lsuperagent-docs
+TARGET BRANCH: main
+```
+
+This handoff is **ONLY** for `lsuperagen.docs` / `agents-sdk.space`.
+
+Do **not** treat this as any other project:
+
+```txt
+NOT S-AGENTS
+NOT AGENTS-SDK-LAB
+NOT tha-abatb-agents-sdk-lab
+NOT s-agents.thanabartb.workers.dev
+NOT a Supabase app migration
+NOT a Railway/Vercel migration
+```
+
+If Claude sees old context mentioning S-AGENTS, AGENTS-SDK-LAB, Railway, Supabase migration, or another repo, treat it as historical noise unless the owner explicitly starts a new task for that project.
+
+The current active project is:
+
+```txt
+lsuperagen.docs → agents-sdk.space → Cloudflare Worker Static Assets → src/index.js → OpenAI Runtime V1
+```
+
+## 1. Project identity
 
 ```txt
 Project: lsuperagen.docs
@@ -17,7 +48,7 @@ Current status: V11 · Public Beta
 
 This repository is the current clean source of truth. Treat older account/workflow context as historical only unless the owner explicitly provides it again.
 
-## 1. Remote setup Claude should use
+## 2. Remote setup Claude should use
 
 Preferred Git remote:
 
@@ -41,19 +72,19 @@ Claude should authenticate through one of these safe paths:
 
 Claude must not ask the owner to paste raw GitHub tokens into the conversation.
 
-## 2. Files Claude must read first
+## 3. Files Claude must read first
 
 Before editing, read these files in order:
 
 ```txt
+CLAUDE_REMOTE_HANDOFF.md
 CLAUDE.md
 LSUPERAGENT.md
-CLAUDE_REMOTE_HANDOFF.md
 src/index.js
 wrangler.toml
 ```
 
-For UI tasks, also inspect the target page:
+For UI tasks, inspect the target page too:
 
 ```txt
 index.html
@@ -69,7 +100,7 @@ changelog.html
 admin.html
 ```
 
-## 3. Current architecture
+## 4. Current architecture
 
 ```txt
 Browser
@@ -99,7 +130,7 @@ Model: env.OPENAI_MODEL first, then fallback candidates
 Secret source: Cloudflare Runtime Secret OPENAI_API_KEY
 ```
 
-## 4. What is already working
+## 5. What is already working
 
 ```txt
 ✓ Public static site is live.
@@ -111,9 +142,10 @@ Secret source: Cloudflare Runtime Secret OPENAI_API_KEY
 ✓ Mobile Public Polish V3 is implemented.
 ✓ Tools Router V1 is implemented.
 ✓ Homepage Polish V1 is implemented.
+✓ CLAUDE_REMOTE_HANDOFF.md target is locked to lsuperagen.docs only.
 ```
 
-## 5. What is not yet production-grade
+## 6. What is not yet production-grade
 
 ```txt
 ✗ Login page is still visually a login form; auth is not wired.
@@ -126,7 +158,7 @@ Secret source: Cloudflare Runtime Secret OPENAI_API_KEY
 ✗ Zapier/LINE/X integrations are not active in this runtime path.
 ```
 
-## 6. Non-negotiable safety rules
+## 7. Non-negotiable safety rules
 
 ```txt
 NO secrets in GitHub.
@@ -142,13 +174,11 @@ Do not replace the current GitHub → Cloudflare path without approval.
 Preserve dark premium / graphite / ice-blue visual identity unless the owner asks for a redesign.
 ```
 
-## 7. Recommended Claude work routes
+## 8. Recommended Claude work routes
 
 ### Route A — Public Access login cleanup
 
 Use when the owner says login page is confusing or asks what public users should enter.
-
-Goal:
 
 ```txt
 Convert login.html from fake account login into Public Access / Guest Access.
@@ -161,8 +191,6 @@ Remove or hide password, forgot password, and magic link until auth is real.
 ### Route B — Image Prompt Engine V1
 
 Use when the owner asks to improve Image Generator behavior.
-
-Goal:
 
 ```txt
 Do not lock the assistant into a fixed persona.
@@ -180,8 +208,6 @@ The Image Generator may output high-quality image prompts/specs, but must not cl
 
 Use only when the owner explicitly asks to wire real image generation.
 
-Goal:
-
 ```txt
 Add a server-side image generation endpoint.
 Keep API key server-side only.
@@ -193,8 +219,6 @@ Do not expose raw provider responses containing secrets.
 ### Route D — Runtime hardening
 
 Use when the owner asks to protect credits/costs/security.
-
-Possible work:
 
 ```txt
 Improve rate limit UX.
@@ -208,8 +232,6 @@ Add abuse-safe error messages.
 
 Use when the owner sends screenshots and says a page looks strange/หลอน.
 
-Rules:
-
 ```txt
 Patch narrowly.
 Prefer src/index.js injection for small display fixes.
@@ -218,7 +240,7 @@ Verify mobile width around 393px.
 Do not disturb working /api/chat.
 ```
 
-## 8. Verification commands
+## 9. Verification commands
 
 Run what is possible in the environment. At minimum, inspect changed files and test public endpoints after deploy.
 
@@ -255,7 +277,7 @@ Expected healthy `/api/chat` shape:
 }
 ```
 
-## 9. Report format back to owner / ChatGPT
+## 10. Report format back to owner / ChatGPT
 
 When finished, report in this exact structure:
 
@@ -272,8 +294,8 @@ Next one task:
 
 If Claude cannot complete a task because account access or secrets are required, say exactly which dashboard action the owner must do and do not invent a fake completion.
 
-## 10. One-line instruction for Claude
+## 11. One-line instruction for Claude
 
 ```txt
-Continue from repo thanabartbb/lsuperagent.docs using SSH/GitHub integration only, read CLAUDE.md + LSUPERAGENT.md + CLAUDE_REMOTE_HANDOFF.md first, preserve the working OpenAI Runtime V1 + Rate Limit V1 path, and never request or store raw secrets in chat or repo.
+Continue ONLY from repo thanabartbb/lsuperagent.docs using SSH/GitHub integration, read CLAUDE_REMOTE_HANDOFF.md + CLAUDE.md + LSUPERAGENT.md first, target agents-sdk.space only, ignore S-AGENTS/AGENTS-SDK-LAB unless the owner explicitly starts that separate project, preserve the working OpenAI Runtime V1 + Rate Limit V1 path, and never request or store raw secrets in chat or repo.
 ```

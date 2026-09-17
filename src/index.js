@@ -89,6 +89,31 @@ function applyHomeEnhancements(html) {
   return html;
 }
 
+function applyHomePolish(html) {
+  html = addBodyClass(html, 'ls-home-polish-v1');
+  if (html.includes('data-ls-home-polish="v1"')) return html;
+  const style = `<style data-ls-home-polish="v1">
+@media(max-width:720px){
+body.ls-home-polish-v1 .hero{padding-block:22px 34px!important;min-height:auto!important}
+body.ls-home-polish-v1 .hero>.wrap{padding-inline:28px!important}
+body.ls-home-polish-v1 .hero .wrap>div>div{display:block!important;grid-template-columns:1fr!important}
+body.ls-home-polish-v1 .hero [role="img"][aria-label="โลโก้ LS"]{display:none!important}
+body.ls-home-polish-v1 .hero h1{font-size:clamp(3.2rem,17vw,4.45rem)!important;line-height:.95!important;letter-spacing:-.045em!important;max-width:7.2ch!important;margin-top:0!important}
+body.ls-home-polish-v1 .hero h1 span{color:#7f858f!important}
+body.ls-home-polish-v1 .hero p[style*="LSUPERAGEN"]{font-size:.66rem!important;letter-spacing:.36em!important;margin-bottom:14px!important;color:#7c828c!important}
+body.ls-home-polish-v1 .hero span[style*="Public Beta Preview"]{margin-bottom:24px!important;background:rgba(22,24,29,.86)!important}
+body.ls-home-polish-v1 .hero .thai[style*="max-width:34ch"]{max-width:21ch!important;font-size:1.02rem!important;line-height:1.68!important;margin:24px 0 24px!important;color:#b5bac3!important}
+body.ls-home-polish-v1 .hero div[style*="display:flex"][style*="flex-wrap:wrap"]{display:grid!important;grid-template-columns:1fr!important;gap:12px!important;max-width:260px!important}
+body.ls-home-polish-v1 .hero .btn{width:100%!important;justify-content:center!important;height:54px!important}
+body.ls-home-polish-v1 .hero div[aria-label="SDK install command"]{max-width:308px!important;margin-top:20px!important;padding:13px 15px!important;border-radius:12px!important;background:rgba(10,10,11,.82)!important;box-shadow:none!important}
+body.ls-home-polish-v1 .hero div[aria-label="SDK install command"] code{display:block!important;margin-top:4px!important;font-size:.88rem!important;line-height:1.45!important}
+body.ls-home-polish-v1 .hero ul[style*="gap:var(--sp6)"]{display:none!important}
+}
+@media(min-width:721px){body.ls-home-polish-v1 .hero [role="img"][aria-label="โลโก้ LS"]{opacity:.62;filter:saturate(.75) contrast(.96)}}
+</style>`;
+  return html.replace(/<\/head>/i, style + '\n</head>');
+}
+
 function routeToolsCard(html, title, href, label) {
   const re = new RegExp('(<a class="card"\\s+)href="#"([^>]*>[\\s\\S]*?<h3>' + escapeRegExp(title) + '<\\/h3>)', 'i');
   return html.replace(re, '$1href="' + href + '" data-ls-tool-route="' + label + '"$2');
@@ -358,13 +383,13 @@ export default {
 
     let html = await response.text();
     const page = currentPage(pathname);
-    if (page === 'index.html') html = applyHomeEnhancements(html);
+    if (page === 'index.html') html = applyHomePolish(applyHomeEnhancements(html));
     if (page === 'tools.html') html = applyToolsRouter(html);
     if (page === 'chat.html') {
       html = applyChatRuntimeStatus(html, Boolean(env.OPENAI_API_KEY));
       html = applyChatToolContext(html, url.searchParams.get('tool'));
     }
     html = mobilePolish(html, pathname);
-    return new Response(html, { status: response.status, headers: htmlHeaders(response, 'openai-runtime-v1-rate-limit-v1') });
+    return new Response(html, { status: response.status, headers: htmlHeaders(response, 'openai-runtime-v1-rate-limit-v1-home-polish') });
   }
 };

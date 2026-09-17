@@ -1,7 +1,8 @@
 {
   "ok": true,
-  "surface": "ai_provider_connect_surface_v1",
+  "surface": "ai_provider_connect_surface_v1_configured",
   "provider_connect_url": "https://agents-sdk.space/provider-connect",
+  "note": "Static status surface updated after Cloudflare secrets were added. Runtime secret values are not exposed.",
   "providers": {
     "openai_chatgpt": {
       "label": "OpenAI / ChatGPT",
@@ -15,9 +16,14 @@
     "anthropic_claude": {
       "label": "Claude / Anthropic",
       "kind": "backend_ai_provider",
-      "status": "not_wired",
-      "planned_routes": ["/api/claude", "/api/claude/status"],
-      "secret_names": ["ANTHROPIC_API_KEY", "ANTHROPIC_MODEL"],
+      "status": "ready_for_runtime_wire",
+      "runtime_route": "/api/claude",
+      "status_route": "/api/claude/status",
+      "provider_api": "/v1/messages",
+      "minimum_runtime_secrets": ["ANTHROPIC_API_KEY", "ANTHROPIC_MODEL"],
+      "workspace_secret_optional": "ANTHROPIC_WORKSPACE_ID",
+      "advisor_model_secret_optional": "ANTHROPIC_ADVISOR_MODEL",
+      "runtime_output_enabled": false,
       "secret_values_exposed": false
     }
   },
@@ -34,6 +40,7 @@
   "security": {
     "raw_provider_keys_in_response": false,
     "raw_provider_keys_in_html": false,
-    "provider_connect_is_not_oauth_login": true
+    "provider_connect_is_not_oauth_login": true,
+    "public_claude_runtime_enabled": false
   }
 }

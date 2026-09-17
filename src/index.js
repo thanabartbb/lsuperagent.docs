@@ -1,3 +1,7 @@
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const RATE_LIMIT_MAX_REQUESTS = 10;
+const RATE_LIMIT_BUCKETS = new Map();
+
 function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data, null, 2), {
     status,
@@ -68,7 +72,7 @@ function mobilePolish(html, pathname) {
 @media(max-width:720px){.ws-tabs,.tbar{overflow-x:auto!important;white-space:nowrap!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important}.ws-tabs::-webkit-scrollbar,.tbar::-webkit-scrollbar{display:none}.ws-tab{flex:0 0 auto!important}.sniff-table-wrap{overflow:visible!important;border:0!important;background:transparent!important}.sniff-table{width:100%!important;min-width:0!important;border-collapse:separate!important;border-spacing:0 10px!important}.sniff-table thead{display:none!important}.sniff-table tbody,.sniff-table tr,.sniff-table td{display:block!important;width:100%!important}.sniff-table tr{border:1px solid var(--border-subtle,var(--bd,#1c1e22));border-radius:12px;background:var(--surface-inset,var(--surf-in,#0a0a0b));padding:12px;margin:0 0 10px}.sniff-table td{border:0!important;padding:3px 0!important;white-space:normal!important;overflow-wrap:anywhere!important}.sniff-table td:nth-child(1)::before{content:"Gate ";color:var(--fg-muted,var(--fg3,#7c828c))}.sniff-table td:nth-child(4)::before{content:"Evidence: ";display:block;margin-top:4px;font-family:var(--font-mono,var(--fm,"IBM Plex Mono",monospace));font-size:.72rem;color:var(--fg-muted,var(--fg3,#7c828c))}.sniff-table td:nth-child(4){margin-top:4px;padding-top:8px!important;border-top:1px solid var(--border-subtle,var(--bd,#1c1e22))!important}}
 </style>`;
 
-  const nav = `<details class="ls-native-menu" data-ls-mobile-public-polish="v3"><summary aria-label="เปิดเมนู"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="ls-native-panel" role="navigation" aria-label="เมนูมือถือ"><div class="ls-native-head"><div class="ls-native-title">lsuperagen.docs</div><div class="ls-native-sub">PUBLIC NAV</div></div><nav class="ls-native-links"><a href="index.html" ${page === 'index.html' ? 'aria-current="page"' : ''}>หน้าแรก <span>→</span></a><a href="chat.html" ${page === 'chat.html' ? 'aria-current="page"' : ''}>Chat <span>→</span></a><a href="tools.html" ${page === 'tools.html' ? 'aria-current="page"' : ''}>Tools <span>→</span></a><a href="examples.html" ${page === 'examples.html' ? 'aria-current="page"' : ''}>SDK Plug Tools <span>→</span></a><a href="workspace.html" ${page === 'workspace.html' ? 'aria-current="page"' : ''}>Workspace <span>→</span></a><a href="getting-started.html" ${page === 'getting-started.html' ? 'aria-current="page"' : ''}>Docs <span>→</span></a><a href="guides.html" ${page === 'guides.html' ? 'aria-current="page"' : ''}>Guides <span>→</span></a><a href="api.html" ${page === 'api.html' ? 'aria-current="page"' : ''}>API <span>→</span></a><a href="changelog.html" ${page === 'changelog.html' ? 'aria-current="page"' : ''}>Changelog <span>→</span></a></nav><div class="ls-native-note">Mobile Public Polish V3 · Tools Router V1 · OpenAI Runtime V1</div></div></details>`;
+  const nav = `<details class="ls-native-menu" data-ls-mobile-public-polish="v3"><summary aria-label="เปิดเมนู"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="ls-native-panel" role="navigation" aria-label="เมนูมือถือ"><div class="ls-native-head"><div class="ls-native-title">lsuperagen.docs</div><div class="ls-native-sub">PUBLIC NAV</div></div><nav class="ls-native-links"><a href="index.html" ${page === 'index.html' ? 'aria-current="page"' : ''}>หน้าแรก <span>→</span></a><a href="chat.html" ${page === 'chat.html' ? 'aria-current="page"' : ''}>Chat <span>→</span></a><a href="tools.html" ${page === 'tools.html' ? 'aria-current="page"' : ''}>Tools <span>→</span></a><a href="examples.html" ${page === 'examples.html' ? 'aria-current="page"' : ''}>SDK Plug Tools <span>→</span></a><a href="workspace.html" ${page === 'workspace.html' ? 'aria-current="page"' : ''}>Workspace <span>→</span></a><a href="getting-started.html" ${page === 'getting-started.html' ? 'aria-current="page"' : ''}>Docs <span>→</span></a><a href="guides.html" ${page === 'guides.html' ? 'aria-current="page"' : ''}>Guides <span>→</span></a><a href="api.html" ${page === 'api.html' ? 'aria-current="page"' : ''}>API <span>→</span></a><a href="changelog.html" ${page === 'changelog.html' ? 'aria-current="page"' : ''}>Changelog <span>→</span></a></nav><div class="ls-native-note">Mobile Public Polish V3 · Tools Router V1 · OpenAI Runtime V1 · Rate Limit V1</div></div></details>`;
   return html.replace(/<\/head>/i, style + '\n</head>').replace(/<\/body>/i, nav + '\n</body>');
 }
 
@@ -113,15 +117,17 @@ function applyChatRuntimeStatus(html, hasKey) {
     .replace(/Runtime not wired/g, 'OpenAI runtime wired')
     .replace(/runtime: not wired/g, 'runtime: OpenAI Runtime V1')
     .replace(/Runtime ยังไม่ wired/g, 'OpenAI Runtime V1')
-    .replace(/ตอนนี้ยังไม่ต่อ API key จริง ระบบจะแสดงสถานะ Runtime not wired จนกว่าจะตั้งค่า Cloudflare Secret และเปิด provider router ฝั่ง Worker/g, 'ตอนนี้เชื่อม OpenAI Runtime V1 ผ่าน Cloudflare Worker แล้ว ค่า API key อยู่ใน Secret ฝั่ง server เท่านั้น');
+    .replace(/ตอนนี้ยังไม่ต่อ API key จริง ระบบจะส่ง request ไป \/api\/chat และคืนสถานะ backend เท่านั้น/g, 'พร้อมรับ prompt แล้ว แต่ระบบจะคุม Rate Limit V1 ก่อนส่งเข้า OpenAI เพื่อกันเครดิตไหล')
+    .replace(/mode: fast · runtime: OpenAI Runtime V1/g, 'mode: fast · runtime: OpenAI Runtime V1 · limit: 10/10m');
 }
 
-function applyChatToolContext(html, tool) {
+function applyChatToolContext(html, rawTool) {
+  const tool = normalizeTool(rawTool);
   const allowed = { writer: 'AI Writer', image: 'Image Generator', research: 'Deep Research', code: 'Code Assistant' };
   const label = allowed[tool];
   if (!label || html.includes('data-ls-chat-tool="v1"')) return html;
-  const script = `<script data-ls-chat-tool="v1">(function(){var tool='${tool}',label='${label}';var p=document.getElementById('prompt'),s=document.getElementById('state'),l=document.getElementById('log');var hints={writer:'เขียนโพสต์ / landing copy / email / caption ที่ต้องการ',image:'อธิบายภาพที่ต้องการสร้าง พร้อมสไตล์และขนาด',research:'ใส่หัวข้อที่ต้องการค้นคว้าและระดับความลึก',code:'วางโค้ดหรืออธิบาย bug ที่ต้องการแก้'};if(p)p.placeholder=label+' — '+hints[tool];if(s)s.textContent='tool: '+tool+' · runtime: OpenAI Runtime V1';if(l){var m=document.createElement('div');m.className='msg bot';m.innerHTML='<div class="role">TOOL ROUTER</div><div></div>';m.lastChild.textContent='เปิดจาก Tools → '+label+' แล้ว · Provider: OpenAI Runtime V1';l.appendChild(m)}})();</script>`;
-  const badge = '<div data-ls-chat-tool="v1" style="margin-top:14px;display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(99,179,255,.24);background:rgba(99,179,255,.07);border-radius:999px;padding:8px 12px;font-family:var(--mono,var(--fm,monospace));font-size:.76rem;color:#8ec6ff">TOOL ROUTER · ' + label + '</div>';
+  const script = `<script data-ls-chat-tool="v1">(function(){var tool='${tool}',label='${label}';var p=document.getElementById('prompt'),s=document.getElementById('state'),l=document.getElementById('log');var hints={writer:'เขียนโพสต์ / landing copy / email / caption ที่ต้องการ',image:'อธิบายภาพที่ต้องการสร้าง พร้อมสไตล์และขนาด',research:'ใส่หัวข้อที่ต้องการค้นคว้าและระดับความลึก',code:'วางโค้ดหรืออธิบาย bug ที่ต้องการแก้'};if(p)p.placeholder=label+' — '+hints[tool];if(s)s.textContent='tool: '+tool+' · runtime: OpenAI Runtime V1 · limit: 10/10m';if(l){var m=document.createElement('div');m.className='msg bot';m.innerHTML='<div class="role">TOOL ROUTER</div><div></div>';m.lastChild.textContent='เปิดจาก Tools → '+label+' แล้ว · Provider: OpenAI Runtime V1 · Rate Limit V1';l.appendChild(m)}})();</script>`;
+  const badge = '<div data-ls-chat-tool="v1" style="margin-top:14px;display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(99,179,255,.24);background:rgba(99,179,255,.07);border-radius:999px;padding:8px 12px;font-family:var(--mono,var(--fm,monospace));font-size:.76rem;color:#8ec6ff">TOOL ROUTER · ' + label + ' · RATE LIMIT V1</div>';
   return html.replace(/(<div class="notice[\s\S]*?<\/div>)/i, '$1\n' + badge).replace(/<\/body>/i, script + '\n</body>');
 }
 
@@ -172,6 +178,9 @@ function modelCandidates(env) {
   const configured = typeof env.OPENAI_MODEL === 'string' ? env.OPENAI_MODEL.trim() : '';
   const list = [
     configured,
+    'gpt-6-astra',
+    'gpt-5-nano-2025-08-07',
+    'gpt-5.3-codex',
     'gpt-4.1',
     'gpt-4o',
     'gpt-4.1-mini',
@@ -181,6 +190,47 @@ function modelCandidates(env) {
     'gpt-5-mini'
   ].filter(Boolean);
   return Array.from(new Set(list));
+}
+
+function clientIp(request) {
+  return request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+}
+
+function rateLimitKey(request, tool) {
+  const ip = clientIp(request);
+  return ['public-chat-v1', ip, tool || 'general'].join(':');
+}
+
+function checkRateLimit(request, tool) {
+  const now = Date.now();
+  const key = rateLimitKey(request, tool);
+  const current = RATE_LIMIT_BUCKETS.get(key);
+  const resetAt = current && current.resetAt > now ? current.resetAt : now + RATE_LIMIT_WINDOW_MS;
+  const count = current && current.resetAt > now ? current.count : 0;
+  const nextCount = count + 1;
+  const remaining = Math.max(0, RATE_LIMIT_MAX_REQUESTS - nextCount);
+  RATE_LIMIT_BUCKETS.set(key, { count: nextCount, resetAt });
+
+  if (RATE_LIMIT_BUCKETS.size > 1000) {
+    for (const [bucketKey, bucket] of RATE_LIMIT_BUCKETS) if (!bucket || bucket.resetAt <= now) RATE_LIMIT_BUCKETS.delete(bucketKey);
+  }
+
+  return {
+    limited: nextCount > RATE_LIMIT_MAX_REQUESTS,
+    limit: RATE_LIMIT_MAX_REQUESTS,
+    remaining,
+    resetAt,
+    retryAfter: Math.max(1, Math.ceil((resetAt - now) / 1000))
+  };
+}
+
+function rateLimitHeaders(result) {
+  return {
+    'x-lsuperagen-rate-limit': String(result.limit),
+    'x-lsuperagen-rate-remaining': String(result.remaining),
+    'x-lsuperagen-rate-reset': new Date(result.resetAt).toISOString(),
+    ...(result.limited ? { 'retry-after': String(result.retryAfter) } : {})
+  };
 }
 
 async function listAccessibleModelIds(env, requestId) {
@@ -223,12 +273,24 @@ async function handleChat(request, env) {
   const tool = inferTool(body, request);
   const provider = 'openai';
   const hasKey = Boolean(env.OPENAI_API_KEY);
-  const runtimeHeader = hasKey ? 'openai-runtime-v1' : 'not-wired';
-  const readiness = { frontend: true, api_route: true, tools_router: true, provider_router: true, secret_detected: hasKey, model_output: hasKey };
+  const runtimeHeader = hasKey ? 'openai-runtime-v1-rate-limit-v1' : 'not-wired';
+  const readiness = { frontend: true, api_route: true, tools_router: true, provider_router: true, secret_detected: hasKey, model_output: hasKey, rate_limit: true };
 
   if (!message) return json({ ok: false, status: 'validation_error', message: 'message is required.', tool: tool === 'invalid' ? null : tool, provider, readiness }, 400, { 'x-lsuperagen-runtime': runtimeHeader });
   if (message.length > 4000) return json({ ok: false, status: 'validation_error', message: 'message is too long. Max 4000 characters.', tool: tool === 'invalid' ? null : tool, provider, readiness }, 413, { 'x-lsuperagen-runtime': runtimeHeader });
   if (tool === 'invalid') return json({ ok: false, status: 'validation_error', message: 'tool must be writer, image, research, code, or null.', provider, readiness }, 400, { 'x-lsuperagen-runtime': runtimeHeader });
+
+  const rate = checkRateLimit(request, tool);
+  const baseHeaders = { 'x-lsuperagen-runtime': runtimeHeader, ...rateLimitHeaders(rate) };
+  if (rate.limited) return json({
+    ok: false,
+    status: 'rate_limited',
+    message: 'Rate limit reached. Public Chat V1 allows 10 requests per 10 minutes per IP/tool. Please wait before sending another message.',
+    tool,
+    provider,
+    limit: { requests: rate.limit, window_seconds: RATE_LIMIT_WINDOW_MS / 1000, retry_after_seconds: rate.retryAfter, reset_at: new Date(rate.resetAt).toISOString() },
+    readiness
+  }, 429, baseHeaders);
 
   if (!hasKey) return json({
     ok: false,
@@ -236,7 +298,7 @@ async function handleChat(request, env) {
     message: 'Runtime not wired. No fake AI response generated. Set OPENAI_API_KEY as a Cloudflare Secret before public model output.',
     requested: { mode, provider: body.provider || 'OpenAI route', tool, has_message: true },
     readiness: { ...readiness, model_output: false }
-  }, 503, { 'x-lsuperagen-runtime': runtimeHeader });
+  }, 503, baseHeaders);
 
   const requestId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
   const candidates = modelCandidates(env);
@@ -251,18 +313,18 @@ async function handleChat(request, env) {
     try {
       ({ response: providerResponse, data } = await createOpenAIResponse(env, model, message, tool, mode, requestId));
     } catch (error) {
-      return json({ ok: false, status: 'provider_network_error', message: 'OpenAI provider request failed before a response was received.', tool, provider, request_id: requestId, error: error && error.message ? error.message : 'network_error' }, 502, { 'x-lsuperagen-runtime': 'openai-runtime-v1', 'x-lsuperagen-request-id': requestId });
+      return json({ ok: false, status: 'provider_network_error', message: 'OpenAI provider request failed before a response was received.', tool, provider, request_id: requestId, error: error && error.message ? error.message : 'network_error' }, 502, { ...baseHeaders, 'x-lsuperagen-request-id': requestId });
     }
 
     if (providerResponse.ok) {
       const output = extractOutputText(data);
-      return json({ ok: true, status: 'completed', tool, provider, model, message: output, output, usage: data.usage || null, response_id: data.id || null, request_id: requestId, attempted_models: attempted }, 200, { 'x-lsuperagen-runtime': 'openai-runtime-v1', 'x-lsuperagen-request-id': requestId });
+      return json({ ok: true, status: 'completed', tool, provider, model, message: output, output, usage: data.usage || null, response_id: data.id || null, request_id: requestId, attempted_models: attempted, rate_limit: { limit: rate.limit, remaining: rate.remaining, reset_at: new Date(rate.resetAt).toISOString() } }, 200, { ...baseHeaders, 'x-lsuperagen-request-id': requestId });
     }
 
     const providerMessage = data && data.error && data.error.message ? data.error.message : 'OpenAI provider returned an error.';
     lastError = { message: providerMessage, model, provider_status: providerResponse.status };
     if (!isModelAccessError(data)) {
-      return json({ ok: false, status: 'provider_error', message: providerMessage, tool, provider, model, request_id: requestId, provider_status: providerResponse.status, attempted_models: attempted }, providerResponse.status >= 400 && providerResponse.status < 500 ? 502 : 503, { 'x-lsuperagen-runtime': 'openai-runtime-v1', 'x-lsuperagen-request-id': requestId });
+      return json({ ok: false, status: 'provider_error', message: providerMessage, tool, provider, model, request_id: requestId, provider_status: providerResponse.status, attempted_models: attempted, rate_limit: { limit: rate.limit, remaining: rate.remaining, reset_at: new Date(rate.resetAt).toISOString() } }, providerResponse.status >= 400 && providerResponse.status < 500 ? 502 : 503, { ...baseHeaders, 'x-lsuperagen-request-id': requestId });
     }
   }
 
@@ -276,8 +338,9 @@ async function handleChat(request, env) {
     attempted_models: attempted,
     configured_model: typeof env.OPENAI_MODEL === 'string' ? env.OPENAI_MODEL.trim() || null : null,
     visible_model_count: visibleModels ? visibleModels.size : null,
-    last_error: lastError
-  }, 502, { 'x-lsuperagen-runtime': 'openai-runtime-v1', 'x-lsuperagen-request-id': requestId });
+    last_error: lastError,
+    rate_limit: { limit: rate.limit, remaining: rate.remaining, reset_at: new Date(rate.resetAt).toISOString() }
+  }, 502, { ...baseHeaders, 'x-lsuperagen-request-id': requestId });
 }
 
 export default {
@@ -302,6 +365,6 @@ export default {
       html = applyChatToolContext(html, url.searchParams.get('tool'));
     }
     html = mobilePolish(html, pathname);
-    return new Response(html, { status: response.status, headers: htmlHeaders(response, 'openai-runtime-v1-direct-model-attempt') });
+    return new Response(html, { status: response.status, headers: htmlHeaders(response, 'openai-runtime-v1-rate-limit-v1') });
   }
 };

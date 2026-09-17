@@ -3,3 +3,7 @@
 
 /sdk /examples 301
 /control /admin 301
+/routes /endpoints 301
+/endpoint /endpoints 301
+/secret /secret-handoff 301
+/key-converter /secret-handoff 301

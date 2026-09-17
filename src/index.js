@@ -152,6 +152,42 @@ function extractOutputText(data) {
   return chunks.join('\n').trim();
 }
 
+function modelCandidates(env) {
+  const configured = typeof env.OPENAI_MODEL === 'string' ? env.OPENAI_MODEL.trim() : '';
+  const list = [configured, 'gpt-4.1-mini', 'gpt-4.1-nano', 'gpt-5-nano', 'gpt-5-mini', 'gpt-4o-mini'].filter(Boolean);
+  return Array.from(new Set(list));
+}
+
+async function listAccessibleModelIds(env, requestId) {
+  try {
+    const res = await fetch('https://api.openai.com/v1/models', {
+      headers: { authorization: 'Bearer ' + env.OPENAI_API_KEY, 'x-client-request-id': requestId }
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return new Set((data.data || []).map((model) => model && model.id).filter(Boolean));
+  } catch (_) {
+    return null;
+  }
+}
+
+async function createOpenAIResponse(env, model, message, tool, mode, requestId) {
+  const response = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: { authorization: 'Bearer ' + env.OPENAI_API_KEY, 'content-type': 'application/json', 'x-client-request-id': requestId },
+    body: JSON.stringify({ model, input: message, instructions: toolInstructions(tool, mode), max_output_tokens: 900, store: false, metadata: { app: 'lsuperagen.docs', route: '/api/chat', tool: tool || 'general', mode } })
+  });
+  const raw = await response.text();
+  let data = {};
+  try { data = raw ? JSON.parse(raw) : {}; } catch (_) { data = { raw: raw.slice(0, 500) }; }
+  return { response, data };
+}
+
+function isModelAccessError(data) {
+  const msg = data && data.error && data.error.message ? data.error.message : '';
+  return /does not have access to model|model .* not found|invalid model|not exist|do not have access/i.test(msg);
+}
+
 async function handleChat(request, env) {
   if (request.method !== 'POST') return json({ ok: false, status: 'method_not_allowed', message: 'Use POST /api/chat.' }, 405, { allow: 'POST, OPTIONS' });
   let body = {};
@@ -178,29 +214,45 @@ async function handleChat(request, env) {
   }, 503, { 'x-lsuperagen-runtime': runtimeHeader });
 
   const requestId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
-  const model = env.OPENAI_MODEL || 'gpt-4o-mini';
-  let providerResponse;
-  try {
-    providerResponse = await fetch('https://api.openai.com/v1/responses', {
-      method: 'POST',
-      headers: { authorization: 'Bearer ' + env.OPENAI_API_KEY, 'content-type': 'application/json', 'x-client-request-id': requestId },
-      body: JSON.stringify({ model, input: message, instructions: toolInstructions(tool, mode), max_output_tokens: 900, store: false, metadata: { app: 'lsuperagen.docs', route: '/api/chat', tool: tool || 'general', mode } })
-    });
-  } catch (error) {
-    return json({ ok: false, status: 'provider_network_error', message: 'OpenAI provider request failed before a response was received.', tool, provider, request_id: requestId, error: error && error.message ? error.message : 'network_error' }, 502, { 'x-lsuperagen-runtime': 'openai-runtime-v1', 'x-lsuperagen-request-id': requestId });
-  }
+  const configuredCandidates = modelCandidates(env);
+  const modelIds = await listAccessibleModelIds(env, requestId);
+  const candidates = modelIds ? configuredCandidates.filter((model) => modelIds.has(model)) : configuredCandidates;
+  const attempted = [];
+  let lastError = null;
 
-  const raw = await providerResponse.text();
-  let data = {};
-  try { data = raw ? JSON.parse(raw) : {}; } catch (_) { data = { raw: raw.slice(0, 500) }; }
+  for (const model of candidates) {
+    attempted.push(model);
+    let providerResponse;
+    let data;
+    try {
+      ({ response: providerResponse, data } = await createOpenAIResponse(env, model, message, tool, mode, requestId));
+    } catch (error) {
+      return json({ ok: false, status: 'provider_network_error', message: 'OpenAI provider request failed before a response was received.', tool, provider, request_id: requestId, error: error && error.message ? error.message : 'network_error' }, 502, { 'x-lsuperagen-runtime': 'openai-runtime-v1', 'x-lsuperagen-request-id': requestId });
+    }
 
-  if (!providerResponse.ok) {
+    if (providerResponse.ok) {
+      const output = extractOutputText(data);
+      return json({ ok: true, status: 'completed', tool, provider, model, message: output, output, usage: data.usage || null, response_id: data.id || null, request_id: requestId, attempted_models: attempted }, 200, { 'x-lsuperagen-runtime': 'openai-runtime-v1', 'x-lsuperagen-request-id': requestId });
+    }
+
     const providerMessage = data && data.error && data.error.message ? data.error.message : 'OpenAI provider returned an error.';
-    return json({ ok: false, status: 'provider_error', message: providerMessage, tool, provider, model, request_id: requestId, provider_status: providerResponse.status }, providerResponse.status >= 400 && providerResponse.status < 500 ? 502 : 503, { 'x-lsuperagen-runtime': 'openai-runtime-v1', 'x-lsuperagen-request-id': requestId });
+    lastError = { message: providerMessage, model, provider_status: providerResponse.status };
+    if (!isModelAccessError(data)) {
+      return json({ ok: false, status: 'provider_error', message: providerMessage, tool, provider, model, request_id: requestId, provider_status: providerResponse.status, attempted_models: attempted }, providerResponse.status >= 400 && providerResponse.status < 500 ? 502 : 503, { 'x-lsuperagen-runtime': 'openai-runtime-v1', 'x-lsuperagen-request-id': requestId });
+    }
   }
 
-  const output = extractOutputText(data);
-  return json({ ok: true, status: 'completed', tool, provider, model, message: output, output, usage: data.usage || null, response_id: data.id || null, request_id: requestId }, 200, { 'x-lsuperagen-runtime': 'openai-runtime-v1', 'x-lsuperagen-request-id': requestId });
+  return json({
+    ok: false,
+    status: 'model_not_available',
+    message: 'OPENAI_API_KEY is valid, but this project does not expose any supported default chat model to the Worker. Set Cloudflare runtime variable OPENAI_MODEL to a model enabled in the OpenAI project, or enable a supported model in OpenAI Platform.',
+    tool,
+    provider,
+    request_id: requestId,
+    attempted_models: attempted.length ? attempted : configuredCandidates,
+    visible_model_count: modelIds ? modelIds.size : null,
+    last_error: lastError
+  }, 502, { 'x-lsuperagen-runtime': 'openai-runtime-v1', 'x-lsuperagen-request-id': requestId });
 }
 
 export default {
@@ -225,6 +277,6 @@ export default {
       html = applyChatToolContext(html, url.searchParams.get('tool'));
     }
     html = mobilePolish(html, pathname);
-    return new Response(html, { status: response.status, headers: htmlHeaders(response, 'openai-runtime-v1') });
+    return new Response(html, { status: response.status, headers: htmlHeaders(response, 'openai-runtime-v1-model-fallback') });
   }
 };

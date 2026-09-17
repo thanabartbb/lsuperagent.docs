@@ -1,0 +1,241 @@
+{
+  "ok": true,
+  "surface": "system_registry_v1",
+  "source": {
+    "name": "File Audit — Base44 / LAB / REF — Checkpoint 03",
+    "source_file": "file-audit-base44-lab-checkpoint-03.md",
+    "basis": "source-derived registry from checkpoint audit; no source file executed as application code",
+    "reviewed_upload_events": 59,
+    "canonical_unique_contents": 42,
+    "redundant_or_duplicate_candidate_uploads": 17,
+    "current_batch": {
+      "upload_events": 10,
+      "new_canonical_contents": 4,
+      "operational_duplicates_or_candidates": 6
+    }
+  },
+  "rules": {
+    "no_fake_runtime": true,
+    "secret_values_exposed": false,
+    "do_not_merge_control_plane_and_appchat_yet": true,
+    "registry_is_inventory_not_execution": true,
+    "status_meaning": {
+      "active_current_app": "wired in the current lsuperagen.docs app surface",
+      "canonical_source": "canonical source file identified by checkpoint audit",
+      "canonical_archive": "canonical archive identified by checkpoint audit",
+      "planned_bridge": "relationship recommended later, not wired now",
+      "not_wired": "known concept but not connected to runtime"
+    }
+  },
+  "counts": {
+    "registry_entries": 12,
+    "checkpoint_canonical_entries": 5,
+    "current_app_entries": 7,
+    "active_current_app": 5,
+    "canonical_source_or_archive": 5,
+    "planned_bridge": 2
+  },
+  "groups": [
+    {
+      "id": "control-plane",
+      "name": "Control Plane",
+      "purpose": "Global evidence, authority, deployment, protocol governance",
+      "status": "canonical_archive",
+      "source_support": "checkpoint lists control-plane-agents-sdk-lab.zip and its 14-entry package structure including schemas and guards",
+      "entries": ["control-plane-archive", "authority-schema", "evidence-schema", "deployment-schema", "protocol-schema", "entity-schema", "runtime-guards"]
+    },
+    {
+      "id": "runtime",
+      "name": "Runtime / AppChat Workflow",
+      "purpose": "One runtime execution loop for computer-using chat agents",
+      "status": "canonical_source",
+      "source_support": "checkpoint identifies appchat-computer-agent-workflow.ts as provider-neutral runtime workflow",
+      "entries": ["appchat-computer-agent-workflow"]
+    },
+    {
+      "id": "providers",
+      "name": "Provider Layer",
+      "purpose": "Model/provider adapters and agent policy surfaces",
+      "status": "mixed",
+      "entries": ["openai-agent-policy", "openrouter-free-model", "openai-current-chat", "claude-provider-status"]
+    },
+    {
+      "id": "auth",
+      "name": "Auth / Authority Layer",
+      "purpose": "Authentication, authorization, authority, and provider credential boundaries",
+      "status": "mixed",
+      "entries": ["github-oauth", "google-oauth", "admin-gate", "platform-register", "authority-schema"]
+    },
+    {
+      "id": "storage",
+      "name": "Storage Layer",
+      "purpose": "Persistence helpers and future platform account storage",
+      "status": "canonical_source",
+      "entries": ["mongo-storage-helper"]
+    }
+  ],
+  "entries": [
+    {
+      "id": "control-plane-archive",
+      "group": "control-plane",
+      "name": "Control Plane archive",
+      "source_file": "control-plane-agents-sdk-lab.zip",
+      "recommended_repo_path": "control-plane/control-plane-agents-sdk-lab.zip",
+      "status": "canonical_archive",
+      "access": "admin",
+      "runtime_wired": false,
+      "role": "Zod schemas + runtime guards for evidence, authority, deployment verification, entity graph, and protocol lifecycle",
+      "hash_sha256": "2c9bbe2e2e045b9bc7263f0f3cc584ffa9bb39b2c1654d8d5362c2b6763eba0a",
+      "notes": "Archive contains the same 14-entry package structure previously inventoried. Do not execute automatically."
+    },
+    {
+      "id": "authority-schema",
+      "group": "auth",
+      "name": "Authority schema",
+      "source_file": "src/schemas/authority.ts inside control plane archive",
+      "recommended_repo_path": "control-plane/src/schemas/authority.ts",
+      "status": "canonical_archive",
+      "access": "admin",
+      "runtime_wired": false,
+      "role": "Authority layer for control-plane governance; not the same thing as login authentication",
+      "notes": "This is part of the broader Auth meaning: authority and governance."
+    },
+    {
+      "id": "appchat-computer-agent-workflow",
+      "group": "runtime",
+      "name": "AppChat Computer Agent Workflow",
+      "source_file": "appchat-computer-agent-workflow.ts",
+      "recommended_repo_path": "runtime/appchat-computer-agent-workflow.ts",
+      "status": "canonical_source",
+      "access": "admin",
+      "runtime_wired": false,
+      "role": "Provider-agnostic AppChat to Agent SDK to Computer Tool runtime workflow and state machine",
+      "hash_sha256": "53b02f71db393cac822f33995076bc0d72ac18eb6a754a81d7733009e1d6fed5",
+      "states": ["RECEIVED", "RUNNING", "TOOL_CALL", "OBSERVED", "AWAITING_APPROVAL", "COMPLETED", "FAILED"],
+      "mechanics": ["runId", "traceId", "monotonic sequence", "event emission", "approval gate", "bounded max-turn loop", "timeout guard", "terminal failure event", "minimal HTTP boundary", "computer actions"],
+      "notes": "Runtime orchestration, not a model/provider implementation."
+    },
+    {
+      "id": "openai-agent-policy",
+      "group": "providers",
+      "name": "OpenAI Agents SDK agent policy",
+      "source_file": "agent.ts",
+      "recommended_repo_path": "providers/openai/agent.ts",
+      "status": "canonical_source",
+      "access": "admin",
+      "runtime_wired": false,
+      "provider": "OpenAI Agents SDK",
+      "role": "Agent definition / behavioral policy for AGENTS-SDK-LAB",
+      "notes": "Provider-specific agent policy/config, not the workflow engine."
+    },
+    {
+      "id": "openrouter-free-model",
+      "group": "providers",
+      "name": "OpenRouter free-model fallback",
+      "source_file": "free-model.ts",
+      "recommended_repo_path": "providers/openrouter/free-model.ts",
+      "status": "canonical_source",
+      "access": "admin",
+      "runtime_wired": false,
+      "provider": "OpenRouter",
+      "requires_secret": ["OPENROUTER_API_KEY"],
+      "role": "Server-only chat-completions fallback adapter using model openrouter/free",
+      "notes": "Simple chat-completion adapter; not a tool-loop agent and not a duplicate of agent.ts."
+    },
+    {
+      "id": "mongo-storage-helper",
+      "group": "storage",
+      "name": "MongoDB / Mongoose helper",
+      "source_file": "database.ts",
+      "recommended_repo_path": "storage/database.ts",
+      "status": "canonical_source",
+      "access": "admin",
+      "runtime_wired": false,
+      "requires_secret": ["MONGO_URL"],
+      "role": "Storage infrastructure helper with connect/disconnect functions",
+      "notes": "Not Control Plane logic itself."
+    },
+    {
+      "id": "github-oauth",
+      "group": "auth",
+      "name": "GitHub OAuth",
+      "source_file": "current lsuperagen.docs Worker/auth surface",
+      "status": "active_current_app",
+      "access": "public",
+      "route": "/auth/github",
+      "runtime_wired": true,
+      "role": "Public trial login provider",
+      "notes": "Current app registry entry; not derived from Checkpoint 03 source file inventory."
+    },
+    {
+      "id": "google-oauth",
+      "group": "auth",
+      "name": "Google OAuth",
+      "source_file": "current lsuperagen.docs Worker/auth surface",
+      "status": "active_current_app",
+      "access": "public",
+      "route": "/auth/google",
+      "runtime_wired": true,
+      "role": "Public trial login provider",
+      "notes": "Current app registry entry; not derived from Checkpoint 03 source file inventory."
+    },
+    {
+      "id": "admin-gate",
+      "group": "auth",
+      "name": "Admin Gate",
+      "source_file": "current lsuperagen.docs Worker/auth surface",
+      "status": "active_current_app",
+      "access": "admin",
+      "route": "/admin",
+      "runtime_wired": true,
+      "requires_secret": ["ADMIN_ALLOWED_LOGINS"],
+      "role": "Separates public login from owner/admin access",
+      "notes": "Authentication is not authorization. Admin access remains allowlist-only."
+    },
+    {
+      "id": "platform-register",
+      "group": "auth",
+      "name": "Platform Register V1",
+      "source_file": "current lsuperagen.docs signup surface",
+      "status": "active_current_app",
+      "access": "public",
+      "route": "/signup.html",
+      "runtime_wired": true,
+      "role": "Registration surface that points users to Google/GitHub first and keeps email backend as future Platform Account V1",
+      "notes": "Supabase/Firebase-style email auth is not claimed as live here."
+    },
+    {
+      "id": "openai-current-chat",
+      "group": "providers",
+      "name": "OpenAI public chat runtime",
+      "source_file": "current lsuperagen.docs /api/chat surface",
+      "status": "active_current_app",
+      "access": "public_rate_limited",
+      "route": "/api/chat",
+      "runtime_wired": true,
+      "requires_secret": ["OPENAI_API_KEY", "OPENAI_MODEL"],
+      "role": "Current public chat model output route",
+      "notes": "This is the only live model-output route in the current app."
+    },
+    {
+      "id": "claude-provider-status",
+      "group": "providers",
+      "name": "Claude provider status",
+      "source_file": "current provider-connect/status surface",
+      "status": "planned_bridge",
+      "access": "admin",
+      "route": "/api/claude/status",
+      "runtime_wired": false,
+      "requires_secret": ["ANTHROPIC_API_KEY", "ANTHROPIC_MODEL"],
+      "role": "Prepared provider slot; output route is not live yet",
+      "notes": "Ready for runtime wiring, not public model output."
+    }
+  ],
+  "recommended_next_order": [
+    "Keep registry as inventory, not execution.",
+    "Move/copy canonical source files into recommended repo paths only after review.",
+    "Wire Control Plane policies before enabling AppChat computer workflow.",
+    "Wire Claude runtime second only after OpenAI chat remains stable.",
+    "Do not merge Control Plane and AppChat workflow yet."
+  ]
+}

@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SDK Plug Tools — lsuperagen.docs</title><meta name="description" content="SDK Plug Tools — ปลั๊กอินและ SDK สำหรับเชื่อมต่อ lsuperagen เข้ากับระบบของคุณ"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+--carbon-950:#060606;--carbon-900:#0a0a0b;--carbon-850:#0d0e10;--carbon-800:#121316;--carbon-750:#16181d;--carbon-700:#1d1f24;
+--graphite-600:#24272d;--graphite-500:#2c3037;--line-800:#1c1e22;--line-700:#26292f;--line-600:#33373f;
+--steel-300:#c8ccd2;--steel-400:#a2a7b0;--steel-500:#7c828c;--steel-600:#5a5f68;
+/* semantic */
+--canvas:var(--carbon-950);--surface:var(--carbon-850);--surface-elevated:var(--carbon-800);--surface-inset:var(--carbon-900);
+--surface-active:rgba(99,179,255,.06);
+--fg-primary:#f5f7f9;--fg-secondary:var(--steel-400);--fg-muted:var(--steel-500);
+--border-subtle:var(--line-800);--border-default:var(--line-700);--border-strong:var(--line-600);
+--accent:#63b3ff;--accent-strong:#8ec6ff;--accent-muted:rgba(99,179,255,.14);
+--focus:#63b3ff;--error:#ff6b6b;--success:#57d39a;
+--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;
+--radius-sm:6px;--radius-md:10px;--radius-lg:14px;--radius-pill:999px;
+--font-display:"Inter","Noto Sans Thai",system-ui,sans-serif;--font-body:"Inter","Noto Sans Thai",system-ui,sans-serif;--font-mono:"IBM Plex Mono",ui-monospace,monospace;--font-thai:"Noto Sans Thai","Inter",system-ui,sans-serif;
+--dur-fast:120ms;--dur-base:200ms;--ease:cubic-bezier(.2,.6,.2,1);
+--content-max:1200px;--gutter:clamp(16px,4vw,40px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--canvas);color:var(--fg-primary);font-family:var(--font-body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+:lang(th),.thai{font-family:var(--font-thai)}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer}
+img,svg{display:block;max-width:100%}
+h1,h2,h3,h4{margin:0}
+:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:-9999px;top:8px;background:#fff;color:#000;padding:8px 14px;border-radius:8px;z-index:999}
+.skip:focus{left:8px}
+.blueprint-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(140,150,165,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(140,150,165,.08) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 30%,transparent 100%)}
+body.dense .blueprint-bg{background-size:80px 80px;background-image:linear-gradient(rgba(140,150,165,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(140,150,165,.045) 1px,transparent 1px)}
+.wrap{position:relative;z-index:1;max-width:var(--content-max);margin:0 auto;padding-inline:var(--gutter)}
+.mono{font-family:var(--font-mono)}
+/* header */
+.site-header{position:sticky;top:0;z-index:50;background:rgba(6,6,6,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--border-subtle)}
+.header-inner{display:flex;align-items:center;gap:var(--space-6);height:64px}
+.brand{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.brand .mono-mark{width:34px;height:34px}
+.brand-name{font-weight:700;letter-spacing:-.01em;font-size:1.02rem}
+.brand-name b{font-weight:800}.brand-name span{color:var(--fg-muted);font-weight:500}
+.primary-nav{display:none;gap:2px;margin-inline-start:8px}
+.primary-nav a{padding:8px 12px;border-radius:8px;color:var(--fg-secondary);font-size:.92rem;font-weight:500;transition:color var(--dur-fast),background var(--dur-fast)}
+.primary-nav a:hover{color:var(--fg-primary);background:var(--surface-elevated)}
+.primary-nav a[aria-current="page"]{color:var(--fg-primary)}
+.primary-nav a[aria-current="page"]::after{content:"";display:block;height:2px;margin-top:4px;background:var(--accent)}
+.header-search{display:none;margin-inline-start:auto;align-items:center;gap:10px;min-width:260px;height:40px;padding:0 12px;background:var(--surface-inset);border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--fg-muted);transition:border-color var(--dur-base),box-shadow var(--dur-base)}
+.header-search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-muted)}
+.header-search input{all:unset;flex:1;color:var(--fg-secondary);font-size:.9rem}
+.kbd{font-family:var(--font-mono);font-size:.72rem;color:var(--fg-muted);border:1px solid var(--border-strong);border-radius:6px;padding:1px 6px}
+.menu-btn{margin-inline-start:auto;display:grid;place-items:center;width:40px;height:40px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--surface-inset);color:var(--fg-secondary)}
+@media(min-width:900px){.primary-nav{display:flex}.header-search{display:flex}.menu-btn{display:none}}
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 22px;border-radius:var(--radius-pill);font-weight:600;font-size:.98rem;border:1px solid transparent;transition:transform var(--dur-fast) var(--ease),background var(--dur-base),border-color var(--dur-base),box-shadow var(--dur-base)}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:#fff;color:#0a0a0b}
+.btn-primary:hover{background:#e9ebee}
+.btn-primary:focus-visible{box-shadow:0 0 0 3px var(--accent-muted)}
+.btn-secondary{background:transparent;color:var(--fg-primary);border-color:var(--border-strong)}
+.btn-secondary:hover{background:var(--surface-elevated);border-color:var(--steel-600)}
+.btn-block{width:100%;justify-content:center}
+.btn .arrow{transition:transform var(--dur-base) var(--ease)}
+.btn:hover .arrow{transform:translateX(3px)}
+.btn[disabled]{opacity:.5;pointer-events:none}
+/* page hero */
+.page-hero{padding-block:clamp(28px,5vw,52px) var(--space-8);border-bottom:1px solid var(--border-subtle)}
+.eyebrow{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.34em;color:var(--fg-muted);margin:0 0 var(--space-4);display:flex;align-items:center;gap:10px}
+.eyebrow .dot{width:6px;height:6px;border-radius:2px;background:var(--accent)}
+.page-hero h1{font-family:var(--font-display);font-weight:800;letter-spacing:-.03em;line-height:1.02;font-size:clamp(2.1rem,6vw,3.4rem)}
+.page-hero p.lede{margin:var(--space-4) 0 0;color:var(--fg-secondary);max-width:62ch;font-size:clamp(1rem,2.2vw,1.12rem)}
+/* generic cards */
+.icon-box{flex:0 0 auto;width:42px;height:42px;display:grid;place-items:center;background:var(--surface-inset);border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--steel-300);transition:border-color var(--dur-base),color var(--dur-base)}
+.card{position:relative;display:flex;flex-direction:column;padding:var(--space-5);background:var(--surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);transition:border-color var(--dur-base),background var(--dur-base),transform var(--dur-base) var(--ease)}
+a.card:hover{border-color:var(--accent-muted);background:var(--surface-elevated);transform:translateY(-2px)}
+a.card:hover .icon-box{border-color:var(--accent-muted);color:var(--accent-strong)}
+.card h3{font-size:1.04rem;font-weight:600}
+.card p{margin:6px 0 0;font-size:.86rem;color:var(--fg-muted);line-height:1.55}
+.card .go{margin-top:auto;padding-top:var(--space-4);align-self:flex-end;color:var(--steel-500);transition:transform var(--dur-base) var(--ease),color var(--dur-base)}
+a.card:hover .go{color:var(--accent);transform:translateX(4px)}
+.badge-status{font-family:var(--font-mono);font-size:.66rem;font-weight:500;letter-spacing:.04em;padding:3px 9px;border-radius:var(--radius-pill);border:1px solid var(--border-default)}
+.badge-status.beta{color:var(--steel-300);background:rgba(200,204,210,.08)}
+.badge-status.soon{color:var(--steel-500);background:rgba(124,130,140,.06)}
+.badge-status.accent{color:var(--accent-strong);border-color:var(--accent-muted);background:var(--accent-muted)}
+.grid{display:grid;gap:var(--space-4)}
+.g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr}.g4{grid-template-columns:1fr}
+@media(min-width:560px){.g2{grid-template-columns:repeat(2,1fr)}.g4{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:820px){.g3{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1000px){.g4{grid-template-columns:repeat(4,1fr)}}
+/* docs layout: sidebar + content */
+.docs{display:grid;grid-template-columns:1fr;gap:var(--space-8);padding-block:var(--space-10)}
+@media(min-width:960px){.docs{grid-template-columns:236px 1fr;gap:var(--space-12)}}
+.side{position:sticky;top:84px;align-self:start;display:none}
+@media(min-width:960px){.side{display:block}}
+.side .side-label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.2em;color:var(--fg-muted);margin:0 0 var(--space-3);padding-inline-start:12px}
+.side a{display:block;padding:8px 12px;border-radius:8px;color:var(--fg-secondary);font-size:.9rem;border-left:2px solid transparent;transition:color var(--dur-fast),background var(--dur-fast),border-color var(--dur-fast)}
+.side a:hover{color:var(--fg-primary);background:var(--surface-elevated)}
+.side a.active{color:var(--fg-primary);border-left-color:var(--accent);background:var(--surface-active)}
+.content{min-width:0}
+.content h2{font-size:clamp(1.4rem,3.6vw,1.9rem);font-weight:700;letter-spacing:-.02em;margin:var(--space-10) 0 var(--space-4);scroll-margin-top:84px}
+.content h2:first-child{margin-top:0}
+.content h3{font-size:1.1rem;font-weight:600;margin:var(--space-8) 0 var(--space-3)}
+.content p{color:var(--fg-secondary);max-width:68ch}
+.content ul{color:var(--fg-secondary);padding-inline-start:20px}
+.content li{margin:6px 0}
+.content strong{color:var(--fg-primary);font-weight:600}
+/* code block */
+.code{position:relative;margin:var(--space-4) 0;background:var(--surface-inset);border:1px solid var(--border-default);border-left:2px solid var(--accent-muted);border-radius:var(--radius-md);overflow:auto}
+.code pre{margin:0;padding:16px 18px;font-family:var(--font-mono);font-size:.84rem;line-height:1.7;color:#dfe3e8;white-space:pre}
+.code .cm{color:var(--fg-muted)}.code .k{color:var(--accent-strong)}.code .s{color:#a9d5a0}
+.inline-code{font-family:var(--font-mono);font-size:.86em;background:var(--surface-inset);border:1px solid var(--border-default);border-radius:6px;padding:1px 6px;color:var(--steel-300)}
+/* steps */
+.step{display:grid;grid-template-columns:auto 1fr;gap:var(--space-5);padding:var(--space-6) 0;border-top:1px solid var(--border-subtle)}
+.step:first-of-type{border-top:0}
+.step .num{width:40px;height:40px;display:grid;place-items:center;font-family:var(--font-mono);font-weight:600;color:var(--fg-primary);background:var(--surface-inset);border:1px solid var(--border-default);border-radius:var(--radius-md)}
+.step h3{margin:2px 0 6px}
+/* table */
+.table-wrap{overflow-x:auto;border:1px solid var(--border-subtle);border-radius:var(--radius-lg);margin:var(--space-4) 0}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.9rem}
+th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--border-subtle)}
+th{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em;color:var(--fg-muted);text-transform:uppercase;background:var(--surface)}
+tr:last-child td{border-bottom:0}
+td .yes{color:var(--accent-strong)}td .no{color:var(--fg-muted)}
+/* filter chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:var(--space-6) 0 var(--space-8)}
+.chip{height:36px;padding:0 16px;display:inline-flex;align-items:center;border:1px solid var(--border-default);border-radius:var(--radius-pill);color:var(--fg-secondary);font-size:.86rem;background:transparent;transition:color var(--dur-fast),border-color var(--dur-fast),background var(--dur-fast)}
+.chip:hover{color:var(--fg-primary);border-color:var(--steel-600)}
+.chip[aria-pressed="true"]{color:var(--fg-primary);border-color:var(--accent);background:var(--surface-active)}
+/* changelog */
+.rel{position:relative;padding:var(--space-8) 0;border-top:1px solid var(--border-subtle)}
+.rel:first-of-type{border-top:0}
+.rel-head{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:var(--space-5)}
+.rel-ver{font-family:var(--font-mono);font-weight:600;font-size:1.05rem;color:var(--fg-primary)}
+.rel-date{font-family:var(--font-mono);font-size:.78rem;color:var(--fg-muted)}
+.change-group{margin:var(--space-4) 0}
+.change-group h4{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;margin:0 0 8px;display:inline-flex;align-items:center;gap:8px}
+.tag-dot{width:8px;height:8px;border-radius:2px}
+.tag-added{color:var(--success)}.tag-added .tag-dot{background:var(--success)}
+.tag-changed{color:var(--accent-strong)}.tag-changed .tag-dot{background:var(--accent)}
+.tag-fixed{color:var(--steel-300)}.tag-fixed .tag-dot{background:var(--steel-400)}
+.change-group ul{margin:0;padding-inline-start:20px;color:var(--fg-secondary)}
+.change-group li{margin:5px 0}
+/* login */
+.login{min-height:calc(100vh - 64px);display:grid;grid-template-columns:1fr}
+@media(min-width:940px){.login{grid-template-columns:1.05fr .95fr}}
+.login-brand{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:var(--space-8);padding:clamp(28px,5vw,64px);border-bottom:1px solid var(--border-subtle)}
+@media(min-width:940px){.login-brand{border-bottom:0;border-right:1px solid var(--border-subtle)}}
+.login-brand .dial{position:absolute;right:-14%;top:50%;transform:translateY(-50%);width:min(70%,420px);opacity:.9;pointer-events:none}
+.login-brand .lb-top{display:flex;align-items:center;gap:12px}
+.login-brand .ver{font-family:var(--font-mono);font-size:.72rem;color:var(--fg-muted);border-left:1px solid var(--border-strong);padding-left:12px}
+.login-brand h2{position:relative;font-family:var(--font-display);font-weight:800;letter-spacing:-.03em;line-height:1.02;font-size:clamp(2rem,5vw,3rem);max-width:16ch}
+.login-brand .lb-sub{position:relative;color:var(--fg-secondary);max-width:34ch;margin-top:var(--space-4)}
+.login-brand .anno{position:relative;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.2em;color:var(--fg-muted);line-height:1.9}
+.login-form-wrap{display:flex;align-items:center;justify-content:center;padding:clamp(28px,5vw,56px)}
+.login-form{width:100%;max-width:400px}
+.login-form h1{font-size:1.6rem;font-weight:700;letter-spacing:-.02em}
+.login-form .welcome{color:var(--fg-secondary);margin:8px 0 var(--space-8)}
+.field{margin-bottom:var(--space-4)}
+.field label{display:block;font-size:.84rem;color:var(--fg-secondary);margin-bottom:8px;font-weight:500}
+.input-shell{display:flex;align-items:center;gap:10px;height:50px;padding:0 14px;background:var(--surface-inset);border:1px solid var(--border-default);border-radius:var(--radius-md);transition:border-color var(--dur-base),box-shadow var(--dur-base)}
+.input-shell:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-muted)}
+.input-shell input{all:unset;flex:1;color:var(--fg-primary);font-size:.95rem}
+.input-shell input::placeholder{color:var(--fg-muted)}
+.input-shell .ic{color:var(--fg-muted);display:grid;place-items:center}
+.toggle-pw{background:none;border:0;color:var(--fg-muted);display:grid;place-items:center;padding:4px;border-radius:6px}
+.toggle-pw:hover{color:var(--fg-secondary)}
+.row-between{display:flex;justify-content:space-between;align-items:center;margin:6px 0 var(--space-6)}
+.link-accent{color:var(--accent);font-size:.85rem}
+.link-accent:hover{color:var(--accent-strong);text-decoration:underline}
+.divider{display:flex;align-items:center;gap:14px;color:var(--fg-muted);font-size:.78rem;margin:var(--space-6) 0}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border-subtle)}
+.oauth-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.oauth-btn{display:flex;align-items:center;justify-content:center;gap:8px;height:46px;background:var(--surface);border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--fg-primary);font-size:.88rem;font-weight:500;transition:border-color var(--dur-base),background var(--dur-base)}
+.oauth-btn:hover{border-color:var(--steel-600);background:var(--surface-elevated)}
+.oauth-btn:focus-visible{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-muted)}
+.form-msg{display:none;align-items:center;gap:10px;margin-top:var(--space-4);padding:12px 14px;border-radius:var(--radius-md);font-size:.86rem;border:1px solid var(--border-default)}
+.form-msg.show{display:flex}
+.form-msg.info{color:var(--accent-strong);border-color:var(--accent-muted);background:var(--accent-muted)}
+.form-msg.err{color:var(--error);border-color:rgba(255,107,107,.3);background:rgba(255,107,107,.08)}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.25);border-top-color:#0a0a0b;border-radius:50%;animation:spin .7s linear infinite}
+.signup-line{text-align:center;margin-top:var(--space-8);color:var(--fg-secondary);font-size:.9rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* footer */
+.site-footer{border-top:1px solid var(--border-subtle);margin-top:clamp(40px,6vw,72px);padding-block:var(--space-10)}
+.footer-inner{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-6) var(--space-8)}
+.footer-brand{display:flex;align-items:center;gap:12px}
+.footer-brand .mono-mark{width:30px;height:30px}
+.footer-ver{font-family:var(--font-mono);font-size:.74rem;color:var(--fg-muted);border-inline-start:1px solid var(--border-strong);padding-inline-start:12px}
+.footer-nav{display:flex;flex-wrap:wrap;gap:var(--space-5);margin-inline:auto}
+.footer-nav a{color:var(--fg-secondary);font-size:.9rem;transition:color var(--dur-fast)}
+.footer-nav a:hover{color:#fff}
+.footer-social{display:flex;gap:var(--space-2)}
+.footer-social a{width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--steel-400);transition:color var(--dur-base),border-color var(--dur-base)}
+.footer-social a:hover{color:#fff;border-color:var(--steel-600)}
+.footer-tag{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.2em;color:var(--fg-muted);text-align:right;line-height:1.7;border-inline-start:1px solid var(--border-strong);padding-inline-start:16px}
+@media(prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+
+/* SDK-PLUG-TOOLS extra */
+.plug-grid{display:grid;grid-template-columns:1fr;gap:20px}
+@media(min-width:640px){.plug-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:960px){.plug-grid{grid-template-columns:repeat(3,1fr)}}
+.plug-card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border-subtle);border-radius:14px;overflow:hidden;transition:border-color 200ms,transform 200ms cubic-bezier(.2,.6,.2,1)}
+.plug-card:hover{border-color:var(--accent-muted,rgba(99,179,255,.3));transform:translateY(-2px)}
+.plug-card-top{padding:20px 20px 0}
+.plug-card-icon{width:44px;height:44px;display:grid;place-items:center;background:var(--surface-inset);border:1px solid var(--border-default);border-radius:10px;color:#c8ccd2;margin-bottom:14px}
+.plug-card-top h3{font-size:1.04rem;font-weight:600;margin:0 0 6px}
+.plug-card-top p{font-size:.86rem;color:var(--fg-secondary);line-height:1.55;margin:0}
+.plug-card-code{margin:16px 0 0;background:var(--surface-inset);border-top:1px solid var(--border-subtle);padding:14px 16px;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.82rem;color:#dfe3e8;line-height:1.65;overflow-x:auto}
+.plug-card-footer{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border-subtle)}
+.plug-card-footer .badge-status{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.66rem;font-weight:500;letter-spacing:.04em;padding:3px 9px;border-radius:999px;border:1px solid var(--border-default)}
+.plug-card-footer .badge-status.beta{color:#c8ccd2;background:rgba(200,204,210,.08)}
+.plug-card-footer .badge-status.soon{color:#7c828c;background:rgba(124,130,140,.06)}
+.plug-card-footer .badge-status.live{color:#8ec6ff;border-color:rgba(99,179,255,.3);background:rgba(99,179,255,.1)}
+.go-arr{color:#5a5f68;transition:transform 200ms,color 200ms}
+.plug-card:hover .go-arr{color:var(--accent,#63b3ff);transform:translateX(4px)}
+.section-divider{display:flex;align-items:center;gap:16px;margin:48px 0 28px;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.72rem;letter-spacing:.34em;color:#7c828c}
+.section-divider::after{content:"";flex:1;height:1px;background:#1c1e22}
+.install-block{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--surface-inset);border:1px solid var(--border-default);border-radius:10px;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.88rem;color:#dfe3e8;margin-bottom:32px;overflow-x:auto}
+.install-block .prompt{color:#5a5f68;user-select:none}
+.copy-btn{margin-left:auto;flex:0 0 auto;height:32px;padding:0 12px;background:transparent;border:1px solid var(--border-strong);border-radius:8px;color:#a2a7b0;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.76rem;cursor:pointer;transition:border-color 150ms,color 150ms}
+.copy-btn:hover{border-color:#5a5f68;color:#fff}
+</style></head>
+<body><a class="skip" href="#main">ข้ามไปยังเนื้อหาหลัก</a>
+<div class="blueprint-bg" aria-hidden="true"></div><svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<linearGradient id="chrome" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6f8fa"/><stop offset=".22" stop-color="#c3c8cf"/><stop offset=".45" stop-color="#6b7078"/><stop offset=".6" stop-color="#3a3d43"/><stop offset=".78" stop-color="#9aa0a8"/><stop offset="1" stop-color="#d7dbe0"/></linearGradient>
+<linearGradient id="chromeEdge" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#242629"/><stop offset=".5" stop-color="#8b9098"/><stop offset="1" stop-color="#f2f4f6"/></linearGradient>
+<linearGradient id="markMini" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef0f2"/><stop offset=".5" stop-color="#7d828a"/><stop offset="1" stop-color="#c9cdd3"/></linearGradient>
+</defs></svg>
+<header class="site-header"><div class="wrap header-inner">
+<a class="brand" href="index.html" aria-label="lsuperagen.docs หน้าแรก"><svg class="mono-mark" viewBox="0 0 40 40" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="9" fill="#0d0e10" stroke="#33373f"/><text x="20" y="27" text-anchor="middle" font-family="Inter,sans-serif" font-weight="800" font-size="19" fill="url(#markMini)">LS</text></svg><span class="brand-name"><b>lsuperagen</b><span>.docs</span></span></a>
+<nav class="primary-nav" aria-label="เมนูหลัก"><a href="getting-started.html">Docs</a><a href="#">Guides</a><a href="api.html">API</a><a href="index.html#tools">Tools</a><a href="examples.html" aria-current="page">Examples</a><a href="changelog.html">Changelog</a></nav>
+<div class="header-search" role="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg><input type="search" placeholder="Search documentation…" aria-label="ค้นหาเอกสาร"/><span class="kbd">⌘K</span></div>
+<button class="menu-btn" aria-label="เปิดเมนู"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+</div></header>
+<main id="main">
+<section class="page-hero"><div class="wrap">
+<p class="eyebrow"><span class="dot"></span>SDK · PLUG · TOOLS</p>
+<h1>SDK Plug Tools</h1>
+<p class="lede thai">ปลั๊กอิน SDK และเครื่องมือสำเร็จรูปสำหรับเชื่อมต่อ lsuperagen เข้ากับระบบของคุณ — ติดตั้งครั้งเดียว ใช้ได้ทุกที่</p>
+</div></section>
+
+<div class="wrap" style="padding-block:var(--space-10)">
+
+<!-- install strip -->
+<div class="install-block" role="region" aria-label="คำสั่งติดตั้ง">
+<span class="prompt">$</span>
+<span id="install-cmd">pnpm add @lsuperagen/sdk</span>
+<button class="copy-btn" id="copyBtn" aria-label="คัดลอกคำสั่ง">copy</button>
+</div>
+
+<!-- filter chips -->
+<div class="chips" role="group" aria-label="กรองตามหมวด">
+<button class="chip" data-filter="all" aria-pressed="true">ทั้งหมด</button>
+<button class="chip" data-filter="core" aria-pressed="false">Core SDK</button>
+<button class="chip" data-filter="auth" aria-pressed="false">Auth</button>
+<button class="chip" data-filter="tools" aria-pressed="false">Tools</button>
+<button class="chip" data-filter="integration" aria-pressed="false">Integrations</button>
+</div>
+
+<!-- CORE SDK -->
+<p class="section-divider">CORE SDK</p>
+<div class="plug-grid" id="plugGrid">
+
+<article class="plug-card" data-cat="core">
+<div class="plug-card-top">
+<div class="plug-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m12 2 8 4.5v9L12 20l-8-4.5v-9z"/><path d="m12 2 8 4.5-8 4.5-8-4.5z"/><path d="M12 11v9"/></svg></div>
+<h3>@lsuperagen/sdk</h3>
+<p class="thai">แพ็กเกจหลักสำหรับเชื่อมต่อทุก service ของ lsuperagen จาก Node.js หรือ Edge Runtime</p>
+</div>
+<div class="plug-card-code"><span style="color:#8ec6ff">import</span> { LsuperagenClient } <span style="color:#8ec6ff">from</span> <span style="color:#a9d5a0">"@lsuperagen/sdk"</span>
+<span style="color:#8ec6ff">const</span> client = <span style="color:#8ec6ff">new</span> LsuperagenClient({ projectId })</div>
+<div class="plug-card-footer">
+<span class="badge-status live">Stable</span>
+<svg class="go-arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+</article>
+
+<article class="plug-card" data-cat="core">
+<div class="plug-card-top">
+<div class="plug-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+<h3>@lsuperagen/sdk-react</h3>
+<p class="thai">React hooks และ Provider components พร้อมใช้ รองรับ Next.js App Router และ RSC</p>
+</div>
+<div class="plug-card-code"><span style="color:#8ec6ff">import</span> { useLsuperagen } <span style="color:#8ec6ff">from</span> <span style="color:#a9d5a0">"@lsuperagen/sdk-react"</span>
+<span style="color:#8ec6ff">const</span> { writer, researcher } = useLsuperagen()</div>
+<div class="plug-card-footer">
+<span class="badge-status live">Stable</span>
+<svg class="go-arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+</article>
+
+<article class="plug-card" data-cat="core">
+<div class="plug-card-top">
+<div class="plug-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></div>
+<h3>@lsuperagen/sdk-edge</h3>
+<p class="thai">Lightweight build สำหรับ Cloudflare Workers, Vercel Edge Functions และ Deno Deploy</p>
+</div>
+<div class="plug-card-code"><span style="color:#8ec6ff">import</span> { createEdgeClient } <span style="color:#8ec6ff">from</span> <span style="color:#a9d5a0">"@lsuperagen/sdk-edge"</span>
+<span style="color:#5a5f68">// ใช้กับ wrangler.toml + workers_dev = true</span></div>
+<div class="plug-card-footer">
+<span class="badge-status beta">Beta</span>
+<svg class="go-arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+</article>
+
+<!-- AUTH -->
+<p class="section-divider" style="grid-column:1/-1">AUTH PLUGINS</p>
+
+<article class="plug-card" data-cat="auth">
+<div class="plug-card-top">
+<div class="plug-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+<h3>auth-supabase</h3>
+<p class="thai">เชื่อม Supabase Auth เป็น primary provider รองรับ email, magic link และ OAuth</p>
+</div>
+<div class="plug-card-code"><span style="color:#8ec6ff">import</span> { SupabaseAuthPlugin } <span style="color:#8ec6ff">from</span> <span style="color:#a9d5a0">"@lsuperagen/sdk"</span>
+client.use(SupabaseAuthPlugin({ url, anonKey }))</div>
+<div class="plug-card-footer">
+<span class="badge-status live">Stable</span>
+<svg class="go-arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+</article>
+
+<article class="plug-card" data-cat="auth">
+<div class="plug-card-top">
+<div class="plug-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l7 3v6c0 5-3 7-7 9-4-2-7-4-7-9V6z"/><path d="m9 12 2 2 4-4"/></svg></div>
+<h3>auth-firebase</h3>
+<p class="thai">Firebase Auth เป็น fallback provider เปิดใช้เมื่อ Supabase trigger: network / provider_down / config_missing</p>
+</div>
+<div class="plug-card-code"><span style="color:#8ec6ff">import</span> { FirebaseAuthPlugin } <span style="color:#8ec6ff">from</span> <span style="color:#a9d5a0">"@lsuperagen/sdk"</span>
+client.use(FirebaseAuthPlugin({ apiKey, authDomain }))</div>
+<div class="plug-card-footer">
+<span class="badge-status beta">Beta</span>
+<svg class="go-arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+</article>
+
+<article class="plug-card" data-cat="auth">
+<div class="plug-card-top">
+<div class="plug-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg></div>
+<h3>auth-session</h3>
+<p class="thai">จัดการ session ข้ามแท็บและ refresh token อัตโนมัติ รองรับ SSR</p>
+</div>
+<div class="plug-card-code"><span style="color:#8ec6ff">import</span> { SessionPlugin } <span style="color:#8ec6ff">from</span> <span style="color:#a9d5a0">"@lsuperagen/sdk"</span>
+client.use(SessionPlugin({ persist: <span style="color:#8ec6ff">true</span> }))</div>
+<div class="plug-card-footer">
+<span class="badge-status live">Stable</span>
+<svg class="go-arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+</article>
+
+<!-- TOOLS -->
+<p class="section-divider" style="grid-column:1/-1">TOOL PLUGINS</p>
+
+<article class="plug-card" data-cat="tools">
+<div class="plug-card-top">
+<div class="plug-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
+<h3>plugin-writer</h3>
+<p class="thai">AI Writer plugin — สร้างและแก้ไขคอนเทนต์ผ่าน SDK ปรับ tone, length และ format ได้</p>
+</div>
+<div class="plug-card-code"><span style="color:#8ec6ff">const</span> result = <span style="color:#8ec6ff">await</span> client.writer.generate({
+  prompt: <span style="color:#a9d5a0">"..."</span>, tone: <span style="color:#a9d5a0">"professional"</span>
+})</div>
+<div class="plug-card-footer">
+<span class="badge-status beta">Beta</span>
+<svg class="go-arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+</article>
+
+<article class="plug-card" data-cat="tools">
+<div class="plug-card-top">
+<div class="plug-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m3 17 5-4 4 3 3-2 6 5"/></svg></div>
+<h3>plugin-image</h3>
+<p class="thai">Image Generator plugin — สร้างภาพจาก prompt รองรับหลาย model และ output format</p>
+</div>
+<div class="plug-card-code"><span style="color:#8ec6ff">const</span> img = <span style="color:#8ec6ff">await</span> client.image.generate({
+  prompt: <span style="color:#a9d5a0">"..."</span>, size: <span style="color:#a9d5a0">"1024x1024"</span>
+})</div>
+<div class="plug-card-footer">
+<span class="badge-status beta">Beta</span>
+<svg class="go-arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+</article>
+
+<article class="plug-card" data-cat="tools">
+<div class="plug-card-top">
+<div class="plug-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg></div>
+<h3>plugin-research</h3>
+<p class="thai">Deep Research plugin — ค้นคว้า สรุป และสร้าง structured report พร้อม citation</p>
+</div>
+<div class="plug-card-code"><span style="color:#8ec6ff">const</span> report = <span style="color:#8ec6ff">await</span> client.research.run({
+  query: <span style="color:#a9d5a0">"..."</span>, depth: <span style="color:#a9d5a0">"deep"</span>
+})</div>
+<div class="plug-card-footer">
+<span class="badge-status beta">Beta</span>
+<svg class="go-arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+</article>
+
+<article class="plug-card" data-cat="tools">
+<div class="plug-card-top">
+<div class="plug-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg></div>
+<h3>plugin-code</h3>
+<p class="thai">Code Assistant plugin — เขียน แก้ไข review และอธิบายโค้ด รองรับ 40+ ภาษา</p>
+</div>
+<div class="plug-card-code"><span style="color:#8ec6ff">const</span> fix = <span style="color:#8ec6ff">await</span> client.code.review({
+  code: sourceCode, lang: <span style="color:#a9d5a0">"typescript"</span>
+})</div>
+<div class="plug-card-footer">
+<span class="badge-status beta">Beta</span>
+<svg class="go-arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+</article>
+
+<article class="plug-card" data-cat="tools">
+<div class="plug-card-top">
+<div class="plug-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div>
+<h3>plugin-slides</h3>
+<p class="thai">Slide Creator plugin — สร้างสไลด์พรีเซนต์จาก outline หรือ markdown</p>
+</div>
+<div class="plug-card-code"><span style="color:#5a5f68">// Coming Soon</span>
+<span style="color:#8ec6ff">await</span> client.slides.create({ outline: <span style="color:#a9d5a0">"..."</span> })</div>
+<div class="plug-card-footer">
+<span class="badge-status soon">Coming Soon</span>
+<svg class="go-arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+</article>
+
+<article class="plug-card" data-cat="tools">
+<div class="plug-card-top">
+<div class="plug-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg></div>
+<h3>plugin-memory</h3>
+<p class="thai">Memory plugin — จัดเก็บและเรียกคืน context ข้ามเซสชัน รองรับ Supabase vector store</p>
+</div>
+<div class="plug-card-code"><span style="color:#5a5f68">// Coming Soon</span>
+<span style="color:#8ec6ff">await</span> client.memory.store({ key, value })</div>
+<div class="plug-card-footer">
+<span class="badge-status soon">Coming Soon</span>
+<svg class="go-arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+</article>
+
+<!-- INTEGRATIONS -->
+<p class="section-divider" style="grid-column:1/-1">INTEGRATIONS</p>
+
+<article class="plug-card" data-cat="integration">
+<div class="plug-card-top">
+<div class="plug-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/></svg></div>
+<h3>next-adapter</h3>
+<p class="thai">Next.js App Router adapter พร้อม middleware, server actions และ RSC support</p>
+</div>
+<div class="plug-card-code"><span style="color:#8ec6ff">import</span> { withLsuperagen } <span style="color:#8ec6ff">from</span> <span style="color:#a9d5a0">"@lsuperagen/next"</span>
+<span style="color:#5a5f68">// next.config.ts</span>
+export default withLsuperagen(nextConfig)</div>
+<div class="plug-card-footer">
+<span class="badge-status live">Stable</span>
+<svg class="go-arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+</article>
+
+<article class="plug-card" data-cat="integration">
+<div class="plug-card-top">
+<div class="plug-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></div>
+<h3>cloudflare-adapter</h3>
+<p class="thai">Cloudflare Workers + Pages adapter รองรับ D1, KV และ R2 binding</p>
+</div>
+<div class="plug-card-code"><span style="color:#8ec6ff">import</span> { cloudflareAdapter } <span style="color:#8ec6ff">from</span> <span style="color:#a9d5a0">"@lsuperagen/sdk-edge"</span>
+<span style="color:#5a5f68">// wrangler.toml compatible</span></div>
+<div class="plug-card-footer">
+<span class="badge-status beta">Beta</span>
+<svg class="go-arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+</article>
+
+<article class="plug-card" data-cat="integration">
+<div class="plug-card-top">
+<div class="plug-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 0 0-1.7-1l-.4-2.5H9.6l-.4 2.5a7 7 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 1.7 1l.4 2.5h4.8l.4-2.5a7 7 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6a7 7 0 0 0 .1-1z"/></svg></div>
+<h3>zapier-mcp</h3>
+<p class="thai">Zapier MCP connector — เชื่อม lsuperagen workflows กับ 7,000+ แอปผ่าน Zapier</p>
+</div>
+<div class="plug-card-code"><span style="color:#8ec6ff">import</span> { ZapierPlugin } <span style="color:#8ec6ff">from</span> <span style="color:#a9d5a0">"@lsuperagen/sdk"</span>
+client.use(ZapierPlugin({ embedId }))</div>
+<div class="plug-card-footer">
+<span class="badge-status beta">Beta</span>
+<svg class="go-arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+</article>
+
+</div><!-- /plugGrid -->
+</div><!-- /wrap -->
+</main>
+<footer class="site-footer"><div class="wrap footer-inner">
+<div class="footer-brand"><svg class="mono-mark" viewBox="0 0 40 40" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="9" fill="#0d0e10" stroke="#33373f"/><text x="20" y="27" text-anchor="middle" font-family="Inter,sans-serif" font-weight="800" font-size="19" fill="url(#markMini)">LS</text></svg><span class="brand-name"><b>lsuperagen</b><span>.docs</span></span><span class="footer-ver">V11 · Public Beta</span></div>
+<nav class="footer-nav" aria-label="ลิงก์ท้ายเว็บ"><a href="getting-started.html">Docs</a><a href="api.html">API</a><a href="index.html#tools">Tools</a><a href="examples.html">Examples</a><a href="changelog.html">Changelog</a></nav>
+<div class="footer-social"><a href="#" aria-label="GitHub"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.4-2.2-.2-4.6-1.1-4.6-4.9 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.6 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.3.2 2.3.1 2.6.6.7 1 1.6 1 2.7 0 3.8-2.4 4.7-4.6 4.9.3.3.6.9.6 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg></a><a href="#" aria-label="X"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7 8 8.2 12h-6.4l-5-6.6L6 22H2.9l7.5-8.6L2.5 2H9l4.5 6z"/></svg></a><a href="#" aria-label="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 5.3A17 17 0 0 0 15.8 4l-.2.4a13 13 0 0 1 3.7 1.9 12 12 0 0 0-10.6 0A13 13 0 0 1 12.4 4.4L12.2 4A17 17 0 0 0 4 5.3C1.6 8.8.9 12.3 1.2 15.7A17 17 0 0 0 6.3 18l.6-.9a11 11 0 0 1-1.7-.8l.4-.3a12 12 0 0 0 10.8 0l.4.3c-.5.3-1.1.6-1.7.8l.6.9a17 17 0 0 0 5.1-2.3c.4-4-.7-7.4-3.6-10.4zM8.9 14c-.8 0-1.5-.8-1.5-1.7s.7-1.7 1.5-1.7 1.5.8 1.5 1.7-.7 1.7-1.5 1.7zm6.2 0c-.8 0-1.5-.8-1.5-1.7s.7-1.7 1.5-1.7 1.5.8 1.5 1.7-.7 1.7-1.5 1.7z"/></svg></a></div>
+<p class="footer-tag" aria-hidden="true">BUILT<br/>FOR A BRIGHTER<br/>TOMORROW</p></div></footer>
+<script>
+(function(){
+// filter chips
+var chips=document.querySelectorAll('.chip');
+var cards=document.querySelectorAll('#plugGrid .plug-card');
+chips.forEach(function(c){
+  c.addEventListener('click',function(){
+    chips.forEach(function(x){x.setAttribute('aria-pressed','false');});
+    c.setAttribute('aria-pressed','true');
+    var f=c.dataset.filter;
+    cards.forEach(function(card){
+      card.style.display=(f==='all'||card.dataset.cat===f)?'':'none';
+    });
+  });
+});
+// copy install cmd
+var copyBtn=document.getElementById('copyBtn');
+if(copyBtn){
+  copyBtn.addEventListener('click',function(){
+    navigator.clipboard.writeText(document.getElementById('install-cmd').textContent).then(function(){
+      copyBtn.textContent='copied!';
+      setTimeout(function(){copyBtn.textContent='copy';},1800);
+    });
+  });
+}
+})();
+</script></body></html>

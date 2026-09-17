@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>เริ่มต้นใช้งาน — lsuperagen.docs</title><meta name="description" content="ติดตั้งและตั้งค่า lsuperagen ครั้งแรก"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+--c950:#060606;--c900:#0a0a0b;--c850:#0d0e10;--c800:#121316;--c750:#16181d;--c700:#1d1f24;
+--g600:#24272d;--g500:#2c3037;
+--l800:#1c1e22;--l700:#26292f;--l600:#33373f;
+--s300:#c8ccd2;--s400:#a2a7b0;--s500:#7c828c;--s600:#5a5f68;
+--canvas:var(--c950);--surface:var(--c850);--surf-el:var(--c800);--surf-in:var(--c900);--surf-act:rgba(99,179,255,.06);
+--fg:#f5f7f9;--fg2:var(--s400);--fg3:var(--s500);
+--bd:var(--l800);--bd2:var(--l700);--bd3:var(--l600);
+--acc:#63b3ff;--acc2:#8ec6ff;--accm:rgba(99,179,255,.14);
+--focus:#63b3ff;--err:#ff6b6b;--ok:#57d39a;
+--sp1:4px;--sp2:8px;--sp3:12px;--sp4:16px;--sp5:20px;--sp6:24px;--sp8:32px;--sp10:40px;--sp12:48px;--sp16:64px;
+--r1:6px;--r2:10px;--r3:14px;--rpill:999px;
+--fd:"Inter","Noto Sans Thai",system-ui,sans-serif;
+--fm:"IBM Plex Mono",ui-monospace,monospace;
+--ft:"Noto Sans Thai","Inter",system-ui,sans-serif;
+--df:120ms;--db:200ms;--ease:cubic-bezier(.2,.6,.2,1);
+--cmax:1200px;--gut:clamp(16px,4vw,40px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--canvas);color:var(--fg);font-family:var(--fd);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.thai,:lang(th){font-family:var(--ft)}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer}
+img,svg{display:block;max-width:100%}
+h1,h2,h3,h4,h5,p{margin:0}
+ul{margin:0;padding:0;list-style:none}
+:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:-9999px;top:8px;background:#fff;color:#000;padding:8px 14px;border-radius:8px;z-index:9999}
+.skip:focus{left:8px}
+
+/* blueprint grid */
+.bp{position:fixed;inset:0;z-index:0;pointer-events:none;
+background-image:linear-gradient(rgba(140,150,165,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(140,150,165,.07) 1px,transparent 1px);
+background-size:56px 56px;mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 30%,transparent 100%)}
+body.dense .bp{background-size:80px 80px;background-image:linear-gradient(rgba(140,150,165,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(140,150,165,.04) 1px,transparent 1px)}
+.wrap{position:relative;z-index:1;max-width:var(--cmax);margin:0 auto;padding-inline:var(--gut)}
+
+/* ---- HEADER ---- */
+.hdr{position:sticky;top:0;z-index:50;background:rgba(6,6,6,.78);backdrop-filter:blur(16px);border-bottom:1px solid var(--bd)}
+.hdr-in{display:flex;align-items:center;gap:var(--sp6);height:64px}
+.brand{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.mark{width:34px;height:34px}
+.bn{font-weight:700;letter-spacing:-.01em;font-size:1.02rem}
+.bn b{font-weight:800}.bn span{color:var(--fg3);font-weight:500}
+.pnav{display:none;gap:2px;margin-inline-start:8px}
+.pnav a{padding:8px 12px;border-radius:8px;color:var(--fg2);font-size:.92rem;font-weight:500;transition:color var(--df),background var(--df),border-color var(--df)}
+.pnav a:hover{color:var(--fg);background:var(--surf-el)}
+.pnav a.cur{color:var(--fg);position:relative}
+.pnav a.cur::after{content:"";position:absolute;bottom:-1px;left:12px;right:12px;height:2px;background:var(--acc);border-radius:2px}
+.hsrch{display:none;margin-inline-start:auto;align-items:center;gap:10px;min-width:260px;height:40px;padding:0 12px;background:var(--surf-in);border:1px solid var(--bd2);border-radius:var(--r2);transition:border-color var(--db),box-shadow var(--db)}
+.hsrch:focus-within{border-color:var(--acc);box-shadow:0 0 0 3px var(--accm)}
+.hsrch input{all:unset;flex:1;color:var(--fg2);font-size:.9rem}
+.kbd{font-family:var(--fm);font-size:.72rem;color:var(--fg3);border:1px solid var(--bd3);border-radius:6px;padding:1px 6px}
+.mbtn{margin-inline-start:auto;display:grid;place-items:center;width:40px;height:40px;border:1px solid var(--bd2);border-radius:var(--r2);background:var(--surf-in);color:var(--fg2)}
+@media(min-width:900px){.pnav{display:flex}.hsrch{display:flex}.mbtn{display:none}}
+
+/* ---- BUTTONS ---- */
+.btn{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 22px;border-radius:var(--rpill);font-weight:600;font-size:.98rem;border:1px solid transparent;transition:transform var(--df) var(--ease),background var(--db),border-color var(--db),box-shadow var(--db)}
+.btn:active{transform:translateY(1px)}
+.btn-p{background:#fff;color:#0a0a0b}.btn-p:hover{background:#e9ebee}
+.btn-p:focus-visible{box-shadow:0 0 0 3px var(--accm)}
+.btn-s{background:transparent;color:var(--fg);border-color:var(--bd3)}.btn-s:hover{background:var(--surf-el);border-color:var(--s600)}
+.btn-w{width:100%;justify-content:center}
+.btn .arr{transition:transform var(--db) var(--ease)}.btn:hover .arr{transform:translateX(3px)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+
+/* ---- CARDS ---- */
+.ic-box{flex:0 0 auto;width:42px;height:42px;display:grid;place-items:center;background:var(--surf-in);border:1px solid var(--bd2);border-radius:var(--r2);color:var(--s300);transition:border-color var(--db),color var(--db)}
+.card{position:relative;display:flex;flex-direction:column;padding:var(--sp5);background:var(--surface);border:1px solid var(--bd);border-radius:var(--r3);transition:border-color var(--db),background var(--db),transform var(--db) var(--ease)}
+a.card:hover{border-color:var(--accm);background:var(--surf-el);transform:translateY(-2px)}
+a.card:hover .ic-box{border-color:var(--accm);color:var(--acc2)}
+.card h3{font-size:1.04rem;font-weight:600;margin-top:var(--sp3)}
+.card p{margin-top:6px;font-size:.86rem;color:var(--fg3);line-height:1.55}
+.go{margin-top:auto;padding-top:var(--sp4);align-self:flex-end;color:var(--s500);transition:transform var(--db) var(--ease),color var(--db)}
+a.card:hover .go{color:var(--acc);transform:translateX(4px)}
+
+/* nav-card (flat layout) */
+.ncard{display:flex;flex-direction:column;gap:var(--sp3);padding:var(--sp5);background:var(--surface);border:1px solid var(--bd);border-radius:var(--r3);transition:border-color var(--db),background var(--db),transform var(--db) var(--ease)}
+a.ncard:hover{border-color:var(--accm);background:var(--surf-el);transform:translateY(-2px)}
+a.ncard:hover .ic-box{border-color:var(--accm);color:var(--acc2)}
+a.ncard:hover .go{color:var(--acc);transform:translateX(4px)}
+.ncard .top{display:flex;align-items:flex-start;gap:var(--sp4)}
+.ncard h3{font-size:1.02rem;font-weight:600;margin:0}
+.ncard p{font-size:.86rem;color:var(--fg3);margin:2px 0 0;line-height:1.5}
+
+/* badges */
+.badge{font-family:var(--fm);font-size:.66rem;font-weight:500;letter-spacing:.04em;padding:3px 9px;border-radius:var(--rpill);border:1px solid var(--bd2)}
+.badge.beta{color:var(--s300);background:rgba(200,204,210,.08)}
+.badge.soon{color:var(--s500);background:rgba(124,130,140,.06)}
+.badge.live{color:var(--acc2);border-color:var(--accm);background:var(--accm)}
+.badge.new{color:var(--ok);border-color:rgba(87,211,154,.3);background:rgba(87,211,154,.08)}
+
+/* grids */
+.g{display:grid;gap:var(--sp4)}
+.g2{grid-template-columns:1fr}
+.g3{grid-template-columns:1fr}
+.g4{grid-template-columns:1fr}
+@media(min-width:560px){.g2{grid-template-columns:repeat(2,1fr)}.g4{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:820px){.g3{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1000px){.g4{grid-template-columns:repeat(4,1fr)}}
+
+/* section */
+section{position:relative;padding-block:clamp(40px,6vw,72px)}
+.slabel{font-family:var(--fm);font-size:.72rem;letter-spacing:.34em;color:var(--fg3);margin-bottom:var(--sp4)}
+.shead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:var(--sp4);margin-bottom:var(--sp8)}
+.stitle{font-weight:700;letter-spacing:-.02em;font-size:clamp(1.6rem,4.4vw,2.4rem);line-height:1.15}
+.ssub{margin-top:var(--sp3);color:var(--fg2);max-width:60ch}
+.link-all{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border:1px solid var(--bd3);border-radius:var(--rpill);color:var(--fg);font-size:.92rem;font-weight:500;white-space:nowrap;transition:background var(--db),border-color var(--db)}
+.link-all:hover{background:var(--surf-el);border-color:var(--s600)}
+.link-all .arr{transition:transform var(--db) var(--ease)}.link-all:hover .arr{transform:translateX(3px)}
+
+/* page hero */
+.phero{padding-block:clamp(28px,5vw,52px) var(--sp8);border-bottom:1px solid var(--bd)}
+.eyebrow{font-family:var(--fm);font-size:.72rem;letter-spacing:.34em;color:var(--fg3);display:flex;align-items:center;gap:10px;margin-bottom:var(--sp4)}
+.eyebrow .dot{width:6px;height:6px;border-radius:2px;background:var(--acc)}
+.phero h1{font-weight:800;letter-spacing:-.03em;line-height:1.02;font-size:clamp(2.1rem,6vw,3.4rem)}
+.phero .lede{margin-top:var(--sp4);color:var(--fg2);max-width:62ch;font-size:clamp(1rem,2.2vw,1.12rem)}
+
+/* docs layout */
+.docs-wrap{display:grid;grid-template-columns:1fr;gap:var(--sp8);padding-block:var(--sp10)}
+@media(min-width:960px){.docs-wrap{grid-template-columns:220px 1fr;gap:var(--sp12)}}
+.side{position:sticky;top:84px;align-self:start;display:none}
+@media(min-width:960px){.side{display:block}}
+.side .slbl{font-family:var(--fm);font-size:.7rem;letter-spacing:.2em;color:var(--fg3);margin-bottom:var(--sp3);padding-inline-start:12px}
+.side a{display:block;padding:8px 12px;border-radius:8px;color:var(--fg2);font-size:.9rem;border-left:2px solid transparent;transition:color var(--df),background var(--df),border-color var(--df)}
+.side a:hover{color:var(--fg);background:var(--surf-el)}
+.side a.on{color:var(--fg);border-left-color:var(--acc);background:var(--surf-act)}
+.cnt{min-width:0}
+.cnt h2{font-size:clamp(1.3rem,3.4vw,1.8rem);font-weight:700;letter-spacing:-.02em;margin:var(--sp10) 0 var(--sp4);scroll-margin-top:84px}
+.cnt h2:first-child{margin-top:0}
+.cnt h3{font-size:1.08rem;font-weight:600;margin:var(--sp8) 0 var(--sp3)}
+.cnt p{color:var(--fg2);max-width:68ch;margin-bottom:var(--sp4)}
+.cnt ul{color:var(--fg2);padding-inline-start:20px}
+.cnt li{margin:6px 0}
+.cnt strong{color:var(--fg);font-weight:600}
+.ic{font-family:var(--fm);font-size:.86em;background:var(--surf-in);border:1px solid var(--bd2);border-radius:6px;padding:1px 7px;color:var(--s300)}
+
+/* code block */
+.code{margin:var(--sp4) 0;background:var(--surf-in);border:1px solid var(--bd2);border-left:2px solid var(--accm);border-radius:var(--r2);overflow:auto}
+.code pre{margin:0;padding:16px 18px;font-family:var(--fm);font-size:.84rem;line-height:1.7;color:#dfe3e8;white-space:pre}
+.cm{color:var(--fg3)}.kw{color:var(--acc2)}.sv{color:#a9d5a0}
+
+/* steps */
+.step{display:grid;grid-template-columns:auto 1fr;gap:var(--sp5);padding:var(--sp6) 0;border-top:1px solid var(--bd)}
+.step:first-of-type{border-top:0}
+.stepn{width:40px;height:40px;display:grid;place-items:center;font-family:var(--fm);font-weight:600;color:var(--fg);background:var(--surf-in);border:1px solid var(--bd2);border-radius:var(--r2)}
+
+/* table */
+.tw{overflow-x:auto;border:1px solid var(--bd);border-radius:var(--r3);margin:var(--sp4) 0}
+table{border-collapse:collapse;width:100%;min-width:480px;font-size:.9rem}
+th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--bd)}
+th{font-family:var(--fm);font-size:.72rem;letter-spacing:.06em;color:var(--fg3);text-transform:uppercase;background:var(--surface)}
+tr:last-child td{border-bottom:0}
+.yes{color:var(--acc2)}.no{color:var(--fg3)}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:var(--sp6) 0 var(--sp8)}
+.chip{height:36px;padding:0 16px;display:inline-flex;align-items:center;border:1px solid var(--bd2);border-radius:var(--rpill);color:var(--fg2);font-size:.86rem;background:transparent;transition:color var(--df),border-color var(--df),background var(--df)}
+.chip:hover{color:var(--fg);border-color:var(--s600)}
+.chip[aria-pressed=true]{color:var(--fg);border-color:var(--acc);background:var(--surf-act)}
+
+/* changelog */
+.rel{padding:var(--sp8) 0;border-top:1px solid var(--bd)}
+.rel:first-of-type{border-top:0}
+.relh{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:var(--sp5)}
+.relv{font-family:var(--fm);font-weight:600;font-size:1.05rem}
+.reld{font-family:var(--fm);font-size:.78rem;color:var(--fg3)}
+.chg{margin:var(--sp4) 0}
+.chg h4{font-family:var(--fm);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;display:inline-flex;align-items:center;gap:8px;margin-bottom:8px}
+.tdot{width:8px;height:8px;border-radius:2px}
+.ta{color:var(--ok)}.ta .tdot{background:var(--ok)}
+.tc{color:var(--acc2)}.tc .tdot{background:var(--acc)}
+.tf{color:var(--s300)}.tf .tdot{background:var(--s400)}
+.chg ul{padding-inline-start:20px;color:var(--fg2)}.chg li{margin:5px 0}
+
+/* login */
+.login{min-height:calc(100vh - 64px);display:grid;grid-template-columns:1fr}
+@media(min-width:920px){.login{grid-template-columns:1.1fr .9fr}}
+.lbrand{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:var(--sp8);padding:clamp(28px,5vw,64px);border-bottom:1px solid var(--bd)}
+@media(min-width:920px){.lbrand{border-bottom:0;border-right:1px solid var(--bd)}}
+.lbrand .ldial{position:absolute;right:-14%;top:50%;transform:translateY(-50%);width:min(70%,420px);opacity:.85;pointer-events:none}
+.ltop{display:flex;align-items:center;gap:12px}
+.lver{font-family:var(--fm);font-size:.72rem;color:var(--fg3);border-left:1px solid var(--bd3);padding-left:12px}
+.lbrand h2{position:relative;font-weight:800;letter-spacing:-.03em;line-height:1.02;font-size:clamp(1.8rem,4.5vw,2.8rem);max-width:16ch}
+.lbrand .lsub{position:relative;color:var(--fg2);max-width:34ch;margin-top:var(--sp4)}
+.lbrand .lanno{position:relative;font-family:var(--fm);font-size:.68rem;letter-spacing:.2em;color:var(--fg3);line-height:1.9}
+.lform-wrap{display:flex;align-items:center;justify-content:center;padding:clamp(28px,5vw,56px)}
+.lform{width:100%;max-width:400px}
+.lform h1{font-size:1.6rem;font-weight:700;letter-spacing:-.02em}
+.lform .lwelcome{color:var(--fg2);margin:8px 0 var(--sp8)}
+.field{margin-bottom:var(--sp4)}
+.field label{display:block;font-size:.84rem;color:var(--fg2);margin-bottom:8px;font-weight:500}
+.ishell{display:flex;align-items:center;gap:10px;height:50px;padding:0 14px;background:var(--surf-in);border:1px solid var(--bd2);border-radius:var(--r2);transition:border-color var(--db),box-shadow var(--db)}
+.ishell:focus-within{border-color:var(--acc);box-shadow:0 0 0 3px var(--accm)}
+.ishell input{all:unset;flex:1;color:var(--fg);font-size:.95rem}.ishell input::placeholder{color:var(--fg3)}
+.ishell .iic{color:var(--fg3);display:grid;place-items:center}
+.tpw{background:none;border:0;color:var(--fg3);display:grid;place-items:center;padding:4px;border-radius:6px}.tpw:hover{color:var(--fg2)}
+.rowb{display:flex;justify-content:space-between;align-items:center;margin:6px 0 var(--sp6)}
+.lacc{color:var(--acc);font-size:.85rem}.lacc:hover{color:var(--acc2);text-decoration:underline}
+.divd{display:flex;align-items:center;gap:14px;color:var(--fg3);font-size:.78rem;margin:var(--sp6) 0}
+.divd::before,.divd::after{content:"";flex:1;height:1px;background:var(--bd)}
+.oauth-g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ob{display:flex;align-items:center;justify-content:center;gap:8px;height:46px;background:var(--surface);border:1px solid var(--bd2);border-radius:var(--r2);color:var(--fg);font-size:.88rem;font-weight:500;transition:border-color var(--db),background var(--db)}
+.ob:hover{border-color:var(--s600);background:var(--surf-el)}
+.ob:focus-visible{border-color:var(--acc);box-shadow:0 0 0 3px var(--accm)}
+.fmsg{display:none;align-items:center;gap:10px;margin-top:var(--sp4);padding:12px 14px;border-radius:var(--r2);font-size:.86rem;border:1px solid var(--bd2)}
+.fmsg.show{display:flex}
+.fmsg.info{color:var(--acc2);border-color:var(--accm);background:var(--accm)}
+.fmsg.err{color:var(--err);border-color:rgba(255,107,107,.3);background:rgba(255,107,107,.08)}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#0a0a0b;border-radius:50%;animation:spin .7s linear infinite}
+.sline{text-align:center;margin-top:var(--sp8);color:var(--fg2);font-size:.9rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* tools page */
+.tool-hero-grid{display:grid;gap:var(--sp4);margin-top:var(--sp8)}
+.tcat{margin-bottom:var(--sp10)}
+.tcat-label{font-family:var(--fm);font-size:.72rem;letter-spacing:.34em;color:var(--fg3);margin-bottom:var(--sp5);display:flex;align-items:center;gap:10px}
+.tcat-label::after{content:"";flex:1;height:1px;background:var(--bd)}
+.tc2{font-size:1.05rem;font-weight:600;margin-bottom:var(--sp2)}
+.td2{font-size:.9rem;color:var(--fg2);margin-bottom:var(--sp5)}
+
+/* dashboard / workspace page */
+.ws-grid{display:grid;grid-template-columns:1fr;gap:var(--sp6);padding-block:var(--sp10)}
+@media(min-width:900px){.ws-grid{grid-template-columns:280px 1fr}}
+.ws-side{display:flex;flex-direction:column;gap:var(--sp4)}
+.ws-main{display:flex;flex-direction:column;gap:var(--sp6)}
+.ws-card{background:var(--surface);border:1px solid var(--bd);border-radius:var(--r3);padding:var(--sp5)}
+.ws-card h3{font-size:1rem;font-weight:600;margin-bottom:var(--sp4)}
+.status-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--bd);font-size:.9rem}
+.status-row:first-of-type{border-top:0}
+.status-row .label{color:var(--fg2)}
+.dot-ok{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 6px var(--ok)}
+.dot-warn{width:8px;height:8px;border-radius:50%;background:#f5a623;box-shadow:0 0 6px #f5a623}
+.dot-off{width:8px;height:8px;border-radius:50%;background:var(--s600)}
+.stat-num{font-family:var(--fm);font-size:1.8rem;font-weight:600;color:var(--fg);letter-spacing:-.02em}
+.stat-lbl{font-size:.82rem;color:var(--fg3);margin-top:4px}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp3)}
+.stat-box{background:var(--surf-in);border:1px solid var(--bd);border-radius:var(--r2);padding:var(--sp4)}
+
+/* guides */
+.guide-card{display:flex;gap:var(--sp5);padding:var(--sp5);background:var(--surface);border:1px solid var(--bd);border-radius:var(--r3);transition:border-color var(--db),background var(--db),transform var(--db) var(--ease))}
+a.guide-card:hover{border-color:var(--accm);background:var(--surf-el);transform:translateY(-2px)}
+a.guide-card:hover .ic-box{border-color:var(--accm);color:var(--acc2)}
+.guide-body{flex:1;min-width:0}
+.guide-body h3{font-size:1rem;font-weight:600;margin-bottom:6px}
+.guide-body p{font-size:.86rem;color:var(--fg3)}
+.guide-meta{display:flex;gap:10px;align-items:center;margin-top:10px;font-family:var(--fm);font-size:.72rem;color:var(--fg3)}
+
+/* footer */
+.ftr{border-top:1px solid var(--bd);margin-top:clamp(40px,6vw,72px);padding-block:var(--sp10)}
+.ftr-in{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp6) var(--sp8)}
+.ftr-brand{display:flex;align-items:center;gap:12px}
+.ftr-ver{font-family:var(--fm);font-size:.74rem;color:var(--fg3);border-inline-start:1px solid var(--bd3);padding-inline-start:12px}
+.fnav{display:flex;flex-wrap:wrap;gap:var(--sp5);margin-inline:auto}
+.fnav a{color:var(--fg2);font-size:.9rem;transition:color var(--df)}.fnav a:hover{color:#fff}
+.fsoc{display:flex;gap:var(--sp2)}
+.fsoc a{width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--bd2);border-radius:var(--r2);color:var(--s400);transition:color var(--db),border-color var(--db)}
+.fsoc a:hover{color:#fff;border-color:var(--s600)}
+.ftag{font-family:var(--fm);font-size:.66rem;letter-spacing:.2em;color:var(--fg3);text-align:right;line-height:1.7;border-inline-start:1px solid var(--bd3);padding-inline-start:16px}
+@media(prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+</style></head>
+<body class="dense"><a class="skip" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="bp" aria-hidden="true"></div><svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<linearGradient id="chrome" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6f8fa"/><stop offset=".22" stop-color="#c3c8cf"/><stop offset=".45" stop-color="#6b7078"/><stop offset=".6" stop-color="#3a3d43"/><stop offset=".78" stop-color="#9aa0a8"/><stop offset="1" stop-color="#d7dbe0"/></linearGradient>
+<linearGradient id="chromeEdge" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#242629"/><stop offset=".5" stop-color="#8b9098"/><stop offset="1" stop-color="#f2f4f6"/></linearGradient>
+<linearGradient id="mm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef0f2"/><stop offset=".5" stop-color="#7d828a"/><stop offset="1" stop-color="#c9cdd3"/></linearGradient>
+</defs></svg>
+<header class="hdr"><div class="wrap hdr-in">
+<a class="brand" href="index.html" aria-label="lsuperagen.docs"><svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="9" fill="#0d0e10" stroke="#33373f"/><text x="20" y="27" text-anchor="middle" font-family="Inter,sans-serif" font-weight="800" font-size="19" fill="url(#mm)">LS</text></svg><span class="bn"><b>lsuperagen</b><span>.docs</span></span></a>
+<nav class="pnav" aria-label="เมนูหลัก"><a href="index.html">หน้าแรก</a><a href="getting-started.html" class="cur">Docs</a><a href="guides.html">Guides</a><a href="api.html">API</a><a href="tools.html">Tools</a><a href="examples.html">Examples</a><a href="changelog.html">Changelog</a><a href="workspace.html">Workspace</a></nav>
+<div class="hsrch" role="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg><input type="search" placeholder="Search…" aria-label="ค้นหา"/><span class="kbd">⌘K</span></div>
+<button class="mbtn" aria-label="เมนู"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+</div></header>
+<main id="main">
+<section class="phero"><div class="wrap">
+<p class="eyebrow"><span class="dot"></span>GETTING STARTED</p>
+<h1 class="thai">เริ่มต้นใช้งาน</h1>
+<p class="lede thai">ติดตั้ง ตั้งค่า และรัน lsuperagen ครั้งแรกในไม่กี่นาที ทำตามขั้นตอนด้านล่างได้เลย</p>
+</div></section>
+<div class="wrap"><div class="docs-wrap">
+<aside class="side" aria-label="ในหน้านี้"><p class="slbl">ในหน้านี้</p>
+<a class="on" href="#req">สิ่งที่ต้องมี</a>
+<a href="#install">ติดตั้ง</a>
+<a href="#env">ตั้งค่า Environment</a>
+<a href="#run">รันครั้งแรก</a>
+<a href="#next">ไปต่อ</a>
+</aside>
+<div class="cnt">
+<h2 id="req" class="thai">สิ่งที่ต้องมี</h2>
+<p class="thai">ก่อนเริ่ม ตรวจสอบว่ามีครบดังนี้:</p>
+<ul class="thai"><li><strong>Node.js 18+</strong> — ตรวจสอบด้วย <span class="ic">node -v</span></li><li><strong>pnpm</strong> — ตรวจสอบด้วย <span class="ic">pnpm -v</span></li><li><strong>บัญชี Supabase</strong> — สร้างได้ที่ supabase.com (ฟรี)</li></ul>
+<h2 id="install" class="thai">ติดตั้ง</h2>
+<p class="thai">Clone โปรเจกต์และติดตั้ง dependencies:</p>
+<div class="code"><pre><span class="kw">git</span> clone https://github.com/thanabartbb/lsuperagent.docs.git
+<span class="kw">cd</span> lsuperagent.docs
+<span class="kw">pnpm</span> install</pre></div>
+<h2 id="env" class="thai">ตั้งค่า Environment</h2>
+<p class="thai">สร้างไฟล์ <span class="ic">.env.local</span> ในโฟลเดอร์โปรเจกต์ แล้วใส่ค่าจาก Supabase Dashboard:</p>
+<div class="code"><pre><span class="cm"># .env.local — ห้าม commit ขึ้น git</span>
+NEXT_PUBLIC_SUPABASE_URL=<span class="sv">https://&lt;your-ref&gt;.supabase.co</span>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<span class="sv">&lt;your-anon-key&gt;</span></pre></div>
+<p class="thai">ถ้า deploy บน Vercel ใส่ค่าเดียวกันใน <strong>Settings → Environment Variables</strong></p>
+<h2 id="run" class="thai">รันครั้งแรก</h2>
+<div class="code"><pre><span class="kw">pnpm</span> dev</pre></div>
+<p class="thai">เปิดเบราว์เซอร์ไปที่ <span class="ic">http://localhost:3000</span> จะเห็นหน้าแรกของ lsuperagen.docs</p>
+<h2 id="next" class="thai">ไปต่อ</h2>
+<div class="g g3" style="margin-top:var(--sp4)">
+<a class="card" href="guides.html"><span class="ic-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v18H6a2 2 0 0 1-2-2z"/><path d="M9 3v18"/></svg></span><h3>Guides</h3><p class="thai">เรียนรู้การใช้งานแบบเจาะลึก</p><svg class="go" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+<a class="card" href="api.html"><span class="ic-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg></span><h3>API Reference</h3><p class="thai">โครงสร้าง API ทั้งหมด</p><svg class="go" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+<a class="card" href="examples.html"><span class="ic-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2h6c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"/></svg></span><h3>Examples</h3><p class="thai">โค้ดตัวอย่างพร้อมใช้</p><svg class="go" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+</div>
+</div></div></div></main>
+<footer class="ftr"><div class="wrap ftr-in">
+<div class="ftr-brand"><svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="9" fill="#0d0e10" stroke="#33373f"/><text x="20" y="27" text-anchor="middle" font-family="Inter,sans-serif" font-weight="800" font-size="19" fill="url(#mm)">LS</text></svg><span class="bn"><b>lsuperagen</b><span>.docs</span></span><span class="ftr-ver">V11 · Public Beta</span></div>
+<nav class="fnav" aria-label="Footer"><a href="getting-started.html">Docs</a><a href="guides.html">Guides</a><a href="api.html">API</a><a href="tools.html">Tools</a><a href="examples.html">Examples</a><a href="changelog.html">Changelog</a><a href="workspace.html">Workspace</a></nav>
+<div class="fsoc"><a href="#" aria-label="GitHub"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.4-2.2-.2-4.6-1.1-4.6-4.9 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.6 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.3.2 2.3.1 2.6.6.7 1 1.6 1 2.7 0 3.8-2.4 4.7-4.6 4.9.3.3.6.9.6 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg></a><a href="#" aria-label="X"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7 8 8.2 12h-6.4l-5-6.6L6 22H2.9l7.5-8.6L2.5 2H9l4.5 6z"/></svg></a><a href="#" aria-label="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 5.3A17 17 0 0 0 15.8 4l-.2.4a13 13 0 0 1 3.7 1.9 12 12 0 0 0-10.6 0A13 13 0 0 1 12.4 4.4L12.2 4A17 17 0 0 0 4 5.3C1.6 8.8.9 12.3 1.2 15.7A17 17 0 0 0 6.3 18l.6-.9a11 11 0 0 1-1.7-.8l.4-.3a12 12 0 0 0 10.8 0l.4.3c-.5.3-1.1.6-1.7.8l.6.9a17 17 0 0 0 5.1-2.3c.4-4-.7-7.4-3.6-10.4zM8.9 14c-.8 0-1.5-.8-1.5-1.7s.7-1.7 1.5-1.7 1.5.8 1.5 1.7-.7 1.7-1.5 1.7zm6.2 0c-.8 0-1.5-.8-1.5-1.7s.7-1.7 1.5-1.7 1.5.8 1.5 1.7-.7 1.7-1.5 1.7z"/></svg></a></div>
+<p class="ftag" aria-hidden="true">BUILT<br/>FOR A BRIGHTER<br/>TOMORROW</p></div></footer>
+</body></html>

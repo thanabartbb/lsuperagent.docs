@@ -1,0 +1,4 @@
+name = "agents-sdk-space"
+compatibility_date = "2026-09-15"
+
+pages_build_output_dir = "."

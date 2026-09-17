@@ -10,17 +10,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root{--bg:#060606;--panel:#0d0e10;--panel2:#121316;--in:#0a0a0b;--line:#26292f;--line2:#33373f;--fg:#f5f7f9;--fg2:#a2a7b0;--fg3:#7c828c;--acc:#63b3ff;--ok:#57d39a;--warn:#f7c96a;--err:#ff6b6b;--r:14px;--mono:"IBM Plex Mono",ui-monospace,monospace;--sans:"Inter","Noto Sans Thai",system-ui,sans-serif}
-*{box-sizing:border-box}html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.55;overflow-x:hidden}.bp{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(140,150,165,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(140,150,165,.07) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 30%,transparent 100%)}.wrap{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:0 clamp(16px,4vw,40px)}a{color:inherit;text-decoration:none}button,input,textarea{font:inherit}.hdr{position:sticky;top:0;z-index:10;background:rgba(6,6,6,.82);backdrop-filter:blur(14px);border-bottom:1px solid #1c1e22}.hdrin{height:66px;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:flex;align-items:center;gap:12px}.mark{width:38px;height:38px;border:1px solid var(--line2);border-radius:10px;background:var(--panel);display:grid;place-items:center;font-weight:900;letter-spacing:-.04em}.bn{font-size:1.05rem;font-weight:800}.bn span{color:var(--fg3);font-weight:500}.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--in);border-radius:999px;padding:8px 12px;color:var(--fg2);font-size:.82rem}.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(87,211,154,.12)}.hero{padding:36px 0 28px}.ey{font-family:var(--mono);font-size:.72rem;letter-spacing:.34em;color:var(--fg3);margin-bottom:14px}.h1{font-size:clamp(2.1rem,8vw,4.9rem);line-height:.98;letter-spacing:-.04em;margin:0;max-width:900px}.sub{margin-top:18px;color:var(--fg2);font-size:clamp(1rem,2.3vw,1.15rem);max-width:72ch}.grid{display:grid;grid-template-columns:1fr;gap:16px;padding:18px 0 44px}@media(min-width:840px){.grid{grid-template-columns:1.05fr .95fr}.span{grid-column:1/-1}}.card{border:1px solid #1c1e22;background:linear-gradient(180deg,rgba(18,19,22,.94),rgba(10,10,11,.96));border-radius:var(--r);padding:18px}.card h2{font-size:1rem;margin:0 0 10px}.muted{color:var(--fg3)}.row{display:grid;gap:10px}.quick{display:grid;gap:10px}.ql{width:100%;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);background:var(--in);border-radius:12px;padding:14px;transition:border-color .15s,transform .15s;color:var(--fg);cursor:pointer}.ql:hover,.ql.on{border-color:var(--acc);transform:translateY(-1px);background:rgba(99,179,255,.06)}.ql b{font-weight:700}.ql span{display:block;color:var(--fg3);font-size:.84rem;margin-top:2px}.arr{color:var(--acc);font-family:var(--mono)}label{display:block;color:var(--fg2);font-size:.86rem;margin:0 0 6px}input,textarea{width:100%;border:1px solid var(--line);background:var(--in);color:var(--fg);border-radius:10px;padding:12px;outline:none}input:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(99,179,255,.12)}textarea{min-height:142px;resize:vertical}.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.btn{border:1px solid var(--line);background:var(--panel2);color:var(--fg);border-radius:999px;padding:11px 16px;cursor:pointer}.btn.primary{background:#fff;color:#000;border-color:#fff;font-weight:800}.btn.ghost{background:transparent}.note{font-family:var(--mono);font-size:.75rem;color:var(--fg3);border-left:2px solid var(--acc);padding-left:12px;margin-top:12px}.status{display:grid;gap:8px}.st{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #1c1e22;padding:10px 0;color:var(--fg2);font-size:.92rem}.ok{color:var(--ok)}.warn{color:var(--warn)}.danger{color:var(--err)}.preview{border:1px solid var(--line);border-radius:12px;background:#050505;padding:18px;min-height:180px}.preview .small{font-family:var(--mono);font-size:.68rem;letter-spacing:.28em;color:var(--fg3)}.preview h3{font-size:2rem;line-height:1.05;margin:10px 0}.preview p{color:var(--fg2)}.output{white-space:pre-wrap;border:1px solid var(--line);background:#050505;border-radius:10px;padding:12px;color:var(--fg2);font-family:var(--mono);font-size:.76rem;line-height:1.7;margin-top:12px;display:none}.output.show{display:block}.adv{margin-top:12px;border-top:1px solid #1c1e22;padding-top:12px}.adv summary{cursor:pointer;color:var(--fg3);font-size:.86rem}.advlinks{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.advlinks a{font-size:.8rem;color:var(--fg2);border:1px solid var(--line);border-radius:999px;padding:7px 10px}.advlinks a:hover{color:#fff;border-color:var(--line2)}.foot{border-top:1px solid #1c1e22;color:var(--fg3);font-family:var(--mono);font-size:.72rem;padding:22px 0 42px}@media(max-width:560px){.card{padding:14px}.ql{padding:13px}.btn{width:100%;text-align:center;justify-content:center}.h1{font-size:2.35rem}}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.55;overflow-x:hidden}.bp{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(140,150,165,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(140,150,165,.07) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 30%,transparent 100%)}.wrap{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:0 clamp(16px,4vw,40px)}a{color:inherit;text-decoration:none}button,input,textarea{font:inherit}.hdr{position:sticky;top:0;z-index:10;background:rgba(6,6,6,.82);backdrop-filter:blur(14px);border-bottom:1px solid #1c1e22}.hdrin{height:66px;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:flex;align-items:center;gap:12px}.mark{width:38px;height:38px;border:1px solid var(--line2);border-radius:10px;background:var(--panel);display:grid;place-items:center;font-weight:900;letter-spacing:-.04em}.bn{font-size:1.05rem;font-weight:800}.bn span{color:var(--fg3);font-weight:500}.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--in);border-radius:999px;padding:8px 12px;color:var(--fg2);font-size:.82rem}.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(87,211,154,.12)}.hero{padding:36px 0 28px}.ey{font-family:var(--mono);font-size:.72rem;letter-spacing:.34em;color:var(--fg3);margin-bottom:14px}.h1{font-size:clamp(2.1rem,8vw,4.9rem);line-height:.98;letter-spacing:-.04em;margin:0;max-width:900px}.sub{margin-top:18px;color:var(--fg2);font-size:clamp(1rem,2.3vw,1.15rem);max-width:72ch}.grid{display:grid;grid-template-columns:1fr;gap:16px;padding:18px 0 44px}@media(min-width:840px){.grid{grid-template-columns:1.05fr .95fr}.span{grid-column:1/-1}}.card{border:1px solid #1c1e22;background:linear-gradient(180deg,rgba(18,19,22,.94),rgba(10,10,11,.96));border-radius:var(--r);padding:18px}.card h2{font-size:1rem;margin:0 0 10px}.muted{color:var(--fg3)}.row{display:grid;gap:10px}.quick{display:grid;gap:10px}.ql{width:100%;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);background:var(--in);border-radius:12px;padding:14px;transition:border-color .15s,transform .15s;color:var(--fg);cursor:pointer}.ql:hover,.ql.on{border-color:var(--acc);transform:translateY(-1px);background:rgba(99,179,255,.06)}.ql b{font-weight:700}.ql span{display:block;color:var(--fg3);font-size:.84rem;margin-top:2px}.arr{color:var(--acc);font-family:var(--mono)}label{display:block;color:var(--fg2);font-size:.86rem;margin:0 0 6px}input,textarea{width:100%;border:1px solid var(--line);background:var(--in);color:var(--fg);border-radius:10px;padding:12px;outline:none}input:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(99,179,255,.12)}textarea{min-height:142px;resize:vertical}.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--panel2);color:var(--fg);border-radius:999px;padding:11px 16px;cursor:pointer}.btn.primary{background:#fff;color:#000;border-color:#fff;font-weight:800}.btn.ghost{background:transparent}.note{font-family:var(--mono);font-size:.75rem;color:var(--fg3);border-left:2px solid var(--acc);padding-left:12px;margin-top:12px}.status{display:grid;gap:8px}.st{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #1c1e22;padding:10px 0;color:var(--fg2);font-size:.92rem}.ok{color:var(--ok)}.warn{color:var(--warn)}.danger{color:var(--err)}.preview,.cmd{border:1px solid var(--line);border-radius:12px;background:#050505;padding:18px}.preview .small{font-family:var(--mono);font-size:.68rem;letter-spacing:.28em;color:var(--fg3)}.preview h3{font-size:2rem;line-height:1.05;margin:10px 0}.preview p{color:var(--fg2)}.cmd code{display:block;overflow:auto;font-family:var(--mono);color:#dfe3e8;background:#070707;border:1px solid #1c1e22;border-radius:10px;padding:12px;margin:10px 0}.output{white-space:pre-wrap;border:1px solid var(--line);background:#050505;border-radius:10px;padding:12px;color:var(--fg2);font-family:var(--mono);font-size:.76rem;line-height:1.7;margin-top:12px;display:none}.output.show{display:block}.adv{margin-top:12px;border-top:1px solid #1c1e22;padding-top:12px}.adv summary{cursor:pointer;color:var(--fg3);font-size:.86rem}.advlinks{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.advlinks a{font-size:.8rem;color:var(--fg2);border:1px solid var(--line);border-radius:999px;padding:7px 10px}.advlinks a:hover{color:#fff;border-color:var(--line2)}.foot{border-top:1px solid #1c1e22;color:var(--fg3);font-family:var(--mono);font-size:.72rem;padding:22px 0 42px}@media(max-width:560px){.card{padding:14px}.ql{padding:13px}.btn{width:100%;text-align:center}.h1{font-size:2.35rem}}
 </style>
 </head>
 <body>
 <div class="bp" aria-hidden="true"></div>
-<header class="hdr"><div class="wrap hdrin"><a class="brand" href="index.html"><div class="mark">LS</div><div class="bn">lsuperagen<span>.docs</span></div></a><div class="pill"><i class="dot"></i>Control V1.1</div></div></header>
+<header class="hdr"><div class="wrap hdrin"><a class="brand" href="index.html"><div class="mark">LS</div><div class="bn">lsuperagen<span>.docs</span></div></a><div class="pill"><i class="dot"></i>Control V1.2</div></div></header>
 <main class="wrap">
 <section class="hero">
 <div class="ey">PRIVATE CONTROL LINK</div>
 <h1 class="h1">ศูนย์สั่งแก้เว็บจากจุดเดียว</h1>
-<p class="sub">กดหัวข้อทางซ้ายเพื่อเลือกหน้าที่จะแก้ ระบบจะเติม Target ให้เอง จากนั้นพิมพ์รายละเอียด กดคัดลอก แล้วส่งมาใน ChatGPT — ไม่ต้องเข้าไปแก้โค้ด GitHub เอง</p>
+<p class="sub">เลือกหน้าที่จะแก้ → พิมพ์รายละเอียด → กดคัดลอก → ส่งมาใน ChatGPT ผมจะ commit ให้จาก GitHub connector แล้ว Cloudflare deploy เอง ไม่ต้องเปิด repo หรือแก้โค้ดบนมือถือ</p>
 </section>
 <section class="grid">
 <div class="card">
@@ -33,7 +33,7 @@
 <button class="ql" type="button" data-target="Examples / SDK Plug Tools" data-hint="เช่น แก้ plugin cards, หมวดเชื่อมต่อระบบ, MCP/SDK examples"><div><b>แก้ SDK Plug Tools</b><span>plugin cards และหมวดเชื่อมต่อระบบ</span></div><div class="arr">→</div></button>
 <button class="ql" type="button" data-target="Routes / Clean URLs" data-hint="เช่น เพิ่ม alias route ใหม่ ห้าม redirect /page ไป /page.html ซ้ำ"><div><b>แก้ Routes</b><span>/login, /workspace, /admin, clean URLs</span></div><div class="arr">→</div></button>
 </div>
-<p class="note">ปุ่มชุดนี้ไม่เปิดหน้าโค้ดแล้ว — มันใช้เลือก Target สำหรับสร้างคำสั่งให้ ChatGPT เท่านั้น</p>
+<p class="note">อย่ากดเปิด Repo ถ้าไม่ได้ตั้งใจแก้โค้ดเอง ใช้กล่อง request ด้านขวาเป็นทางหลัก</p>
 </div>
 <div class="row">
 <div class="card">
@@ -53,10 +53,20 @@
 <input id="target" value="หน้าแรก / Hero"/>
 <label for="change" style="margin-top:10px">รายละเอียดที่ต้องการแก้</label>
 <textarea id="change" placeholder="เช่น เปลี่ยนหัวข้อหน้าแรกเป็น... / เอาปุ่มนี้ออก / เพิ่ม section ใหม่"></textarea>
-<div class="btns"><button class="btn primary" id="copy">คัดลอกคำสั่งให้ ChatGPT</button><a class="btn" href="index.html">ดูเว็บ</a><a class="btn ghost" href="https://github.com/thanabartbb/lsuperagent.docs">เปิด Repo</a></div>
+<div class="btns"><button class="btn primary" id="copy">คัดลอกคำสั่งให้ ChatGPT</button><a class="btn" href="index.html">ดูเว็บ</a></div>
 <p class="note" id="msg">กดคัดลอก แล้วส่งกลับใน ChatGPT ผมจะ commit ให้จากฝั่งนี้</p>
 <pre class="output" id="out"></pre>
-<details class="adv"><summary>โหมดขั้นสูง: เปิด GitHub editor โดยตรง</summary><div class="advlinks">
+</div>
+</div>
+<div class="card span">
+<h2>SDK install command</h2>
+<div class="cmd"><p class="muted">คำสั่งนี้เป็นตัวอย่างสำหรับเครื่อง developer ที่มี Node/pnpm ไม่ใช่ปุ่มที่ต้องกดบนมือถือ</p><code id="sdkcmd">pnpm add @lsuperagen/sdk</code><button class="btn" id="copysdk">คัดลอกคำสั่ง SDK</button></div>
+</div>
+<div class="card span">
+<h2>Preview ความหมายของระบบ</h2>
+<div class="preview"><div class="small">CONTROL PLANE V1.2</div><h3>เลือกหัวข้อ → คัดลอกคำสั่ง → ส่งให้ ChatGPT → Commit → Deploy</h3><p>เวอร์ชันนี้ซ่อนปุ่มเปิด repo ออกจาก flow หลักแล้ว เพื่อไม่ให้เด้งไปเจอโค้ดยาว ๆ บนมือถือ ถ้าต้องเปิด GitHub จริงให้ใช้โหมดขั้นสูงด้านล่างเท่านั้น</p></div>
+<details class="adv"><summary>โหมดขั้นสูง: เปิด GitHub / GitHub editor โดยตรง</summary><div class="advlinks">
+<a href="https://github.com/thanabartbb/lsuperagent.docs">Repo root</a>
 <a href="https://github.com/thanabartbb/lsuperagent.docs/edit/main/index.html">index.html</a>
 <a href="https://github.com/thanabartbb/lsuperagent.docs/edit/main/workspace.html">workspace.html</a>
 <a href="https://github.com/thanabartbb/lsuperagent.docs/edit/main/login.html">login.html</a>
@@ -65,31 +75,16 @@
 <a href="https://github.com/thanabartbb/lsuperagent.docs/edit/main/_redirects">_redirects</a>
 </div></details>
 </div>
-</div>
-<div class="card span">
-<h2>Preview ความหมายของระบบ</h2>
-<div class="preview"><div class="small">CONTROL PLANE V1.1</div><h3>เลือกหัวข้อ → คัดลอกคำสั่ง → ส่งให้ ChatGPT → Commit → Deploy</h3><p>เวอร์ชันนี้ลดการชนกับ GitHub code editor แล้ว ใช้หน้าเว็บเป็นศูนย์สั่งงานแทน ส่วนการเขียนไฟล์จริงให้ทำจาก ChatGPT/GitHub connector เพื่อไม่ต้องฝัง token หรือ secret ไว้ในหน้าเว็บ</p></div>
-</div>
 </section>
 </main>
-<footer class="foot"><div class="wrap">LSUPERAGEN.DOCS · CONTROL V1.1 · NO SECRET IN UI · GITHUB AS SOURCE OF TRUTH</div></footer>
+<footer class="foot"><div class="wrap">LSUPERAGEN.DOCS · CONTROL V1.2 · NO SECRET IN UI · CHATGPT AS EDIT OPERATOR · GITHUB AS SOURCE OF TRUTH</div></footer>
 <script>
 (function(){
-var target=document.getElementById('target'),change=document.getElementById('change'),copy=document.getElementById('copy'),msg=document.getElementById('msg'),out=document.getElementById('out');
-document.getElementById('quick').addEventListener('click',function(e){
- var b=e.target.closest('.ql'); if(!b) return;
- document.querySelectorAll('.ql').forEach(function(x){x.classList.remove('on')});
- b.classList.add('on'); target.value=b.dataset.target||''; change.placeholder=b.dataset.hint||change.placeholder;
- document.getElementById('builder').scrollIntoView({behavior:'smooth',block:'center'}); change.focus();
-});
-copy.addEventListener('click',function(){
- var t=target.value.trim()||'ไม่ระบุ';
- var ch=change.value.trim()||'ยังไม่ได้ใส่รายละเอียด';
- var text='LSUPERAGEN.DOCS CONTROL REQUEST\nTarget: '+t+'\nChange: '+ch+'\nRule: แก้ใน repo thanabartbb/lsuperagent.docs แล้วให้ Cloudflare deploy อัตโนมัติ';
- function show(){out.textContent=text;out.classList.add('show')}
- if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){msg.textContent='คัดลอกแล้ว — กลับไปวางใน ChatGPT ได้เลย';show();},function(){msg.textContent='คัดลอกอัตโนมัติไม่ได้ — ก๊อปข้อความในกล่องด้านล่างแทน';show();});}
- else{msg.textContent='ก๊อปข้อความในกล่องด้านล่าง แล้วส่งใน ChatGPT';show();}
-});
+var qs=function(s){return document.querySelector(s)},qsa=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+var target=qs('#target'),change=qs('#change'),msg=qs('#msg'),out=qs('#out');
+qsa('.ql').forEach(function(b){b.addEventListener('click',function(){qsa('.ql').forEach(function(x){x.classList.remove('on')});b.classList.add('on');target.value=b.dataset.target||'';change.placeholder=b.dataset.hint||'พิมพ์รายละเอียดที่ต้องการแก้';location.hash='builder';setTimeout(function(){change.focus()},120);});});
+qs('#copy').addEventListener('click',function(){var t=target.value.trim()||'ไม่ระบุ';var c=change.value.trim()||'ยังไม่ได้ใส่รายละเอียด';var text='LSUPERAGEN.DOCS CONTROL REQUEST\nTarget: '+t+'\nChange: '+c+'\nRule: แก้ใน repo thanabartbb/lsuperagent.docs แล้วให้ Cloudflare deploy อัตโนมัติ';function done(){msg.textContent='คัดลอกแล้ว — กลับไปวางใน ChatGPT ได้เลย';out.textContent=text;out.classList.add('show')}if(navigator.clipboard){navigator.clipboard.writeText(text).then(done,function(){done()})}else{done()}});
+qs('#copysdk').addEventListener('click',function(){var t='pnpm add @lsuperagen/sdk';function done(){qs('#copysdk').textContent='คัดลอกแล้ว'}if(navigator.clipboard){navigator.clipboard.writeText(t).then(done,function(){done()})}else{done()}});
 })();
 </script>
 </body>

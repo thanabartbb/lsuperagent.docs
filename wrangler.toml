@@ -1,6 +1,9 @@
 name = "lsuperagent-docs"
+main = "src/index.js"
 compatibility_date = "2026-09-17"
 
 [assets]
 directory = "."
+binding = "ASSETS"
 html_handling = "auto-trailing-slash"
+run_worker_first = true

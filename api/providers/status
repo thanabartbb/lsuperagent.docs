@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "surface": "ai_provider_connect_surface_v1",
+  "provider_connect_url": "https://agents-sdk.space/provider-connect",
+  "providers": {
+    "openai_chatgpt": {
+      "label": "OpenAI / ChatGPT",
+      "kind": "backend_ai_provider",
+      "status": "connected_by_runtime_secret",
+      "runtime_route": "/api/chat",
+      "provider_api": "/v1/responses",
+      "secret_names": ["OPENAI_API_KEY", "OPENAI_MODEL"],
+      "secret_values_exposed": false
+    },
+    "anthropic_claude": {
+      "label": "Claude / Anthropic",
+      "kind": "backend_ai_provider",
+      "status": "not_wired",
+      "planned_routes": ["/api/claude", "/api/claude/status"],
+      "secret_names": ["ANTHROPIC_API_KEY", "ANTHROPIC_MODEL"],
+      "secret_values_exposed": false
+    }
+  },
+  "login_providers": {
+    "github": "oauth_login_ready",
+    "google": "oauth_login_ready",
+    "guest": "public_chat_only"
+  },
+  "admin_gate": {
+    "enabled": true,
+    "allowlist_env": "ADMIN_ALLOWED_LOGINS",
+    "public_users_can_access_admin": false
+  },
+  "security": {
+    "raw_provider_keys_in_response": false,
+    "raw_provider_keys_in_html": false,
+    "provider_connect_is_not_oauth_login": true
+  }
+}

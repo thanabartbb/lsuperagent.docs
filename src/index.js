@@ -2,13 +2,20 @@ const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 10;
 const RATE_LIMIT_BUCKETS = new Map();
 
+const AUTH_COOKIE = 'lsuperagen_trial_session';
+const AUTH_STATE_COOKIE = 'lsuperagen_oauth_state';
+const AUTH_SESSION_TTL_SECONDS = 6 * 60 * 60;
+const AUTH_STATE_TTL_SECONDS = 10 * 60;
+
 const ALIASES = {
   '/sdk': '/examples',
   '/control': '/admin',
   '/routes': '/endpoints',
   '/endpoint': '/endpoints',
   '/secret': '/secret-handoff',
-  '/key-converter': '/secret-handoff'
+  '/key-converter': '/secret-handoff',
+  '/signin': '/login',
+  '/auth': '/login'
 };
 
 const TOOL_LABELS = {
@@ -23,6 +30,17 @@ function json(data, status = 200, extraHeaders = {}) {
     status,
     headers: {
       'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+      ...extraHeaders
+    }
+  });
+}
+
+function redirectTo(location, status = 302, extraHeaders = {}) {
+  return new Response(null, {
+    status,
+    headers: {
+      location,
       'cache-control': 'no-store',
       ...extraHeaders
     }
@@ -64,6 +82,7 @@ function addChatToFirstHeaderNav(html) {
     let next = inner;
     if (!/href=["'](?:\/)?chat(?:\.html)?["']/i.test(next)) next += '<a href="chat.html">Chat</a>';
     if (!/href=["'](?:\/)?endpoints(?:\.html)?["']/i.test(next)) next += '<a href="endpoints.html">Endpoints</a>';
+    if (!/href=["'](?:\/)?login(?:\.html)?["']/i.test(next)) next += '<a href="login.html">Login</a>';
     return '<nav' + attrs + '>' + next + '</nav>';
   });
 }
@@ -71,26 +90,26 @@ function addChatToFirstHeaderNav(html) {
 function addChatToFooter(html) {
   return html.replace(/<footer([^>]*)>([\s\S]*?)<\/footer>/i, (match, attrs, inner) => {
     if (/ls-footer-chat/.test(inner)) return match;
-    const link = '<div class="ls-footer-chat"><a href="chat.html">Chat</a><a href="endpoints.html">Endpoints</a><a href="secret-handoff.html">Secret Handoff</a><span>Public Chat V1 · Endpoint Surface V1</span></div>';
+    const link = '<div class="ls-footer-chat"><a href="chat.html">Chat</a><a href="login.html">Login</a><a href="endpoints.html">Endpoints</a><a href="secret-handoff.html">Secret Handoff</a><span>Public Chat V1 · Auth Surface V1</span></div>';
     return '<footer' + attrs + '>' + inner + link + '</footer>';
   });
 }
 
 function mobilePolish(html, pathname) {
   const page = currentPage(pathname);
-  html = addBodyClass(html, 'ls-mobile-public-polish-v4' + (page === 'workspace.html' ? ' ls-page-workspace' : ''));
+  html = addBodyClass(html, 'ls-mobile-public-polish-v5' + (page === 'workspace.html' ? ' ls-page-workspace' : ''));
   html = addChatToFirstHeaderNav(html);
   html = addChatToFooter(html);
-  if (html.includes('data-ls-mobile-public-polish="v3"') || html.includes('data-ls-mobile-public-polish="v4"')) return html;
+  if (html.includes('data-ls-mobile-public-polish="v5"')) return html;
 
-  const style = `<style data-ls-mobile-public-polish="v4">
+  const style = `<style data-ls-mobile-public-polish="v5">
 .ls-footer-chat{max-width:1200px;margin:10px auto 0;padding:0 clamp(16px,4vw,40px);display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-family:var(--fm,var(--font-mono,"IBM Plex Mono",monospace));font-size:.74rem;color:var(--fg3,var(--fg-muted,#7c828c))}.ls-footer-chat a{display:inline-flex;align-items:center;border:1px solid var(--bd2,var(--border-default,#26292f));border-radius:999px;padding:6px 10px;color:var(--fg,var(--fg-primary,#f5f7f9));text-decoration:none;background:var(--surf-in,var(--surface-inset,#0a0a0b))}
 .ls-native-menu{display:none}
 @media(max-width:899px){.primary-nav,.pnav,.nav{display:none!important}.menu-btn,.mbtn{display:none!important}.ls-native-menu{display:block;position:fixed;z-index:700;top:20px;right:28px;color:var(--fg,var(--fg-primary,#f5f7f9));font-family:var(--fd,var(--font-body,"Inter","Noto Sans Thai",system-ui,sans-serif))}.ls-native-menu>summary{list-style:none;width:52px;height:52px;border-radius:14px;border:1px solid var(--bd2,var(--border-default,#26292f));background:rgba(10,10,11,.94);box-shadow:0 10px 28px rgba(0,0,0,.24);backdrop-filter:blur(14px);display:grid;place-items:center;cursor:pointer}.ls-native-menu>summary::-webkit-details-marker{display:none}.ls-native-menu[open]>summary{background:rgba(35,82,105,.92);border-color:rgba(99,179,255,.35)}.ls-native-menu[open]::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,.56);backdrop-filter:blur(5px);z-index:-1}.ls-native-panel{position:fixed;top:84px;right:16px;left:16px;max-height:calc(100vh - 110px);overflow:auto;border:1px solid var(--bd2,var(--border-default,#26292f));border-radius:16px;background:linear-gradient(180deg,rgba(18,19,22,.98),rgba(6,6,6,.98));box-shadow:0 22px 70px rgba(0,0,0,.55);padding:14px;display:grid;gap:12px}.ls-native-head{border-bottom:1px solid var(--bd,var(--border-subtle,#1c1e22));padding:2px 2px 12px}.ls-native-title{font-weight:800;letter-spacing:-.02em}.ls-native-sub{font-family:var(--fm,var(--font-mono,"IBM Plex Mono",monospace));font-size:.68rem;color:var(--fg3,var(--fg-muted,#7c828c));letter-spacing:.12em;margin-top:2px}.ls-native-links{display:grid;gap:8px}.ls-native-links a{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--bd,var(--border-subtle,#1c1e22));border-radius:12px;padding:12px 13px;background:var(--surf-in,var(--surface-inset,#0a0a0b));color:var(--fg2,var(--fg-secondary,#a2a7b0));text-decoration:none}.ls-native-links a[aria-current="page"],.ls-native-links a:hover{border-color:var(--acc,#63b3ff);background:rgba(99,179,255,.06);color:var(--fg,var(--fg-primary,#f5f7f9))}.ls-native-note{border-left:2px solid var(--acc,#63b3ff);padding-left:10px;font-family:var(--fm,var(--font-mono,"IBM Plex Mono",monospace));font-size:.7rem;line-height:1.6;color:var(--fg3,var(--fg-muted,#7c828c))}}
 @media(max-width:720px){.ws-tabs,.tbar{overflow-x:auto!important;white-space:nowrap!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important}.ws-tabs::-webkit-scrollbar,.tbar::-webkit-scrollbar{display:none}.ws-tab{flex:0 0 auto!important}.sniff-table-wrap{overflow:visible!important;border:0!important;background:transparent!important}.sniff-table{width:100%!important;min-width:0!important;border-collapse:separate!important;border-spacing:0 10px!important}.sniff-table thead{display:none!important}.sniff-table tbody,.sniff-table tr,.sniff-table td{display:block!important;width:100%!important}.sniff-table tr{border:1px solid var(--border-subtle,var(--bd,#1c1e22));border-radius:12px;background:var(--surface-inset,var(--surf-in,#0a0a0b));padding:12px;margin:0 0 10px}.sniff-table td{border:0!important;padding:3px 0!important;white-space:normal!important;overflow-wrap:anywhere!important}.sniff-table td:nth-child(1)::before{content:"Gate ";color:var(--fg-muted,var(--fg3,#7c828c))}.sniff-table td:nth-child(4)::before{content:"Evidence: ";display:block;margin-top:4px;font-family:var(--font-mono,var(--fm,"IBM Plex Mono",monospace));font-size:.72rem;color:var(--fg-muted,var(--fg3,#7c828c))}.sniff-table td:nth-child(4){margin-top:4px;padding-top:8px!important;border-top:1px solid var(--border-subtle,var(--bd,#1c1e22))!important}}
 </style>`;
 
-  const nav = `<details class="ls-native-menu" data-ls-mobile-public-polish="v4"><summary aria-label="เปิดเมนู"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="ls-native-panel" role="navigation" aria-label="เมนูมือถือ"><div class="ls-native-head"><div class="ls-native-title">lsuperagen.docs</div><div class="ls-native-sub">PUBLIC NAV</div></div><nav class="ls-native-links"><a href="index.html" ${page === 'index.html' ? 'aria-current="page"' : ''}>หน้าแรก <span>→</span></a><a href="chat.html" ${page === 'chat.html' ? 'aria-current="page"' : ''}>Chat <span>→</span></a><a href="tools.html" ${page === 'tools.html' ? 'aria-current="page"' : ''}>Tools <span>→</span></a><a href="secret-handoff.html" ${page === 'secret-handoff.html' ? 'aria-current="page"' : ''}>Secret Handoff <span>→</span></a><a href="endpoints.html" ${page === 'endpoints.html' ? 'aria-current="page"' : ''}>Endpoints <span>→</span></a><a href="examples.html" ${page === 'examples.html' ? 'aria-current="page"' : ''}>SDK Plug Tools <span>→</span></a><a href="workspace.html" ${page === 'workspace.html' ? 'aria-current="page"' : ''}>Workspace <span>→</span></a><a href="getting-started.html" ${page === 'getting-started.html' ? 'aria-current="page"' : ''}>Docs <span>→</span></a><a href="guides.html" ${page === 'guides.html' ? 'aria-current="page"' : ''}>Guides <span>→</span></a><a href="api.html" ${page === 'api.html' ? 'aria-current="page"' : ''}>API <span>→</span></a><a href="changelog.html" ${page === 'changelog.html' ? 'aria-current="page"' : ''}>Changelog <span>→</span></a><a href="admin.html" ${page === 'admin.html' ? 'aria-current="page"' : ''}>Admin <span>→</span></a></nav><div class="ls-native-note">Mobile Public Polish V4 · Endpoint Surface V1 · OpenAI Runtime V1 · Rate Limit V1</div></div></details>`;
+  const nav = `<details class="ls-native-menu" data-ls-mobile-public-polish="v5"><summary aria-label="เปิดเมนู"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="ls-native-panel" role="navigation" aria-label="เมนูมือถือ"><div class="ls-native-head"><div class="ls-native-title">lsuperagen.docs</div><div class="ls-native-sub">PUBLIC NAV</div></div><nav class="ls-native-links"><a href="index.html" ${page === 'index.html' ? 'aria-current="page"' : ''}>หน้าแรก <span>→</span></a><a href="chat.html" ${page === 'chat.html' ? 'aria-current="page"' : ''}>Chat <span>→</span></a><a href="login.html" ${page === 'login.html' ? 'aria-current="page"' : ''}>Login / Trial Auth <span>→</span></a><a href="tools.html" ${page === 'tools.html' ? 'aria-current="page"' : ''}>Tools <span>→</span></a><a href="secret-handoff.html" ${page === 'secret-handoff.html' ? 'aria-current="page"' : ''}>Secret Handoff <span>→</span></a><a href="endpoints.html" ${page === 'endpoints.html' ? 'aria-current="page"' : ''}>Endpoints <span>→</span></a><a href="examples.html" ${page === 'examples.html' ? 'aria-current="page"' : ''}>SDK Plug Tools <span>→</span></a><a href="workspace.html" ${page === 'workspace.html' ? 'aria-current="page"' : ''}>Workspace <span>→</span></a><a href="getting-started.html" ${page === 'getting-started.html' ? 'aria-current="page"' : ''}>Docs <span>→</span></a><a href="guides.html" ${page === 'guides.html' ? 'aria-current="page"' : ''}>Guides <span>→</span></a><a href="api.html" ${page === 'api.html' ? 'aria-current="page"' : ''}>API <span>→</span></a><a href="changelog.html" ${page === 'changelog.html' ? 'aria-current="page"' : ''}>Changelog <span>→</span></a><a href="admin.html" ${page === 'admin.html' ? 'aria-current="page"' : ''}>Admin <span>→</span></a></nav><div class="ls-native-note">Mobile Public Polish V5 · Login Auth Surface V1 · Endpoint Surface V1</div></div></details>`;
   return html.replace(/<\/head>/i, style + '\n</head>').replace(/<\/body>/i, nav + '\n</body>');
 }
 
@@ -132,6 +151,262 @@ function applyToolsRouter(html) {
   const toast = '<div id="ls-coming-soon-toast" class="ls-coming-soon-toast" role="status" aria-live="polite"><b>COMING SOON</b><span>เครื่องมือนี้ยังไม่เปิดใน Public Chat V1 — ตอนนี้เปิดใช้ก่อนเฉพาะ AI Writer, Image Generator, Deep Research, Code Assistant และ Secret Handoff</span></div>';
   const script = '<script data-ls-tools-router="v2">(function(){var t=document.getElementById("ls-coming-soon-toast");document.addEventListener("click",function(e){var a=e.target.closest("a.card[href=\\\"#\\\"]");if(!a)return;e.preventDefault();if(t){t.classList.add("show");setTimeout(function(){t.classList.remove("show")},3600)}})})();</script>';
   return html.replace(/<\/head>/i, style + '\n</head>').replace(/<\/body>/i, toast + '\n' + script + '\n</body>');
+}
+
+function truthySecret(env, name) {
+  return typeof env[name] === 'string' && env[name].trim().length > 0;
+}
+
+function authProviderStatus(env) {
+  const sessionSecret = truthySecret(env, 'AUTH_SESSION_SECRET');
+  const github = {
+    provider: 'github',
+    client_id: truthySecret(env, 'GITHUB_CLIENT_ID'),
+    client_secret: truthySecret(env, 'GITHUB_CLIENT_SECRET'),
+    ready: sessionSecret && truthySecret(env, 'GITHUB_CLIENT_ID') && truthySecret(env, 'GITHUB_CLIENT_SECRET')
+  };
+  const google = {
+    provider: 'google',
+    client_id: truthySecret(env, 'GOOGLE_CLIENT_ID'),
+    client_secret: truthySecret(env, 'GOOGLE_CLIENT_SECRET'),
+    ready: sessionSecret && truthySecret(env, 'GOOGLE_CLIENT_ID') && truthySecret(env, 'GOOGLE_CLIENT_SECRET')
+  };
+  return {
+    status: github.ready || google.ready ? 'partially_configured' : 'not_configured',
+    mode: 'public_trial_auth_v1',
+    session_secret: sessionSecret,
+    github,
+    google,
+    expected_secrets: ['AUTH_SESSION_SECRET', 'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'],
+    optional_variables: ['PUBLIC_SITE_URL'],
+    secret_values_exposed: false
+  };
+}
+
+function authStatusPayload(request, env) {
+  const url = new URL(request.url);
+  const origin = publicOrigin(url, env);
+  const status = authProviderStatus(env);
+  return {
+    ok: true,
+    surface: 'login_backend_ui_v1',
+    public_trial: true,
+    origin,
+    login_urls: {
+      github: origin + '/auth/github',
+      google: origin + '/auth/google',
+      logout: origin + '/auth/logout',
+      session: origin + '/api/auth/session'
+    },
+    ...status
+  };
+}
+
+function publicOrigin(url, env) {
+  try {
+    if (typeof env.PUBLIC_SITE_URL === 'string' && env.PUBLIC_SITE_URL.trim()) return new URL(env.PUBLIC_SITE_URL.trim()).origin;
+  } catch (_) {}
+  return url.origin;
+}
+
+function b64urlEncode(input) {
+  const bytes = input instanceof Uint8Array ? input : new TextEncoder().encode(String(input));
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function b64urlDecode(value) {
+  const pad = value.length % 4 ? '='.repeat(4 - (value.length % 4)) : '';
+  const binary = atob((value + pad).replace(/-/g, '+').replace(/_/g, '/'));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+async function hmacSign(value, secret) {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value));
+  return b64urlEncode(new Uint8Array(sig));
+}
+
+async function createSignedToken(payload, env, typ, ttlSeconds) {
+  const now = Math.floor(Date.now() / 1000);
+  const body = b64urlEncode(JSON.stringify({ typ, iat: now, exp: now + ttlSeconds, ...payload }));
+  const sig = await hmacSign(body, env.AUTH_SESSION_SECRET || 'missing-session-secret');
+  return body + '.' + sig;
+}
+
+async function verifySignedToken(token, env, typ) {
+  if (!token || !truthySecret(env, 'AUTH_SESSION_SECRET') || !token.includes('.')) return null;
+  const [body, sig] = token.split('.');
+  const expected = await hmacSign(body, env.AUTH_SESSION_SECRET);
+  if (sig !== expected) return null;
+  let payload;
+  try { payload = JSON.parse(b64urlDecode(body)); } catch (_) { return null; }
+  if (!payload || payload.typ !== typ) return null;
+  if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return null;
+  return payload;
+}
+
+function cookieValue(request, name) {
+  const raw = request.headers.get('cookie') || '';
+  const parts = raw.split(';').map((part) => part.trim());
+  for (const part of parts) {
+    const idx = part.indexOf('=');
+    if (idx < 0) continue;
+    if (part.slice(0, idx) === name) return decodeURIComponent(part.slice(idx + 1));
+  }
+  return '';
+}
+
+function setCookie(name, value, maxAge) {
+  return `${name}=${encodeURIComponent(value)}; Max-Age=${maxAge}; Path=/; HttpOnly; Secure; SameSite=Lax`;
+}
+
+function clearCookie(name) {
+  return `${name}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`;
+}
+
+function safeReturnTo(value) {
+  if (!value || typeof value !== 'string') return '/chat?auth=trial';
+  if (!value.startsWith('/') || value.startsWith('//')) return '/chat?auth=trial';
+  if (/\r|\n/.test(value)) return '/chat?auth=trial';
+  return value.slice(0, 160);
+}
+
+async function handleAuthStart(provider, request, env) {
+  const url = new URL(request.url);
+  const status = authProviderStatus(env);
+  const providerStatus = status[provider];
+  if (!providerStatus || !providerStatus.ready) {
+    return redirectTo(`/login?auth_error=${provider}_not_configured`);
+  }
+
+  const origin = publicOrigin(url, env);
+  const redirectUri = `${origin}/auth/${provider}/callback`;
+  const returnTo = safeReturnTo(url.searchParams.get('return_to') || '/chat?auth=' + provider);
+  const state = await createSignedToken({ provider, return_to: returnTo, nonce: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) }, env, 'oauth_state', AUTH_STATE_TTL_SECONDS);
+  const stateCookie = setCookie(AUTH_STATE_COOKIE, state, AUTH_STATE_TTL_SECONDS);
+
+  let authUrl;
+  if (provider === 'github') {
+    authUrl = new URL('https://github.com/login/oauth/authorize');
+    authUrl.searchParams.set('client_id', env.GITHUB_CLIENT_ID.trim());
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('scope', 'read:user user:email');
+    authUrl.searchParams.set('state', state);
+    authUrl.searchParams.set('allow_signup', 'true');
+  } else {
+    authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    authUrl.searchParams.set('client_id', env.GOOGLE_CLIENT_ID.trim());
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('scope', 'openid email profile');
+    authUrl.searchParams.set('state', state);
+    authUrl.searchParams.set('prompt', 'select_account');
+  }
+
+  return redirectTo(authUrl.toString(), 302, { 'set-cookie': stateCookie, 'x-lsuperagen-auth': provider + '-start-v1' });
+}
+
+async function exchangeGithubCode(code, redirectUri, env) {
+  const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+    method: 'POST',
+    headers: { accept: 'application/json', 'content-type': 'application/json', 'user-agent': 'lsuperagen.docs' },
+    body: JSON.stringify({ client_id: env.GITHUB_CLIENT_ID, client_secret: env.GITHUB_CLIENT_SECRET, code, redirect_uri: redirectUri })
+  });
+  const tokenData = await tokenRes.json().catch(() => ({}));
+  if (!tokenRes.ok || !tokenData.access_token) throw new Error('github_exchange_failed');
+  const userRes = await fetch('https://api.github.com/user', {
+    headers: { authorization: 'Bearer ' + tokenData.access_token, accept: 'application/vnd.github+json', 'user-agent': 'lsuperagen.docs' }
+  });
+  const user = await userRes.json().catch(() => ({}));
+  if (!userRes.ok || !user.id) throw new Error('github_user_failed');
+  return { provider: 'github', id: String(user.id), login: user.login || null, email: user.email || null, name: user.name || user.login || 'GitHub user', avatar: user.avatar_url || null };
+}
+
+async function exchangeGoogleCode(code, redirectUri, env) {
+  const params = new URLSearchParams({ client_id: env.GOOGLE_CLIENT_ID, client_secret: env.GOOGLE_CLIENT_SECRET, code, redirect_uri: redirectUri, grant_type: 'authorization_code' });
+  const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: params
+  });
+  const tokenData = await tokenRes.json().catch(() => ({}));
+  if (!tokenRes.ok || !tokenData.access_token) throw new Error('google_exchange_failed');
+  const userRes = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
+    headers: { authorization: 'Bearer ' + tokenData.access_token }
+  });
+  const user = await userRes.json().catch(() => ({}));
+  if (!userRes.ok || !user.sub) throw new Error('google_user_failed');
+  return { provider: 'google', id: String(user.sub), login: user.email || null, email: user.email || null, name: user.name || user.email || 'Google user', avatar: user.picture || null };
+}
+
+async function handleAuthCallback(provider, request, env) {
+  const url = new URL(request.url);
+  const error = url.searchParams.get('error');
+  if (error) return redirectTo(`/login?auth_error=${provider}_${encodeURIComponent(error)}`);
+
+  const code = url.searchParams.get('code');
+  const state = url.searchParams.get('state');
+  const cookieState = cookieValue(request, AUTH_STATE_COOKIE);
+  if (!code || !state || !cookieState || state !== cookieState) return redirectTo(`/login?auth_error=${provider}_invalid_state`);
+
+  const payload = await verifySignedToken(state, env, 'oauth_state');
+  if (!payload || payload.provider !== provider) return redirectTo(`/login?auth_error=${provider}_state_rejected`);
+
+  const origin = publicOrigin(url, env);
+  const redirectUri = `${origin}/auth/${provider}/callback`;
+  let user;
+  try {
+    user = provider === 'github' ? await exchangeGithubCode(code, redirectUri, env) : await exchangeGoogleCode(code, redirectUri, env);
+  } catch (err) {
+    return redirectTo(`/login?auth_error=${encodeURIComponent(err && err.message ? err.message : provider + '_failed')}`, 302, { 'set-cookie': clearCookie(AUTH_STATE_COOKIE) });
+  }
+
+  const session = await createSignedToken({ provider: user.provider, id: user.id, login: user.login, email: user.email, name: user.name, avatar: user.avatar }, env, 'auth_session', AUTH_SESSION_TTL_SECONDS);
+  const headers = new Headers();
+  headers.append('set-cookie', clearCookie(AUTH_STATE_COOKIE));
+  headers.append('set-cookie', setCookie(AUTH_COOKIE, session, AUTH_SESSION_TTL_SECONDS));
+  headers.set('x-lsuperagen-auth', provider + '-callback-v1');
+  return redirectTo(safeReturnTo(payload.return_to || '/chat?auth=' + provider), 302, headers);
+}
+
+async function handleAuthSession(request, env) {
+  const session = await verifySignedToken(cookieValue(request, AUTH_COOKIE), env, 'auth_session');
+  if (!session) return json({ ok: true, authenticated: false, surface: 'public_trial_auth_v1', user: null, secret_values_exposed: false });
+  return json({ ok: true, authenticated: true, surface: 'public_trial_auth_v1', user: { provider: session.provider, id: session.id, login: session.login, email: session.email, name: session.name, avatar: session.avatar }, expires_at: session.exp ? new Date(session.exp * 1000).toISOString() : null, secret_values_exposed: false });
+}
+
+function handleAuthLogout() {
+  const headers = new Headers();
+  headers.append('set-cookie', clearCookie(AUTH_COOKIE));
+  headers.append('set-cookie', clearCookie(AUTH_STATE_COOKIE));
+  return redirectTo('/login?auth=logged_out', 302, headers);
+}
+
+function authButton(label, href, ready, provider) {
+  return `<a class="lsauth-btn ${ready ? '' : 'disabled'}" href="${href}" data-provider="${provider}" aria-disabled="${ready ? 'false' : 'true'}"><span>${label}</span><b>${ready ? 'READY' : 'SETUP'}</b></a>`;
+}
+
+function applyLoginAuthUi(html, env) {
+  html = addBodyClass(html, 'ls-login-auth-surface-v1');
+  if (html.includes('data-ls-login-auth-surface="v1"')) return html;
+  const status = authProviderStatus(env);
+  const style = `<style data-ls-login-auth-surface="v1">
+.lsauth{width:100%;max-width:430px}.lsauth h1{font-size:1.65rem!important;line-height:1.12!important}.lsauth .lead{color:var(--fg2,#a2a7b0);margin:9px 0 22px;line-height:1.65}.lsauth-stack{display:grid;gap:11px}.lsauth-btn{height:52px;border-radius:999px;border:1px solid var(--bd2,#26292f);background:var(--surf-in,#0a0a0b);color:var(--fg,#f5f7f9);display:flex;align-items:center;justify-content:space-between;padding:0 16px;text-decoration:none;font-weight:700}.lsauth-btn:hover{border-color:var(--acc,#63b3ff);background:rgba(99,179,255,.07)}.lsauth-btn b{font-family:var(--fm,monospace);font-size:.66rem;letter-spacing:.12em;color:var(--fg3,#7c828c)}.lsauth-btn.primary{background:#fff;color:#070708;border-color:#fff}.lsauth-btn.primary b{color:#444}.lsauth-btn.disabled{opacity:.62}.lsauth-card{border:1px solid var(--bd,#1c1e22);border-radius:14px;background:rgba(6,6,6,.5);padding:14px;margin-top:16px}.lsauth-card h2{font-size:.9rem;margin:0 0 10px}.lsauth-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--bd,#1c1e22);padding:9px 0;color:var(--fg2,#a2a7b0);font-size:.84rem}.lsauth-row:first-of-type{border-top:0}.lsauth-row code{font-family:var(--fm,monospace);font-size:.76rem;color:#dfe3e8;overflow-wrap:anywhere}.lsauth-ok{color:#9de7bf}.lsauth-warn{color:#f7d889}.lsauth-note{border-left:2px solid var(--acc,#63b3ff);background:rgba(99,179,255,.06);border-radius:12px;padding:12px 13px;margin-top:16px;color:var(--fg2,#a2a7b0);font-size:.84rem;line-height:1.65}.lsauth-error{display:none;border:1px solid rgba(255,107,107,.24);background:rgba(255,107,107,.08);color:#ffb2b2;border-radius:12px;padding:11px 13px;margin:0 0 14px;font-size:.84rem}.lsauth-error.show{display:block}.lsauth-mini{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.lsauth-mini a{font-size:.78rem;color:var(--fg2,#a2a7b0);border:1px solid var(--bd,#1c1e22);border-radius:999px;padding:6px 10px;text-decoration:none}.lsauth-session{margin-top:14px;color:var(--fg3,#7c828c);font-family:var(--fm,monospace);font-size:.72rem;line-height:1.55}@media(max-width:720px){body.ls-login-auth-surface-v1 .lbrand .ldial{opacity:.18!important}body.ls-login-auth-surface-v1 .lform-wrap{align-items:flex-start!important;padding-top:30px!important}}
+</style>`;
+  const panel = `<div class="lsauth" data-ls-login-auth-surface="v1"><div id="lsauth-error" class="lsauth-error"></div><h1 class="thai">ทดลองใช้งานแบบ Public Trial</h1><p class="lead thai">เลือก GitHub หรือ Google เพื่อเริ่ม session ทดลอง ระบบอ่านค่า client id / client secret จาก Cloudflare Secret เท่านั้น และไม่แสดง secret ในหน้าเว็บ</p><div class="lsauth-stack">${authButton('Continue with GitHub', '/auth/github', status.github.ready, 'github')}${authButton('Continue with Google', '/auth/google', status.google.ready, 'google')}<a class="lsauth-btn primary" href="chat.html"><span>Continue as Guest</span><b>PUBLIC</b></a></div><div class="lsauth-card"><h2>Backend secret checklist</h2><div class="lsauth-row"><code>AUTH_SESSION_SECRET</code><span class="${status.session_secret ? 'lsauth-ok' : 'lsauth-warn'}">${status.session_secret ? 'READY' : 'MISSING'}</span></div><div class="lsauth-row"><code>GITHUB_CLIENT_ID</code><span class="${status.github.client_id ? 'lsauth-ok' : 'lsauth-warn'}">${status.github.client_id ? 'READY' : 'MISSING'}</span></div><div class="lsauth-row"><code>GITHUB_CLIENT_SECRET</code><span class="${status.github.client_secret ? 'lsauth-ok' : 'lsauth-warn'}">${status.github.client_secret ? 'READY' : 'MISSING'}</span></div><div class="lsauth-row"><code>GOOGLE_CLIENT_ID</code><span class="${status.google.client_id ? 'lsauth-ok' : 'lsauth-warn'}">${status.google.client_id ? 'READY' : 'MISSING'}</span></div><div class="lsauth-row"><code>GOOGLE_CLIENT_SECRET</code><span class="${status.google.client_secret ? 'lsauth-ok' : 'lsauth-warn'}">${status.google.client_secret ? 'READY' : 'MISSING'}</span></div></div><div class="lsauth-note thai">Secret values ไม่ถูกส่งเข้า HTML, Markdown, GitHub หรือ Chat UI. ปุ่ม OAuth จะเริ่มทำงานเมื่อใส่ Secret ครบใน Cloudflare Runtime Variables and Secrets.</div><div class="lsauth-mini"><a href="/api/auth/status">Auth status JSON</a><a href="/api/auth/session">Session JSON</a><a href="secret-handoff.html">Secret Handoff</a><a href="endpoints.html">Endpoints</a><a href="/auth/logout">Logout</a></div><div id="lsauth-session" class="lsauth-session">session: checking…</div></div>`;
+  const script = `<script data-ls-login-auth-surface="v1">(function(){var params=new URLSearchParams(location.search);var err=params.get('auth_error');var box=document.getElementById('lsauth-error');if(err&&box){box.textContent='AUTH ERROR: '+err;box.classList.add('show')}document.addEventListener('click',function(e){var a=e.target.closest('.lsauth-btn.disabled');if(!a)return;e.preventDefault();if(box){box.textContent='Provider ยังไม่พร้อม: ต้องใส่ client id/client secret + AUTH_SESSION_SECRET ใน Cloudflare ก่อน';box.classList.add('show')}});fetch('/api/auth/session',{cache:'no-store'}).then(function(r){return r.json()}).then(function(s){var el=document.getElementById('lsauth-session');if(!el)return;el.textContent=s.authenticated?'session: signed in via '+s.user.provider+' · '+(s.user.login||s.user.email||s.user.name):'session: guest / not signed in'}).catch(function(){var el=document.getElementById('lsauth-session');if(el)el.textContent='session: unavailable'})})();</script>`;
+  const replaceScript = `<script data-ls-login-auth-surface="v1-replace">(function(){var mount=document.querySelector('.lform-wrap');if(mount){mount.innerHTML=${JSON.stringify(panel)};}})();</script>`;
+  return html.replace(/<\/head>/i, style + '\n</head>').replace(/<\/body>/i, replaceScript + '\n' + script + '\n</body>');
+}
+
+function applyEndpointsAuthBlock(html) {
+  if (html.includes('data-ls-auth-endpoints="v1"')) return html;
+  const block = `<div class="wrap grid" data-ls-auth-endpoints="v1"><section class="section"><h2>Login Auth Backend UI</h2><p>OAuth endpoints สำหรับ Public Trial Login. Secret ทั้งหมดต้องอยู่ใน Cloudflare Runtime Secrets เท่านั้น</p><div class="table"><div class="row"><div class="path">GET /api/auth/status</div><div class="kind">Worker API</div><div class="desc">แสดงสถานะว่าตั้งค่า GitHub/Google/Auth secret ครบหรือยัง โดยไม่คืนค่า secret จริง</div><div class="tag LIVE">LIVE</div></div><div class="row"><div class="path">GET /api/auth/session</div><div class="kind">Worker API</div><div class="desc">ตรวจ session cookie แบบ signed HttpOnly สำหรับ public trial</div><div class="tag LIVE">LIVE</div></div><div class="row"><div class="path">GET /auth/github</div><div class="kind">OAuth start</div><div class="desc">เริ่ม GitHub login เมื่อ GITHUB_CLIENT_ID/SECRET พร้อม</div><div class="tag LIVE">LIVE</div></div><div class="row"><div class="path">GET /auth/github/callback</div><div class="kind">OAuth callback</div><div class="desc">แลก code ฝั่ง server แล้วออก signed session cookie ไม่คืน raw token</div><div class="tag LIVE">LIVE</div></div><div class="row"><div class="path">GET /auth/google</div><div class="kind">OAuth start</div><div class="desc">เริ่ม Google login เมื่อ GOOGLE_CLIENT_ID/SECRET พร้อม</div><div class="tag LIVE">LIVE</div></div><div class="row"><div class="path">GET /auth/google/callback</div><div class="kind">OAuth callback</div><div class="desc">แลก code ฝั่ง server แล้วออก signed session cookie ไม่คืน raw token</div><div class="tag LIVE">LIVE</div></div><div class="row"><div class="path">GET /auth/logout</div><div class="kind">session</div><div class="desc">ล้าง public trial session cookie</div><div class="tag LIVE">LIVE</div></div></div></section></div>`;
+  return html.replace(/<\/main>/i, block + '\n</main>');
 }
 
 function applyChatRuntimeStatus(html, hasKey) {
@@ -257,7 +532,7 @@ function plannedEndpoint(pathname) {
   const planned = {
     '/api/image': { status: 'planned', method: 'POST', message: 'Image API is planned but not implemented. Current Image Generator is a prompt/spec compiler only.' },
     '/api/image/status': { status: 'planned', method: 'GET', message: 'Image API provider is not wired yet. No image secret is exposed here.' },
-    '/admin/auth/github': { status: 'planned', method: 'GET', message: 'Admin GitHub OAuth is planned. Not active yet.' },
+    '/admin/auth/github': { status: 'planned', method: 'GET', message: 'Admin GitHub OAuth is planned. Public trial OAuth uses /auth/github.' },
     '/admin/github/status': { status: 'planned', method: 'GET', message: 'Admin GitHub status endpoint is planned. Not active yet.' },
     '/admin/github/files': { status: 'planned', method: 'GET', message: 'Admin GitHub files endpoint is planned. Not active yet.' },
     '/admin/github/commit': { status: 'planned', method: 'POST', message: 'Admin GitHub commit endpoint is planned. Not active yet.' },
@@ -310,22 +585,36 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const pathname = url.pathname.replace(/\/+$/, '') || '/';
-    if (ALIASES[pathname]) return Response.redirect(new URL(ALIASES[pathname], url), 301);
+
+    if (ALIASES[pathname]) return redirectTo(new URL(ALIASES[pathname], url).toString(), 301);
+
+    if (pathname === '/api/auth/status') return json(authStatusPayload(request, env), 200, { 'x-lsuperagen-auth': 'status-v1' });
+    if (pathname === '/api/auth/session') return handleAuthSession(request, env);
+    if (pathname === '/auth/logout') return handleAuthLogout();
+    if (pathname === '/auth/github') return handleAuthStart('github', request, env);
+    if (pathname === '/auth/google') return handleAuthStart('google', request, env);
+    if (pathname === '/auth/github/callback') return handleAuthCallback('github', request, env);
+    if (pathname === '/auth/google/callback') return handleAuthCallback('google', request, env);
+
     if (request.method === 'OPTIONS' && pathname === '/api/chat') return new Response(null, { status: 204, headers: { 'access-control-allow-origin': url.origin, 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type' } });
     if (pathname === '/api/chat') return handleChat(request, env);
+
     const planned = plannedEndpoint(pathname);
     if (planned) return planned;
+
     const response = await env.ASSETS.fetch(request);
     if (!(response.headers.get('content-type') || '').includes('text/html')) return response;
     let html = await response.text();
     const page = currentPage(pathname);
     if (page === 'index.html') html = applyHomePolish(applyHomeEnhancements(html));
     if (page === 'tools.html') html = applyToolsRouter(html);
+    if (page === 'login.html') html = applyLoginAuthUi(html, env);
+    if (page === 'endpoints.html') html = applyEndpointsAuthBlock(html);
     if (page === 'chat.html') {
       html = applyChatRuntimeStatus(html, Boolean(env.OPENAI_API_KEY));
       html = applyChatToolContext(html, url.searchParams.get('tool'));
     }
     html = mobilePolish(html, pathname);
-    return new Response(html, { status: response.status, headers: htmlHeaders(response, 'endpoint-surface-v1-openai-runtime-v1-rate-limit-v1') });
+    return new Response(html, { status: response.status, headers: htmlHeaders(response, 'login-auth-surface-v1-openai-runtime-v1-rate-limit-v1') });
   }
 };

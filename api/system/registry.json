@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "surface": "system_registry_v1_api_static",
+  "canonical_registry": "/system-registry.json",
+  "registry_page": "/system-registry.html",
+  "source_checkpoint": "File Audit — Base44 / LAB / REF — Checkpoint 03",
+  "reviewed_upload_events": 59,
+  "canonical_unique_contents": 42,
+  "redundant_or_duplicate_candidate_uploads": 17,
+  "groups": ["control-plane", "runtime", "providers", "auth", "storage"],
+  "active_current_app": ["github-oauth", "google-oauth", "admin-gate", "platform-register", "openai-current-chat"],
+  "canonical_source_or_archive": ["control-plane-archive", "authority-schema", "appchat-computer-agent-workflow", "openai-agent-policy", "openrouter-free-model", "mongo-storage-helper"],
+  "planned_bridge": ["claude-provider-status"],
+  "secret_values_exposed": false,
+  "registry_is_inventory_not_execution": true
+}

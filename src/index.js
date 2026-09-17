@@ -1,7 +1,11 @@
 function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data, null, 2), {
     status,
-    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...extraHeaders }
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+      ...extraHeaders
+    }
   });
 }
 
@@ -21,7 +25,8 @@ function addBodyClass(html, classes) {
   return html.replace(/<body([^>]*)>/i, (match, attrs) => {
     if (/class\s*=/.test(attrs)) {
       return '<body' + attrs.replace(/class=["']([^"']*)["']/i, (_m, current) => {
-        return 'class="' + Array.from(new Set((current + ' ' + classes).trim().split(/\s+/))).join(' ') + '"';
+        const merged = Array.from(new Set((current + ' ' + classes).trim().split(/\s+/))).join(' ');
+        return 'class="' + merged + '"';
       }) + '>';
     }
     return '<body class="' + classes + '"' + attrs + '>';
@@ -44,7 +49,8 @@ function addChatToFirstHeaderNav(html) {
 function addChatToFooter(html) {
   return html.replace(/<footer([^>]*)>([\s\S]*?)<\/footer>/i, (match, attrs, inner) => {
     if (/href=["'](?:\/)?chat(?:\.html)?["']/i.test(inner)) return match;
-    return '<footer' + attrs + '>' + inner + '<div class="ls-footer-chat"><a href="chat.html">Chat</a><span>Public Chat V1</span></div></footer>';
+    const link = '<div class="ls-footer-chat"><a href="chat.html">Chat</a><span>Public Chat V1</span></div>';
+    return '<footer' + attrs + '>' + inner + link + '</footer>';
   });
 }
 
@@ -57,7 +63,8 @@ function mobilePolish(html, pathname) {
 
   const style = `<style data-ls-mobile-public-polish="v3">
 .ls-footer-chat{max-width:1200px;margin:10px auto 0;padding:0 clamp(16px,4vw,40px);display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-family:var(--fm,var(--font-mono,"IBM Plex Mono",monospace));font-size:.74rem;color:var(--fg3,var(--fg-muted,#7c828c))}.ls-footer-chat a{display:inline-flex;align-items:center;border:1px solid var(--bd2,var(--border-default,#26292f));border-radius:999px;padding:6px 10px;color:var(--fg,var(--fg-primary,#f5f7f9));text-decoration:none;background:var(--surf-in,var(--surface-inset,#0a0a0b))}
-.ls-native-menu{display:none}@media(max-width:899px){.primary-nav,.pnav,.nav{display:none!important}.menu-btn,.mbtn{display:none!important}.ls-native-menu{display:block;position:fixed;z-index:700;top:20px;right:28px;color:var(--fg,var(--fg-primary,#f5f7f9));font-family:var(--fd,var(--font-body,"Inter","Noto Sans Thai",system-ui,sans-serif))}.ls-native-menu>summary{list-style:none;width:52px;height:52px;border-radius:14px;border:1px solid var(--bd2,var(--border-default,#26292f));background:rgba(10,10,11,.94);box-shadow:0 10px 28px rgba(0,0,0,.24);backdrop-filter:blur(14px);display:grid;place-items:center;cursor:pointer}.ls-native-menu>summary::-webkit-details-marker{display:none}.ls-native-menu[open]>summary{background:rgba(35,82,105,.92);border-color:rgba(99,179,255,.35)}.ls-native-menu[open]::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,.56);backdrop-filter:blur(5px);z-index:-1}.ls-native-panel{position:fixed;top:84px;right:16px;left:16px;max-height:calc(100vh - 110px);overflow:auto;border:1px solid var(--bd2,var(--border-default,#26292f));border-radius:16px;background:linear-gradient(180deg,rgba(18,19,22,.98),rgba(6,6,6,.98));box-shadow:0 22px 70px rgba(0,0,0,.55);padding:14px;display:grid;gap:12px}.ls-native-head{border-bottom:1px solid var(--bd,var(--border-subtle,#1c1e22));padding:2px 2px 12px}.ls-native-title{font-weight:800;letter-spacing:-.02em}.ls-native-sub{font-family:var(--fm,var(--font-mono,"IBM Plex Mono",monospace));font-size:.68rem;color:var(--fg3,var(--fg-muted,#7c828c));letter-spacing:.12em;margin-top:2px}.ls-native-links{display:grid;gap:8px}.ls-native-links a{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--bd,var(--border-subtle,#1c1e22));border-radius:12px;padding:12px 13px;background:var(--surf-in,var(--surface-inset,#0a0a0b));color:var(--fg2,var(--fg-secondary,#a2a7b0));text-decoration:none}.ls-native-links a[aria-current="page"],.ls-native-links a:hover{border-color:var(--acc,#63b3ff);background:rgba(99,179,255,.06);color:var(--fg,var(--fg-primary,#f5f7f9))}.ls-native-note{border-left:2px solid var(--acc,#63b3ff);padding-left:10px;font-family:var(--fm,var(--font-mono,"IBM Plex Mono",monospace));font-size:.7rem;line-height:1.6;color:var(--fg3,var(--fg-muted,#7c828c))}}
+.ls-native-menu{display:none}
+@media(max-width:899px){.primary-nav,.pnav,.nav{display:none!important}.menu-btn,.mbtn{display:none!important}.ls-native-menu{display:block;position:fixed;z-index:700;top:20px;right:28px;color:var(--fg,var(--fg-primary,#f5f7f9));font-family:var(--fd,var(--font-body,"Inter","Noto Sans Thai",system-ui,sans-serif))}.ls-native-menu>summary{list-style:none;width:52px;height:52px;border-radius:14px;border:1px solid var(--bd2,var(--border-default,#26292f));background:rgba(10,10,11,.94);box-shadow:0 10px 28px rgba(0,0,0,.24);backdrop-filter:blur(14px);display:grid;place-items:center;cursor:pointer}.ls-native-menu>summary::-webkit-details-marker{display:none}.ls-native-menu[open]>summary{background:rgba(35,82,105,.92);border-color:rgba(99,179,255,.35)}.ls-native-menu[open]::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,.56);backdrop-filter:blur(5px);z-index:-1}.ls-native-panel{position:fixed;top:84px;right:16px;left:16px;max-height:calc(100vh - 110px);overflow:auto;border:1px solid var(--bd2,var(--border-default,#26292f));border-radius:16px;background:linear-gradient(180deg,rgba(18,19,22,.98),rgba(6,6,6,.98));box-shadow:0 22px 70px rgba(0,0,0,.55);padding:14px;display:grid;gap:12px}.ls-native-head{border-bottom:1px solid var(--bd,var(--border-subtle,#1c1e22));padding:2px 2px 12px}.ls-native-title{font-weight:800;letter-spacing:-.02em}.ls-native-sub{font-family:var(--fm,var(--font-mono,"IBM Plex Mono",monospace));font-size:.68rem;color:var(--fg3,var(--fg-muted,#7c828c));letter-spacing:.12em;margin-top:2px}.ls-native-links{display:grid;gap:8px}.ls-native-links a{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--bd,var(--border-subtle,#1c1e22));border-radius:12px;padding:12px 13px;background:var(--surf-in,var(--surface-inset,#0a0a0b));color:var(--fg2,var(--fg-secondary,#a2a7b0));text-decoration:none}.ls-native-links a[aria-current="page"],.ls-native-links a:hover{border-color:var(--acc,#63b3ff);background:rgba(99,179,255,.06);color:var(--fg,var(--fg-primary,#f5f7f9))}.ls-native-note{border-left:2px solid var(--acc,#63b3ff);padding-left:10px;font-family:var(--fm,var(--font-mono,"IBM Plex Mono",monospace));font-size:.7rem;line-height:1.6;color:var(--fg3,var(--fg-muted,#7c828c))}}
 @media(max-width:720px){.ws-tabs,.tbar{overflow-x:auto!important;white-space:nowrap!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important}.ws-tabs::-webkit-scrollbar,.tbar::-webkit-scrollbar{display:none}.ws-tab{flex:0 0 auto!important}.sniff-table-wrap{overflow:visible!important;border:0!important;background:transparent!important}.sniff-table{width:100%!important;min-width:0!important;border-collapse:separate!important;border-spacing:0 10px!important}.sniff-table thead{display:none!important}.sniff-table tbody,.sniff-table tr,.sniff-table td{display:block!important;width:100%!important}.sniff-table tr{border:1px solid var(--border-subtle,var(--bd,#1c1e22));border-radius:12px;background:var(--surface-inset,var(--surf-in,#0a0a0b));padding:12px;margin:0 0 10px}.sniff-table td{border:0!important;padding:3px 0!important;white-space:normal!important;overflow-wrap:anywhere!important}.sniff-table td:nth-child(1)::before{content:"Gate ";color:var(--fg-muted,var(--fg3,#7c828c))}.sniff-table td:nth-child(4)::before{content:"Evidence: ";display:block;margin-top:4px;font-family:var(--font-mono,var(--fm,"IBM Plex Mono",monospace));font-size:.72rem;color:var(--fg-muted,var(--fg3,#7c828c))}.sniff-table td:nth-child(4){margin-top:4px;padding-top:8px!important;border-top:1px solid var(--border-subtle,var(--bd,#1c1e22))!important}}
 </style>`;
 
@@ -97,7 +104,16 @@ function applyToolsRouter(html) {
 
 function applyChatRuntimeStatus(html, hasKey) {
   if (!hasKey) return html;
-  return html.replace(/RUNTIME NOT WIRED/g, 'OPENAI LIVE').replace(/SAFE STUB/g, 'OPENAI LIVE').replace(/STUB 503/g, 'LIVE 200').replace(/MISSING/g, 'DETECTED').replace(/DISABLED/g, 'ENABLED').replace(/Runtime not wired/g, 'OpenAI runtime wired').replace(/runtime: not wired/g, 'runtime: OpenAI Runtime V1').replace(/ตอนนี้ยังไม่ต่อ API key จริง ระบบจะแสดงสถานะ Runtime not wired จนกว่าจะตั้งค่า Cloudflare Secret และเปิด provider router ฝั่ง Worker/g, 'ตอนนี้เชื่อม OpenAI Runtime V1 ผ่าน Cloudflare Worker แล้ว ค่า API key อยู่ใน Secret ฝั่ง server เท่านั้น');
+  return html
+    .replace(/RUNTIME NOT WIRED/g, 'OPENAI LIVE')
+    .replace(/SAFE STUB/g, 'OPENAI LIVE')
+    .replace(/STUB 503/g, 'LIVE 200')
+    .replace(/MISSING/g, 'DETECTED')
+    .replace(/DISABLED/g, 'ENABLED')
+    .replace(/Runtime not wired/g, 'OpenAI runtime wired')
+    .replace(/runtime: not wired/g, 'runtime: OpenAI Runtime V1')
+    .replace(/Runtime ยังไม่ wired/g, 'OpenAI Runtime V1')
+    .replace(/ตอนนี้ยังไม่ต่อ API key จริง ระบบจะแสดงสถานะ Runtime not wired จนกว่าจะตั้งค่า Cloudflare Secret และเปิด provider router ฝั่ง Worker/g, 'ตอนนี้เชื่อม OpenAI Runtime V1 ผ่าน Cloudflare Worker แล้ว ค่า API key อยู่ใน Secret ฝั่ง server เท่านั้น');
 }
 
 function applyChatToolContext(html, tool) {
@@ -154,7 +170,16 @@ function extractOutputText(data) {
 
 function modelCandidates(env) {
   const configured = typeof env.OPENAI_MODEL === 'string' ? env.OPENAI_MODEL.trim() : '';
-  const list = [configured, 'gpt-4.1-mini', 'gpt-4.1-nano', 'gpt-5-nano', 'gpt-5-mini', 'gpt-4o-mini'].filter(Boolean);
+  const list = [
+    configured,
+    'gpt-4.1',
+    'gpt-4o',
+    'gpt-4.1-mini',
+    'gpt-4.1-nano',
+    'gpt-4o-mini',
+    'gpt-5-nano',
+    'gpt-5-mini'
+  ].filter(Boolean);
   return Array.from(new Set(list));
 }
 
@@ -214,9 +239,8 @@ async function handleChat(request, env) {
   }, 503, { 'x-lsuperagen-runtime': runtimeHeader });
 
   const requestId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
-  const configuredCandidates = modelCandidates(env);
-  const modelIds = await listAccessibleModelIds(env, requestId);
-  const candidates = modelIds ? configuredCandidates.filter((model) => modelIds.has(model)) : configuredCandidates;
+  const candidates = modelCandidates(env);
+  const visibleModels = await listAccessibleModelIds(env, requestId);
   const attempted = [];
   let lastError = null;
 
@@ -245,12 +269,13 @@ async function handleChat(request, env) {
   return json({
     ok: false,
     status: 'model_not_available',
-    message: 'OPENAI_API_KEY is valid, but this project does not expose any supported default chat model to the Worker. Set Cloudflare runtime variable OPENAI_MODEL to a model enabled in the OpenAI project, or enable a supported model in OpenAI Platform.',
+    message: 'OPENAI_API_KEY is valid, but every attempted model was rejected for this project. Tried: ' + attempted.join(', ') + '. Set OPENAI_MODEL to an exact model enabled in this OpenAI project, or enable a supported model in OpenAI Platform.',
     tool,
     provider,
     request_id: requestId,
-    attempted_models: attempted.length ? attempted : configuredCandidates,
-    visible_model_count: modelIds ? modelIds.size : null,
+    attempted_models: attempted,
+    configured_model: typeof env.OPENAI_MODEL === 'string' ? env.OPENAI_MODEL.trim() || null : null,
+    visible_model_count: visibleModels ? visibleModels.size : null,
     last_error: lastError
   }, 502, { 'x-lsuperagen-runtime': 'openai-runtime-v1', 'x-lsuperagen-request-id': requestId });
 }
@@ -277,6 +302,6 @@ export default {
       html = applyChatToolContext(html, url.searchParams.get('tool'));
     }
     html = mobilePolish(html, pathname);
-    return new Response(html, { status: response.status, headers: htmlHeaders(response, 'openai-runtime-v1-model-fallback') });
+    return new Response(html, { status: response.status, headers: htmlHeaders(response, 'openai-runtime-v1-direct-model-attempt') });
   }
 };

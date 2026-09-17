@@ -7,3 +7,7 @@
 /endpoint /endpoints 301
 /secret /secret-handoff 301
 /key-converter /secret-handoff 301
+/providers /provider-connect 301
+/provider /provider-connect 301
+/ai-providers /provider-connect 301
+/provider-status /api/providers/status 301

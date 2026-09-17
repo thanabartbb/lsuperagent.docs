@@ -8,19 +8,17 @@
 
 ## 0. Read Order
 
-Read in this order before doing work:
-
 ```txt
-1. LSUPERAGENT.md        ← this file; current source-of-truth router
+1. LSUPERAGENT.md        ← current source-of-truth router
 2. CLAUDE.md             ← Claude-specific pointer only
-3. src/index.js          ← Cloudflare Worker runtime and HTML injection layer
+3. src/index.js          ← Cloudflare Worker runtime + HTML injection
 4. chat.html             ← Public Chat UI
 5. tools.html            ← Public tools catalog
-6. workspace.html        ← release gates / protocol reference
+6. workspace.html        ← gates / protocol reference
 7. wrangler.toml         ← Cloudflare Worker config
 ```
 
-If any source conflicts with this file, stop and ask the owner before changing architecture.
+If another file conflicts with this router, stop and ask the owner before changing architecture.
 
 ---
 
@@ -33,10 +31,10 @@ Repo:           thanabartbb/lsuperagent.docs
 Public domain:  https://agents-sdk.space
 Runtime:        Cloudflare Workers Static Assets + src/index.js
 Version:        V11 · Public Beta
-Status:         public docs/site live; chat UI live; AI runtime not wired
+Status:         public docs/site live; chat UI live; OpenAI Runtime V1 wired in code
 ```
 
-This is currently a public docs + launch + control surface that is being evolved into a public AI chat product.
+This is a public docs + launch + control surface being evolved into a public AI chat product.
 
 ---
 
@@ -51,7 +49,7 @@ Cloudflare Worker: src/index.js
   ├─ serves static HTML via env.ASSETS.fetch(request)
   ├─ injects safe UI enhancements
   ├─ routes Tools cards into /chat?tool=...
-  └─ handles /api/chat as a safe runtime endpoint
+  └─ handles /api/chat as OpenAI Runtime V1 when OPENAI_API_KEY exists
 ```
 
 ### Current runtime path
@@ -65,10 +63,8 @@ POST /api/chat
   ↓
 Cloudflare Worker src/index.js
   ↓
-OpenAI provider route — FUTURE, only when OPENAI_API_KEY exists as Cloudflare Secret
+OpenAI Responses API via server-side Cloudflare Secret: OPENAI_API_KEY
 ```
-
-### Current behavior
 
 If `OPENAI_API_KEY` is missing, `/api/chat` must return `runtime_not_wired`.
 
@@ -77,8 +73,6 @@ No fake AI response is allowed.
 ---
 
 ## 3. Explicitly Not Active
-
-The following are not active in the current work unit:
 
 ```txt
 Supabase
@@ -98,7 +92,7 @@ Do not wire Supabase.
 Do not wire Firebase.
 Do not add Auth.
 Do not require Trusted Gateway.
-Do not use Claude/Anthropic as the first provider.
+Do not use Claude/Anthropic as first provider.
 Do not create D1/KV/R2 unless explicitly approved.
 Do not rotate, print, commit, or expose secrets.
 ```
@@ -112,13 +106,12 @@ These may be future modules only after explicit approval.
 ```txt
 ✓ Static site publicly available
 ✓ Cloudflare Worker serves static assets
-✓ src/index.js exists
 ✓ /admin exists as owner control surface
 ✓ /chat exists as Public Chat V1 UI
-✓ /api/chat exists as safe runtime_not_wired endpoint
 ✓ Tools Router V1 exists
 ✓ Mobile Public Polish V3 exists
-✓ Main Tools route into chat query modes
+✓ OPENAI_API_KEY Cloudflare Secret has been set by owner
+✓ /api/chat OpenAI Runtime V1 code is wired in src/index.js
 ```
 
 Tools Router V1:
@@ -128,7 +121,7 @@ AI Writer        → /chat?tool=writer
 Image Generator  → /chat?tool=image
 Deep Research    → /chat?tool=research
 Code Assistant   → /chat?tool=code
-Coming Soon      → show clear Coming Soon status; do not navigate to a broken page
+Coming Soon      → show clear Coming Soon status
 ```
 
 ---
@@ -137,8 +130,7 @@ Coming Soon      → show clear Coming Soon status; do not navigate to a broken 
 
 ```txt
 index.html             homepage / launch hero
-chat.html              Public Chat V1 UI; runtime not wired
-admin.html             owner control request surface
+chat.html              Public Chat V1 UI
 tools.html             public tools catalog
 examples.html          SDK Plug Tools catalog
 workspace.html         protocol / release gates / workspace reference
@@ -146,11 +138,12 @@ getting-started.html   docs entry
 guides.html            guides page
 api.html               API docs page
 changelog.html         release notes
-src/index.js           Cloudflare Worker runtime + injection router
+admin.html             owner control request surface
+src/index.js           Cloudflare Worker runtime + OpenAI Runtime V1
 wrangler.toml          Cloudflare Worker config
 _redirects             clean route aliases
 _headers               static response headers
-CLAUDE.md              Claude-specific pointer to this router
+CLAUDE.md              Claude-specific pointer
 LSUPERAGENT.md         canonical reusable router
 ```
 
@@ -161,23 +154,21 @@ LSUPERAGENT.md         canonical reusable router
 Current priority:
 
 ```txt
-PUBLIC CHAT RUNTIME V1
+PUBLIC CHAT RUNTIME V1 VERIFICATION
 ```
 
-Scope:
+Verification checklist:
 
 ```txt
-1. Keep visual design stable.
-2. Use src/index.js only unless a new support file is clearly required.
-3. Add request validation for /api/chat.
-4. Support tool values: writer, image, research, code, or null.
-5. Connect OpenAI first provider only when OPENAI_API_KEY exists in Cloudflare env.
-6. If secret is missing, keep runtime_not_wired.
-7. Return structured JSON.
-8. Do not add login, database, Supabase, Firebase, or Trusted Gateway.
+1. GET / works
+2. GET /tools works
+3. GET /chat works
+4. POST /api/chat without secret returns safe runtime_not_wired
+5. POST /api/chat with Cloudflare Secret returns real OpenAI model output
+6. No secret appears in repo, logs, screenshots, or UI
 ```
 
-Expected JSON shape:
+Runtime JSON success shape:
 
 ```json
 {
@@ -185,12 +176,14 @@ Expected JSON shape:
   "status": "completed",
   "tool": "writer",
   "provider": "openai",
+  "model": "gpt-5-mini",
+  "message": "...",
   "output": "...",
   "usage": null
 }
 ```
 
-Safe error shape:
+Safe error shape when secret is absent:
 
 ```json
 {
@@ -201,7 +194,7 @@ Safe error shape:
     "frontend": true,
     "api_route": true,
     "tools_router": true,
-    "provider_router": false,
+    "provider_router": true,
     "secret_detected": false,
     "model_output": false
   }
@@ -212,20 +205,10 @@ Safe error shape:
 
 ## 7. Design System Lock
 
-Design identity:
-
 ```txt
 Dark Premium Street × Gaming × Editorial × Minimal
 NEWGENRETIN v0.2
-```
-
-Palette:
-
-```txt
-Carbon Black          85%   canvas / page background
-Gunmetal / Graphite   10%   cards / panels
-Ice Blue #63b3ff       4%   focus / active / indicators
-White                  1%   high contrast text
+Carbon Black 85% / Gunmetal 10% / Ice Blue #63b3ff 4% / White 1%
 ```
 
 Rules:
@@ -242,8 +225,6 @@ Use thin borders and clean mobile-first hierarchy.
 ---
 
 ## 8. Safety / Security Rules
-
-Hard rules:
 
 ```txt
 No fake AI response.
@@ -265,35 +246,22 @@ Provider calls must be server-side inside Cloudflare Worker only.
 
 ## 9. Release Gates
 
-Current practical gates:
-
 ```txt
 R1  Static site loads                         DONE
 R2  Chat UI exists                            DONE
 R3  Tools Router V1                           DONE
-R4  /api/chat validation                      NEXT
-R5  OpenAI provider with Cloudflare Secret    NEXT
-R6  Runtime verification                      BLOCKED until secret/deploy evidence
+R4  /api/chat validation                      DONE IN CODE
+R5  OpenAI provider with Cloudflare Secret    DONE IN CODE / VERIFY LIVE
+R6  Runtime verification                      CURRENT
 R7  Rate limit / abuse guard                  FUTURE
 R8  Auth / memory / persistence               FUTURE, not current
 ```
 
-Do not mark Public Chat Runtime V1 complete until:
-
-```txt
-GET / works
-GET /tools works
-GET /chat works
-POST /api/chat without secret returns safe runtime_not_wired
-POST /api/chat with Cloudflare Secret returns real model output
-No secret appears in repo, logs, or UI
-```
+Do not mark Public Chat Runtime V1 fully complete until live POST verification succeeds.
 
 ---
 
-## 10. Claude / External AI Instructions
-
-When Claude or another AI works on this repo:
+## 10. External AI Instructions
 
 ```txt
 1. Read LSUPERAGENT.md first.
@@ -306,53 +274,13 @@ When Claude or another AI works on this repo:
 8. Report files changed, commands run, and evidence.
 ```
 
-If an instruction conflicts with this file, stop and ask.
-
 ---
 
-## 11. Prompt for Claude Code
-
-Use this prompt when handing work to Claude:
-
-```txt
-Read LSUPERAGENT.md first. It is the current source-of-truth router.
-Ignore older instructions that treat Supabase/Auth/Trusted Gateway as active.
-
-Work Unit: PUBLIC CHAT RUNTIME V1
-
-Goal:
-Wire /api/chat in src/index.js to an OpenAI server-side provider route only when OPENAI_API_KEY exists as a Cloudflare Secret.
-
-Hard rules:
-- Do not add Supabase.
-- Do not add Firebase.
-- Do not add Auth.
-- Do not require Trusted Gateway.
-- Do not use Claude/Anthropic as first provider.
-- Do not put secrets in repo, HTML, client JS, logs, or screenshots.
-- If OPENAI_API_KEY is missing, keep runtime_not_wired.
-- No fake AI response.
-- Keep visual identity unchanged.
-
-Validation:
-- message is required
-- max message length must be enforced
-- tool must be writer, image, research, code, or null
-- response JSON must include ok/status/tool/provider/output/usage when completed
-
-Report:
-- files changed
-- commands run
-- deploy status
-- verification evidence
-```
-
----
-
-## 12. Last Updated
+## 11. Last Updated
 
 ```txt
 2026-09-17
 Router mode: Cloudflare + OpenAI-first
+Runtime status: OpenAI Runtime V1 wired in code; live verification pending
 Supabase status: not active / future only
 ```

@@ -9,13 +9,18 @@ const AUTH_STATE_TTL_SECONDS = 10 * 60;
 
 const ALIASES = {
   '/sdk': '/examples',
-  '/control': '/admin',
+  '/control': '/dev',
+  '/owner': '/dev',
   '/routes': '/endpoints',
   '/endpoint': '/endpoints',
+  '/registry': '/system-registry.html',
   '/secret': '/secret-handoff',
   '/key-converter': '/secret-handoff',
   '/signin': '/login',
-  '/auth': '/login'
+  '/auth': '/login',
+  '/providers': '/provider-connect',
+  '/provider': '/provider-connect',
+  '/ai-providers': '/provider-connect'
 };
 
 const TOOL_LABELS = {
@@ -61,11 +66,6 @@ function htmlHeaders(response, tag) {
   return headers;
 }
 
-function currentPage(pathname) {
-  if (pathname === '/') return 'index.html';
-  return pathname.replace(/^\//, '').replace(/\/$/, '').replace(/\.html$/, '') + '.html';
-}
-
 function publicOrigin(url, env) {
   try {
     if (typeof env.PUBLIC_SITE_URL === 'string' && env.PUBLIC_SITE_URL.trim()) return new URL(env.PUBLIC_SITE_URL.trim()).origin;
@@ -77,6 +77,22 @@ function truthySecret(env, key) {
   return Boolean(typeof env[key] === 'string' && env[key].trim());
 }
 
+function splitEnvList(value) {
+  return new Set(String(value || '').split(/[\s,]+/).map((item) => item.trim().toLowerCase()).filter(Boolean));
+}
+
+function ownerEmails(env) {
+  return splitEnvList(env.OWNER_GOOGLE_EMAIL);
+}
+
+function ownerSubs(env) {
+  return splitEnvList(env.OWNER_GOOGLE_SUB);
+}
+
+function ownerGoogleConfigured(env) {
+  return ownerEmails(env).size > 0 || ownerSubs(env).size > 0;
+}
+
 function authProviderStatus(env) {
   const sessionReady = truthySecret(env, 'AUTH_SESSION_SECRET');
   const githubReady = truthySecret(env, 'GITHUB_CLIENT_ID') && truthySecret(env, 'GITHUB_CLIENT_SECRET');
@@ -86,11 +102,13 @@ function authProviderStatus(env) {
     status: sessionReady && (githubReady || googleReady) ? (adminAllowlistReady ? 'configured' : 'public_login_ready_admin_locked') : 'partially_configured',
     session_secret: sessionReady,
     admin_gate: { enabled: true, allowlist_configured: adminAllowlistReady, env_name: 'ADMIN_ALLOWED_LOGINS' },
+    owner_google_gate: { enabled: true, configured: ownerGoogleConfigured(env), required_provider: 'google', email_env_name: 'OWNER_GOOGLE_EMAIL', sub_env_name: 'OWNER_GOOGLE_SUB' },
     github: { provider: 'github', client_id: truthySecret(env, 'GITHUB_CLIENT_ID'), client_secret: truthySecret(env, 'GITHUB_CLIENT_SECRET'), ready: githubReady },
     google: { provider: 'google', client_id: truthySecret(env, 'GOOGLE_CLIENT_ID'), client_secret: truthySecret(env, 'GOOGLE_CLIENT_SECRET'), ready: googleReady },
     expected_secrets: ['AUTH_SESSION_SECRET', 'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'],
     admin_expected_variable: 'ADMIN_ALLOWED_LOGINS',
-    optional_variables: ['PUBLIC_SITE_URL'],
+    owner_expected_variable: 'OWNER_GOOGLE_EMAIL',
+    optional_variables: ['PUBLIC_SITE_URL', 'OWNER_GOOGLE_SUB'],
     secret_values_exposed: false
   };
 }
@@ -100,14 +118,16 @@ function authStatusPayload(request, env) {
   const origin = publicOrigin(url, env);
   return {
     ok: true,
-    surface: 'login_backend_ui_v1_admin_gate_v1',
+    surface: 'login_backend_ui_v1_owner_google_dev_gate_v1',
     public_trial: true,
     origin,
     login_urls: {
       github: origin + '/auth/github',
       google: origin + '/auth/google',
+      owner_dev_google: origin + '/auth/google?return_to=/dev',
       logout: origin + '/auth/logout',
       session: origin + '/api/auth/session',
+      dev_status: origin + '/api/dev/status',
       admin_status: origin + '/api/admin/status'
     },
     ...authProviderStatus(env)
@@ -168,6 +188,14 @@ function clearCookie(name) {
   return `${name}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`;
 }
 
+function clearAuthHeaders(extra = {}) {
+  const headers = new Headers(extra);
+  headers.append('set-cookie', clearCookie(AUTH_COOKIE));
+  headers.append('set-cookie', clearCookie(AUTH_STATE_COOKIE));
+  headers.set('cache-control', 'no-store');
+  return headers;
+}
+
 function safeReturnTo(value) {
   if (!value || typeof value !== 'string') return '/chat?auth=trial';
   if (!value.startsWith('/') || value.startsWith('//')) return '/chat?auth=trial';
@@ -180,8 +208,7 @@ async function currentSession(request, env) {
 }
 
 function adminAllowlist(env) {
-  const raw = typeof env.ADMIN_ALLOWED_LOGINS === 'string' ? env.ADMIN_ALLOWED_LOGINS : '';
-  return new Set(raw.split(/[\s,]+/).map((item) => item.trim().toLowerCase()).filter(Boolean));
+  return splitEnvList(env.ADMIN_ALLOWED_LOGINS);
 }
 
 function adminIdentityCandidates(session) {
@@ -210,17 +237,57 @@ function isAdminSession(session, env) {
   return adminIdentityCandidates(session).some((candidate) => allowed.has(candidate));
 }
 
-function adminDeniedPage(reason, session, env) {
-  const allowlistReady = adminAllowlist(env).size > 0;
-  const signedIn = Boolean(session);
-  const userLabel = session ? `${session.provider || 'provider'}:${session.login || session.email || session.id || 'unknown'}` : 'not signed in';
-  return `<!doctype html><html lang="th"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Admin Access Locked — lsuperagen.docs</title><style>body{margin:0;background:#060606;color:#f5f7f9;font-family:Inter,"Noto Sans Thai",system-ui,sans-serif;line-height:1.65}.bp{position:fixed;inset:0;background-image:linear-gradient(rgba(140,150,165,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(140,150,165,.07) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse 90% 60% at 50% 0,#000 30%,transparent 100%)}main{position:relative;z-index:1;min-height:100vh;display:grid;place-items:center;padding:28px}.card{width:min(680px,100%);border:1px solid #26292f;border-radius:20px;background:linear-gradient(180deg,rgba(18,19,22,.94),rgba(10,10,11,.94));padding:28px;box-shadow:0 28px 80px rgba(0,0,0,.42)}.ey{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.72rem;letter-spacing:.22em;color:#7c828c;margin-bottom:14px}h1{font-size:clamp(2rem,7vw,3.4rem);line-height:1;margin:0 0 16px;letter-spacing:-.04em}.lead{color:#a2a7b0;font-size:1.04rem}.box{margin:22px 0;border-left:2px solid #63b3ff;background:rgba(99,179,255,.07);border-radius:14px;padding:14px;color:#c8ccd2}.meta{display:grid;gap:10px;margin:20px 0}.row{display:flex;justify-content:space-between;gap:12px;border:1px solid #1c1e22;border-radius:12px;padding:12px;background:#0a0a0b}.row span{color:#7c828c}.row b{overflow-wrap:anywhere}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}.btn{height:46px;border-radius:999px;padding:0 18px;display:inline-flex;align-items:center;border:1px solid #33373f;color:#f5f7f9;text-decoration:none;font-weight:700}.btn.primary{background:#fff;color:#060606;border-color:#fff}</style></head><body><div class="bp"></div><main><section class="card"><div class="ey">ADMIN GATE V1</div><h1>Admin Locked</h1><p class="lead">หน้านี้เป็นพื้นที่แอดมิน ไม่เปิดให้ public user เข้า แม้ล็อกอิน GitHub หรือ Google สำเร็จแล้วก็ตาม</p><div class="box">${reason === 'not_authenticated' ? 'ต้องล็อกอินก่อน ระบบจะพากลับไปหน้า login โดยอัตโนมัติเมื่อเข้าตรง /admin' : 'บัญชีนี้ล็อกอินได้ แต่ยังไม่มีสิทธิ์ admin'} · Secret values ไม่ถูกแสดงในหน้านี้</div><div class="meta"><div class="row"><span>Signed in</span><b>${signedIn ? 'YES' : 'NO'}</b></div><div class="row"><span>Identity</span><b>${userLabel}</b></div><div class="row"><span>Allowlist</span><b>${allowlistReady ? 'CONFIGURED' : 'MISSING: ADMIN_ALLOWED_LOGINS'}</b></div></div><div class="actions"><a class="btn primary" href="/login?return_to=/admin">Login</a><a class="btn" href="/chat">Go to Public Chat</a><a class="btn" href="/api/admin/status">Admin Status JSON</a><a class="btn" href="/auth/logout">Logout</a></div></section></main></body></html>`;
+function isOwnerGoogleSession(session, env) {
+  if (!session || String(session.provider || '').toLowerCase() !== 'google') return false;
+  const emails = ownerEmails(env);
+  const subs = ownerSubs(env);
+  if (emails.size === 0 && subs.size === 0) return false;
+  const email = String(session.email || session.login || '').trim().toLowerCase();
+  const sub = String(session.id || '').trim().toLowerCase();
+  const emailVerified = session.email_verified === true || session.email_verified === 'true';
+  const emailMatch = emailVerified && email && emails.has(email);
+  const subMatch = sub && subs.has(sub);
+  return Boolean(emailMatch || subMatch);
 }
 
-async function guardAdmin(request, env) {
+function devDeniedPage(reason, session, env) {
+  const reasonText = {
+    not_configured: 'OWNER_GOOGLE_EMAIL ยังไม่ได้ตั้งค่าใน Cloudflare Secret',
+    not_google: 'session นี้ไม่ใช่ Google owner session จึงถูกบล็อกและล้าง session',
+    not_owner: 'Google account นี้ไม่ตรงกับ OWNER_GOOGLE_EMAIL / OWNER_GOOGLE_SUB',
+    not_verified: 'Google email ยังไม่ผ่าน email_verified',
+    not_authenticated: 'ต้องล็อกอินด้วย Google owner ก่อน'
+  }[reason] || 'Owner gate blocked';
+  const identity = session ? `${session.provider || 'provider'}:${session.email || session.login || session.id || 'unknown'}` : 'not signed in';
+  return `<!doctype html><html lang="th"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Owner Dev Gate — lsuperagen.docs</title><style>body{margin:0;background:#060606;color:#f5f7f9;font-family:Inter,"Noto Sans Thai",system-ui,sans-serif;line-height:1.65}.bp{position:fixed;inset:0;background-image:linear-gradient(rgba(140,150,165,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(140,150,165,.07) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse 90% 60% at 50% 0,#000 30%,transparent 100%)}main{position:relative;z-index:1;min-height:100vh;display:grid;place-items:center;padding:28px}.card{width:min(680px,100%);border:1px solid #26292f;border-radius:20px;background:linear-gradient(180deg,rgba(18,19,22,.94),rgba(10,10,11,.94));padding:28px;box-shadow:0 28px 80px rgba(0,0,0,.42)}.ey{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.72rem;letter-spacing:.22em;color:#7c828c;margin-bottom:14px}h1{font-size:clamp(2rem,7vw,3.4rem);line-height:1;margin:0 0 16px;letter-spacing:-.04em}.lead{color:#a2a7b0;font-size:1.04rem}.box{margin:22px 0;border-left:2px solid #63b3ff;background:rgba(99,179,255,.07);border-radius:14px;padding:14px;color:#c8ccd2}.meta{display:grid;gap:10px;margin:20px 0}.row{display:flex;justify-content:space-between;gap:12px;border:1px solid #1c1e22;border-radius:12px;padding:12px;background:#0a0a0b}.row span{color:#7c828c}.row b{overflow-wrap:anywhere}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}.btn{min-height:46px;border-radius:999px;padding:0 18px;display:inline-flex;align-items:center;border:1px solid #33373f;color:#f5f7f9;text-decoration:none;font-weight:700}.btn.primary{background:#fff;color:#060606;border-color:#fff}</style></head><body><div class="bp"></div><main><section class="card"><div class="ey">OWNER GOOGLE DEV GATE V1</div><h1>Dev Locked</h1><p class="lead">พื้นที่ /dev เปิดเฉพาะ Google account ของเจ้าของระบบเท่านั้น ไม่ใช้ GitHub session และไม่เปิด contacts scope ในรอบนี้</p><div class="box">${reasonText}</div><div class="meta"><div class="row"><span>Identity</span><b>${identity}</b></div><div class="row"><span>OWNER_GOOGLE_EMAIL</span><b>${ownerEmails(env).size ? 'CONFIGURED' : 'MISSING'}</b></div><div class="row"><span>OWNER_GOOGLE_SUB</span><b>${ownerSubs(env).size ? 'CONFIGURED' : 'OPTIONAL'}</b></div></div><div class="actions"><a class="btn primary" href="/auth/google?return_to=/dev">Login with Owner Google</a><a class="btn" href="/auth/logout">Clear Session</a><a class="btn" href="/chat">Public Chat</a></div></section></main></body></html>`;
+}
+
+async function guardOwnerDev(request, env, responseMode = 'html') {
   const session = await currentSession(request, env);
-  if (!session) return redirectTo('/login?return_to=/admin&auth_error=admin_login_required', 302, { 'x-lsuperagen-admin-gate': 'login-required' });
-  if (!isAdminSession(session, env)) return htmlResponse(adminDeniedPage('not_allowed', session, env), 403, { 'x-lsuperagen-admin-gate': 'denied' });
+  if (!ownerGoogleConfigured(env)) {
+    if (responseMode === 'json') return json({ ok: false, status: 'owner_google_not_configured', required_secret: 'OWNER_GOOGLE_EMAIL', secret_values_exposed: false }, 503, { 'x-lsuperagen-dev-gate': 'not-configured' });
+    return htmlResponse(devDeniedPage('not_configured', session, env), 503, { 'x-lsuperagen-dev-gate': 'not-configured' });
+  }
+  if (!session) {
+    if (responseMode === 'json') return json({ ok: false, status: 'not_authenticated', login: '/auth/google?return_to=/dev', secret_values_exposed: false }, 401, { 'x-lsuperagen-dev-gate': 'login-required' });
+    return redirectTo('/auth/google?return_to=/dev', 302, { 'x-lsuperagen-dev-gate': 'login-required' });
+  }
+  if (String(session.provider || '').toLowerCase() !== 'google') {
+    const headers = clearAuthHeaders({ 'x-lsuperagen-dev-gate': 'blocked-non-google' });
+    if (responseMode === 'json') return json({ ok: false, status: 'blocked_non_google_session', action: 'session_cleared', secret_values_exposed: false }, 403, headers);
+    return htmlResponse(devDeniedPage('not_google', session, env), 403, headers);
+  }
+  const emailVerified = session.email_verified === true || session.email_verified === 'true';
+  if (!emailVerified && ownerEmails(env).size > 0) {
+    const headers = clearAuthHeaders({ 'x-lsuperagen-dev-gate': 'blocked-email-unverified' });
+    if (responseMode === 'json') return json({ ok: false, status: 'blocked_google_email_unverified', action: 'session_cleared', secret_values_exposed: false }, 403, headers);
+    return htmlResponse(devDeniedPage('not_verified', session, env), 403, headers);
+  }
+  if (!isOwnerGoogleSession(session, env)) {
+    const headers = clearAuthHeaders({ 'x-lsuperagen-dev-gate': 'blocked-not-owner' });
+    if (responseMode === 'json') return json({ ok: false, status: 'blocked_not_owner_google', action: 'session_cleared', provider: session.provider, secret_values_exposed: false }, 403, headers);
+    return htmlResponse(devDeniedPage('not_owner', session, env), 403, headers);
+  }
   return null;
 }
 
@@ -228,16 +295,37 @@ async function handleAdminStatus(request, env) {
   const session = await currentSession(request, env);
   return json({
     ok: true,
-    surface: 'admin_gate_v1',
+    surface: 'admin_gate_v1_owner_google_dev_gate_v1',
     authenticated: Boolean(session),
     admin: isAdminSession(session, env),
+    owner_google: isOwnerGoogleSession(session, env),
     allowlist_configured: adminAllowlist(env).size > 0,
+    owner_google_configured: ownerGoogleConfigured(env),
     allowed_env_name: 'ADMIN_ALLOWED_LOGINS',
-    user: session ? { provider: session.provider, id: session.id, login: session.login, email: session.email, name: session.name, avatar: session.avatar } : null,
+    owner_env_name: 'OWNER_GOOGLE_EMAIL',
+    user: session ? { provider: session.provider, id: session.id, login: session.login, email: session.email, email_verified: session.email_verified, name: session.name, avatar: session.avatar } : null,
     public_users_can_access_admin: false,
+    public_users_can_access_dev: false,
     guest_can_access_admin: false,
     secret_values_exposed: false
   }, 200, { 'x-lsuperagen-admin-gate': 'status-v1' });
+}
+
+async function handleDevStatus(request, env) {
+  const gate = await guardOwnerDev(request, env, 'json');
+  if (gate) return gate;
+  const session = await currentSession(request, env);
+  return json({
+    ok: true,
+    surface: 'owner_google_dev_gate_v1',
+    owner_google: true,
+    provider_required: 'google',
+    email_verified_required: ownerEmails(env).size > 0,
+    session: { provider: session.provider, email: session.email, email_verified: session.email_verified, name: session.name },
+    contacts_scope_enabled: false,
+    contacts_scope_note: 'Contacts are intentionally not requested in Owner Google Dev Gate V1.',
+    secret_values_exposed: false
+  }, 200, { 'x-lsuperagen-dev-gate': 'owner' });
 }
 
 async function handleAuthStart(provider, request, env) {
@@ -279,7 +367,7 @@ async function exchangeGithubCode(code, redirectUri, env) {
   const userRes = await fetch('https://api.github.com/user', { headers: { authorization: 'Bearer ' + tokenData.access_token, accept: 'application/vnd.github+json', 'user-agent': 'lsuperagen.docs' } });
   const user = await userRes.json().catch(() => ({}));
   if (!userRes.ok || !user.id) throw new Error('github_user_failed');
-  return { provider: 'github', id: String(user.id), login: user.login || null, email: user.email || null, name: user.name || user.login || 'GitHub user', avatar: user.avatar_url || null };
+  return { provider: 'github', id: String(user.id), login: user.login || null, email: user.email || null, email_verified: null, name: user.name || user.login || 'GitHub user', avatar: user.avatar_url || null };
 }
 
 async function exchangeGoogleCode(code, redirectUri, env) {
@@ -293,7 +381,7 @@ async function exchangeGoogleCode(code, redirectUri, env) {
   const userRes = await fetch('https://openidconnect.googleapis.com/v1/userinfo', { headers: { authorization: 'Bearer ' + tokenData.access_token } });
   const user = await userRes.json().catch(() => ({}));
   if (!userRes.ok || !user.sub) throw new Error('google_user_failed');
-  return { provider: 'google', id: String(user.sub), login: user.email || null, email: user.email || null, name: user.name || user.email || 'Google user', avatar: user.picture || null };
+  return { provider: 'google', id: String(user.sub), login: user.email || null, email: user.email || null, email_verified: user.email_verified === true, name: user.name || user.email || 'Google user', avatar: user.picture || null };
 }
 
 async function handleAuthCallback(provider, request, env) {
@@ -325,112 +413,21 @@ async function handleAuthCallback(provider, request, env) {
 
 async function handleAuthSession(request, env) {
   const session = await currentSession(request, env);
-  if (!session) return json({ ok: true, authenticated: false, surface: 'public_trial_auth_v1', user: null, admin: false, secret_values_exposed: false });
+  if (!session) return json({ ok: true, authenticated: false, surface: 'public_trial_auth_v1', user: null, admin: false, owner_google: false, secret_values_exposed: false });
   return json({
     ok: true,
     authenticated: true,
     surface: 'public_trial_auth_v1',
-    user: { provider: session.provider, id: session.id, login: session.login, email: session.email, name: session.name, avatar: session.avatar },
+    user: { provider: session.provider, id: session.id, login: session.login, email: session.email, email_verified: session.email_verified, name: session.name, avatar: session.avatar },
     admin: isAdminSession(session, env),
+    owner_google: isOwnerGoogleSession(session, env),
     expires_at: session.exp ? new Date(session.exp * 1000).toISOString() : null,
     secret_values_exposed: false
   });
 }
 
 function handleAuthLogout() {
-  const headers = new Headers();
-  headers.append('set-cookie', clearCookie(AUTH_COOKIE));
-  headers.append('set-cookie', clearCookie(AUTH_STATE_COOKIE));
-  return redirectTo('/login?auth=logged_out', 302, headers);
-}
-
-function injectHead(html, content) { return html.replace(/<\/head>/i, content + '\n</head>'); }
-function injectBody(html, content) { return html.replace(/<\/body>/i, content + '\n</body>'); }
-
-function addBodyClass(html, classes) {
-  return html.replace(/<body([^>]*)>/i, (match, attrs) => {
-    if (/class\s*=/.test(attrs)) return '<body' + attrs.replace(/class=["']([^"']*)["']/i, (_m, current) => `class="${Array.from(new Set((current + ' ' + classes).trim().split(/\s+/))).join(' ')}"`) + '>';
-    return `<body class="${classes}"${attrs}>`;
-  });
-}
-
-function addHeaderLinks(html) {
-  return html.replace(/<nav([^>]*)>([\s\S]*?)<\/nav>/i, (match, attrs, inner) => {
-    const shape = attrs + inner.slice(0, 260);
-    if (!/(primary-nav|pnav|class="nav|เมนูหลัก|main navigation)/i.test(shape)) return match;
-    let next = inner;
-    if (!/href=["'](?:\/)?chat(?:\.html)?["']/i.test(next)) next += '<a href="chat.html">Chat</a>';
-    if (!/href=["'](?:\/)?login(?:\.html)?["']/i.test(next)) next += '<a href="login.html">Login</a>';
-    if (!/href=["'](?:\/)?endpoints(?:\.html)?["']/i.test(next)) next += '<a href="endpoints.html">Endpoints</a>';
-    return '<nav' + attrs + '>' + next + '</nav>';
-  });
-}
-
-function addFooterLinks(html) {
-  if (html.includes('ls-footer-chat')) return html;
-  return html.replace(/<footer([^>]*)>([\s\S]*?)<\/footer>/i, (_m, attrs, inner) => `<footer${attrs}>${inner}<div class="ls-footer-chat"><a href="chat.html">Chat</a><a href="login.html">Login</a><a href="endpoints.html">Endpoints</a><a href="secret-handoff.html">Secret Handoff</a><span>Public Trial · Admin Gate V1</span></div></footer>`);
-}
-
-function mobilePolish(html, pathname) {
-  const page = currentPage(pathname);
-  html = addBodyClass(html, 'ls-mobile-public-polish-v6' + (page === 'workspace.html' ? ' ls-page-workspace' : ''));
-  html = addHeaderLinks(addFooterLinks(html));
-  if (html.includes('data-ls-mobile-public-polish="v6"')) return html;
-  const style = `<style data-ls-mobile-public-polish="v6">.ls-footer-chat{max-width:1200px;margin:10px auto 0;padding:0 clamp(16px,4vw,40px);display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-family:var(--fm,ui-monospace,monospace);font-size:.74rem;color:var(--fg3,#7c828c)}.ls-footer-chat a{display:inline-flex;border:1px solid var(--bd2,#26292f);border-radius:999px;padding:6px 10px;color:var(--fg,#f5f7f9);text-decoration:none;background:var(--surf-in,#0a0a0b)}.ls-native-menu{display:none}@media(max-width:899px){.primary-nav,.pnav,.nav{display:none!important}.menu-btn,.mbtn{display:none!important}.ls-native-menu{display:block;position:fixed;z-index:700;top:20px;right:28px;color:var(--fg,#f5f7f9);font-family:var(--fd,system-ui,sans-serif)}.ls-native-menu>summary{list-style:none;width:52px;height:52px;border-radius:14px;border:1px solid var(--bd2,#26292f);background:rgba(10,10,11,.94);display:grid;place-items:center;cursor:pointer}.ls-native-menu>summary::-webkit-details-marker{display:none}.ls-native-menu[open]::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,.56);backdrop-filter:blur(5px);z-index:-1}.ls-native-panel{position:fixed;top:84px;right:16px;left:16px;max-height:calc(100vh - 110px);overflow:auto;border:1px solid var(--bd2,#26292f);border-radius:16px;background:linear-gradient(180deg,rgba(18,19,22,.98),rgba(6,6,6,.98));box-shadow:0 22px 70px rgba(0,0,0,.55);padding:14px;display:grid;gap:12px}.ls-native-head{border-bottom:1px solid var(--bd,#1c1e22);padding:2px 2px 12px}.ls-native-title{font-weight:800}.ls-native-sub{font-family:var(--fm,ui-monospace,monospace);font-size:.68rem;color:var(--fg3,#7c828c);letter-spacing:.12em}.ls-native-links{display:grid;gap:8px}.ls-native-links a{display:flex;justify-content:space-between;gap:12px;border:1px solid var(--bd,#1c1e22);border-radius:12px;padding:12px 13px;background:var(--surf-in,#0a0a0b);color:var(--fg2,#a2a7b0);text-decoration:none}.ls-native-links a[aria-current="page"],.ls-native-links a:hover{border-color:var(--acc,#63b3ff);background:rgba(99,179,255,.06);color:var(--fg,#f5f7f9)}.ls-native-note{border-left:2px solid var(--acc,#63b3ff);padding-left:10px;font-family:var(--fm,ui-monospace,monospace);font-size:.7rem;line-height:1.6;color:var(--fg3,#7c828c)}}@media(max-width:720px){.ws-tabs,.tbar{overflow-x:auto!important;white-space:nowrap!important;-webkit-overflow-scrolling:touch!important}.sniff-table-wrap{overflow:visible!important;border:0!important;background:transparent!important}.sniff-table{width:100%!important;min-width:0!important;border-spacing:0 10px!important}.sniff-table thead{display:none!important}.sniff-table tbody,.sniff-table tr,.sniff-table td{display:block!important;width:100%!important}.sniff-table tr{border:1px solid var(--bd,#1c1e22);border-radius:12px;background:var(--surf-in,#0a0a0b);padding:12px;margin:0 0 10px}.sniff-table td{border:0!important;padding:3px 0!important;white-space:normal!important;overflow-wrap:anywhere!important}}</style>`;
-  const nav = `<details class="ls-native-menu" data-ls-mobile-public-polish="v6"><summary aria-label="เปิดเมนู"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="ls-native-panel" role="navigation" aria-label="เมนูมือถือ"><div class="ls-native-head"><div class="ls-native-title">lsuperagen.docs</div><div class="ls-native-sub">PUBLIC NAV · ADMIN LOCKED</div></div><nav class="ls-native-links"><a href="index.html" ${page === 'index.html' ? 'aria-current="page"' : ''}>หน้าแรก <span>→</span></a><a href="chat.html" ${page === 'chat.html' ? 'aria-current="page"' : ''}>Chat <span>→</span></a><a href="login.html" ${page === 'login.html' ? 'aria-current="page"' : ''}>Login / Trial Auth <span>→</span></a><a href="tools.html" ${page === 'tools.html' ? 'aria-current="page"' : ''}>Tools <span>→</span></a><a href="secret-handoff.html" ${page === 'secret-handoff.html' ? 'aria-current="page"' : ''}>Secret Handoff <span>→</span></a><a href="endpoints.html" ${page === 'endpoints.html' ? 'aria-current="page"' : ''}>Endpoints <span>→</span></a><a href="examples.html" ${page === 'examples.html' ? 'aria-current="page"' : ''}>SDK Plug Tools <span>→</span></a><a href="workspace.html" ${page === 'workspace.html' ? 'aria-current="page"' : ''}>Workspace <span>→</span></a><a href="getting-started.html" ${page === 'getting-started.html' ? 'aria-current="page"' : ''}>Docs <span>→</span></a><a href="guides.html" ${page === 'guides.html' ? 'aria-current="page"' : ''}>Guides <span>→</span></a><a href="api.html" ${page === 'api.html' ? 'aria-current="page"' : ''}>API <span>→</span></a><a href="changelog.html" ${page === 'changelog.html' ? 'aria-current="page"' : ''}>Changelog <span>→</span></a><a href="admin.html" ${page === 'admin.html' ? 'aria-current="page"' : ''}>Admin Gate <span>→</span></a></nav><div class="ls-native-note">Public login does not grant admin access · Admin Gate V1</div></div></details>`;
-  return injectBody(injectHead(html, style), nav);
-}
-
-function applyHomeEnhancements(html) {
-  if (!html.includes('href="chat.html"') && !html.includes('href="/chat"')) html = html.replace('<a class="btn btn-s thai" href="getting-started.html">ดูเอกสารทั้งหมด</a>', '<a class="btn btn-s thai" href="getting-started.html">ดูเอกสารทั้งหมด</a>\n<a class="btn btn-s thai" href="chat.html">เปิด Public Chat</a>');
-  if (!html.includes('pnpm add @lsuperagen/sdk')) html = html.replace('</div>\n<ul style="display:flex;flex-wrap:wrap;gap:var(--sp6) var(--sp8);margin:var(--sp10) 0 0;padding:0;list-style:none">', '</div><div aria-label="SDK install command" style="margin-top:var(--sp4);max-width:560px;padding:12px 14px;background:var(--surf-in);border:1px solid var(--bd2);border-left:2px solid var(--acc);border-radius:var(--r2);font-family:var(--fm);font-size:.82rem;color:var(--s300)"><span style="font-size:.68rem;letter-spacing:.18em;color:var(--fg3)">SDK INSTALL</span> <code style="font-family:var(--fm);color:#fff;word-break:break-word">pnpm add @lsuperagen/sdk</code></div><ul style="display:flex;flex-wrap:wrap;gap:var(--sp6) var(--sp8);margin:var(--sp10) 0 0;padding:0;list-style:none">');
-  return html;
-}
-
-function applyHomePolish(html) {
-  html = addBodyClass(html, 'ls-home-polish-v1');
-  if (html.includes('data-ls-home-polish="v1"')) return html;
-  return injectHead(html, `<style data-ls-home-polish="v1">@media(max-width:720px){body.ls-home-polish-v1 .hero{padding-block:22px 34px!important;min-height:auto!important}body.ls-home-polish-v1 .hero>.wrap{padding-inline:28px!important}body.ls-home-polish-v1 .hero .wrap>div>div{display:block!important;grid-template-columns:1fr!important}body.ls-home-polish-v1 .hero [role="img"][aria-label="โลโก้ LS"]{display:none!important}body.ls-home-polish-v1 .hero h1{font-size:clamp(3.2rem,17vw,4.45rem)!important;line-height:.95!important;letter-spacing:-.045em!important;max-width:7.2ch!important;margin-top:0!important}body.ls-home-polish-v1 .hero h1 span{color:#7f858f!important}body.ls-home-polish-v1 .hero .btn{width:100%!important;justify-content:center!important;height:54px!important}body.ls-home-polish-v1 .hero div[style*="display:flex"][style*="flex-wrap:wrap"]{display:grid!important;grid-template-columns:1fr!important;gap:12px!important;max-width:260px!important}body.ls-home-polish-v1 .hero div[aria-label="SDK install command"]{max-width:308px!important;margin-top:20px!important;padding:13px 15px!important;border-radius:12px!important;background:rgba(10,10,11,.82)!important}body.ls-home-polish-v1 .hero div[aria-label="SDK install command"] code{display:block!important;margin-top:4px!important;font-size:.88rem!important;line-height:1.45!important}body.ls-home-polish-v1 .hero ul[style*="gap:var(--sp6)"]{display:none!important}}@media(min-width:721px){body.ls-home-polish-v1 .hero [role="img"][aria-label="โลโก้ LS"]{opacity:.62;filter:saturate(.75) contrast(.96)}}</style>`);
-}
-
-function routeToolsCard(html, title, href, label) {
-  const re = new RegExp('(<a class="card"\\s+)href="#"([^>]*>[\\s\\S]*?<h3>' + String(title).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '<\\/h3>)', 'i');
-  return html.replace(re, '$1href="' + href + '" data-ls-tool-route="' + label + '"$2');
-}
-
-function applyToolsRouter(html) {
-  html = routeToolsCard(html, 'AI Writer', 'chat.html?tool=writer', 'writer');
-  html = routeToolsCard(html, 'Image Generator', 'chat.html?tool=image', 'image');
-  html = routeToolsCard(html, 'Deep Research', 'chat.html?tool=research', 'research');
-  html = routeToolsCard(html, 'Code Assistant', 'chat.html?tool=code', 'code');
-  if (!html.includes('Secret Handoff Converter')) {
-    const card = `<a class="card" href="secret-handoff.html" style="min-height:160px" data-ls-tool-route="secret-handoff"><span class="badge live" style="position:absolute;top:var(--sp4);right:var(--sp4)">Client-only</span><span class="ic-box">🔐</span><h3>Secret Handoff Converter</h3><p class="thai">แปลง API key/token เป็น safe handoff package โดยไม่แสดง raw secret</p><svg class="go" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>`;
-    html = html.replace(/<\/div>\s*<\/div>\s*<\/div><\/main>/i, card + '</div></div></div></main>');
-  }
-  return html;
-}
-
-function authButton(label, href, ready, provider) { return `<a class="lsauth-btn ${ready ? '' : 'disabled'}" href="${ready ? href : '#'}" data-provider="${provider}" aria-disabled="${ready ? 'false' : 'true'}"><span>${label}</span><b>${ready ? 'READY' : 'SETUP'}</b></a>`; }
-
-function applyLoginAuthUi(html, env) {
-  const status = authProviderStatus(env);
-  if (html.includes('data-ls-login-auth="v2"')) return html;
-  const panel = `<style data-ls-login-auth="v2">.lsauth{max-width:780px;margin:28px auto;padding:0 clamp(24px,5vw,44px);position:relative;z-index:2}.lsauth h1{font-size:clamp(2rem,7vw,3.2rem);line-height:1.06;margin:0 0 12px}.lsauth p{color:var(--fg2,#a2a7b0);font-size:1.04rem;line-height:1.7}.lsauth-actions{display:grid;gap:14px;margin:26px 0}.lsauth-btn{height:84px;border:1px solid var(--bd2,#26292f);border-radius:999px;background:rgba(6,6,6,.7);display:flex;align-items:center;justify-content:space-between;padding:0 26px;text-decoration:none;color:var(--fg,#f5f7f9);font-weight:800;font-size:1.25rem}.lsauth-btn b{font-family:var(--fm,ui-monospace,monospace);font-size:.76rem;letter-spacing:.22em;color:#afecc9}.lsauth-btn.disabled{opacity:.55;pointer-events:none}.lsauth-btn.guest{background:#fff;color:#060606}.lsauth-btn.guest b{color:#060606}.lsauth-card{border:1px solid var(--bd,#1c1e22);border-radius:18px;background:rgba(6,6,6,.62);padding:20px;margin-top:22px}.lsauth-row{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-top:1px solid var(--bd,#1c1e22);font-family:var(--fm,ui-monospace,monospace)}.lsauth-row:first-child{border-top:0}.ready{color:#afecc9}.setup{color:#f7d889}.lsauth-note{border-left:3px solid var(--acc,#63b3ff);background:rgba(99,179,255,.07);border-radius:14px;padding:14px 18px;margin-top:22px;color:var(--fg2,#a2a7b0)}.lsauth-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.lsauth-links a{border:1px solid var(--bd2,#26292f);border-radius:999px;padding:9px 13px;color:var(--fg2,#a2a7b0);text-decoration:none}@media(max-width:720px){.lsauth-btn{height:82px;font-size:1.18rem}}</style><section class="lsauth" data-ls-login-auth="v2"><h1 class="thai">ทดลองใช้งานแบบ Public Trial</h1><p class="thai">ผู้ใช้ทั่วไปล็อกอิน GitHub หรือ Google เพื่อเริ่ม session ทดลองได้ แต่ <b>ไม่ได้สิทธิ์เข้า Admin</b> จนกว่าจะอยู่ใน allowlist ของเจ้าของเว็บ</p><div class="lsauth-actions">${authButton('Continue with GitHub', '/auth/github', status.github.ready, 'github')}${authButton('Continue with Google', '/auth/google', status.google.ready, 'google')}<a class="lsauth-btn guest" href="chat.html"><span>Continue as Guest</span><b>PUBLIC</b></a></div><div class="lsauth-card"><h2>Backend secret checklist</h2><div class="lsauth-row"><span>AUTH_SESSION_SECRET</span><b class="${status.session_secret ? 'ready' : 'setup'}">${status.session_secret ? 'READY' : 'SETUP'}</b></div><div class="lsauth-row"><span>GITHUB_CLIENT_ID</span><b class="${status.github.client_id ? 'ready' : 'setup'}">${status.github.client_id ? 'READY' : 'SETUP'}</b></div><div class="lsauth-row"><span>GITHUB_CLIENT_SECRET</span><b class="${status.github.client_secret ? 'ready' : 'setup'}">${status.github.client_secret ? 'READY' : 'SETUP'}</b></div><div class="lsauth-row"><span>GOOGLE_CLIENT_ID</span><b class="${status.google.client_id ? 'ready' : 'setup'}">${status.google.client_id ? 'READY' : 'SETUP'}</b></div><div class="lsauth-row"><span>GOOGLE_CLIENT_SECRET</span><b class="${status.google.client_secret ? 'ready' : 'setup'}">${status.google.client_secret ? 'READY' : 'SETUP'}</b></div><div class="lsauth-row"><span>ADMIN_ALLOWED_LOGINS</span><b class="${status.admin_gate.allowlist_configured ? 'ready' : 'setup'}">${status.admin_gate.allowlist_configured ? 'READY' : 'ADMIN LOCKED'}</b></div></div><div class="lsauth-note thai">Secret values ไม่ถูกส่งเข้า HTML, Markdown, GitHub หรือ Chat UI. Public login สร้าง session ได้ แต่ Admin Gate V1 จะกัน /admin ไว้จนกว่า identity จะอยู่ใน ADMIN_ALLOWED_LOGINS.</div><div class="lsauth-links"><a href="/api/auth/status">Auth status JSON</a><a href="/api/auth/session">Session JSON</a><a href="/api/admin/status">Admin Status</a><a href="secret-handoff.html">Secret Handoff</a><a href="endpoints.html">Endpoints</a><a href="/auth/logout">Logout</a></div></section>`;
-  return injectBody(injectHead(html, panel.match(/<style[\s\S]*?<\/style>/)[0]), panel.replace(/<style[\s\S]*?<\/style>/, ''));
-}
-
-function applyChatRuntimeStatus(html, hasKey) {
-  if (!hasKey) return html;
-  return html.replace(/RUNTIME NOT WIRED/g, 'OPENAI LIVE').replace(/SAFE STUB/g, 'OPENAI LIVE').replace(/STUB 503/g, 'LIVE 200').replace(/MISSING/g, 'DETECTED').replace(/DISABLED/g, 'ENABLED').replace(/Runtime not wired/g, 'OpenAI runtime wired').replace(/runtime: not wired/g, 'runtime: OpenAI Runtime V1').replace(/Runtime ยังไม่ wired/g, 'OpenAI Runtime V1').replace(/mode: fast · runtime: OpenAI Runtime V1/g, 'mode: fast · runtime: OpenAI Runtime V1 · limit: 10/10m');
-}
-
-function applyChatToolContext(html, rawTool) {
-  const tool = normalizeTool(rawTool);
-  const label = TOOL_LABELS[tool];
-  if (!label || html.includes('data-ls-chat-tool="v1"')) return html;
-  const script = `<script data-ls-chat-tool="v1">(function(){var tool='${tool}',label='${label}';var p=document.getElementById('prompt'),s=document.getElementById('state'),l=document.getElementById('log');var hints={writer:'เขียนโพสต์ / landing copy / email / caption ที่ต้องการ',image:'อธิบายภาพที่ต้องการสร้าง พร้อมสไตล์และขนาด',research:'ใส่หัวข้อที่ต้องการค้นคว้าและระดับความลึก',code:'วางโค้ดหรืออธิบาย bug ที่ต้องการแก้'};if(p)p.placeholder=label+' — '+hints[tool];if(s)s.textContent='tool: '+tool+' · runtime: OpenAI Runtime V1 · limit: 10/10m';if(l){var m=document.createElement('div');m.className='msg bot';m.innerHTML='<div class="role">TOOL ROUTER</div><div></div>';m.lastChild.textContent='เปิดจาก Tools → '+label+' แล้ว · Public login does not grant admin access';l.appendChild(m)}})();</script>`;
-  const badge = '<div data-ls-chat-tool="v1" style="margin-top:14px;display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(99,179,255,.24);background:rgba(99,179,255,.07);border-radius:999px;padding:8px 12px;font-family:var(--mono,var(--fm,monospace));font-size:.76rem;color:#8ec6ff">TOOL ROUTER · ' + label + ' · RATE LIMIT V1</div>';
-  return html.replace(/(<div class="notice[\s\S]*?<\/div>)/i, '$1\n' + badge).replace(/<\/body>/i, script + '\n</body>');
+  return redirectTo('/login?auth=logged_out', 302, clearAuthHeaders());
 }
 
 function normalizeTool(value) {
@@ -501,15 +498,6 @@ function rateLimitHeaders(result) {
   return { 'x-lsuperagen-rate-limit': String(result.limit), 'x-lsuperagen-rate-remaining': String(result.remaining), 'x-lsuperagen-rate-reset': new Date(result.resetAt).toISOString(), ...(result.limited ? { 'retry-after': String(result.retryAfter) } : {}) };
 }
 
-async function listAccessibleModelIds(env, requestId) {
-  try {
-    const res = await fetch('https://api.openai.com/v1/models', { headers: { authorization: 'Bearer ' + env.OPENAI_API_KEY, 'x-client-request-id': requestId } });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return new Set((data.data || []).map((model) => model && model.id).filter(Boolean));
-  } catch (_) { return null; }
-}
-
 async function createOpenAIResponse(env, model, message, tool, mode, requestId) {
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
@@ -527,19 +515,6 @@ function isModelAccessError(data) {
   return /does not have access to model|model .* not found|invalid model|not exist|do not have access/i.test(msg);
 }
 
-function plannedEndpoint(pathname) {
-  const planned = {
-    '/api/image': { status: 'planned', method: 'POST', message: 'Image API is planned but not implemented. Current Image Generator is a prompt/spec compiler only.' },
-    '/api/image/status': { status: 'planned', method: 'GET', message: 'Image API provider is not wired yet. No image secret is exposed here.' },
-    '/admin/auth/github': { status: 'planned', method: 'GET', message: 'Admin GitHub OAuth is planned. Public trial OAuth uses /auth/github; admin page is protected by Admin Gate V1.' },
-    '/admin/github/status': { status: 'planned', method: 'GET', message: 'Admin GitHub status endpoint is planned. Admin Gate V1 must pass first.' },
-    '/admin/github/files': { status: 'planned', method: 'GET', message: 'Admin GitHub files endpoint is planned. Admin Gate V1 must pass first.' },
-    '/admin/github/commit': { status: 'planned', method: 'POST', message: 'Admin GitHub commit endpoint is planned. Admin Gate V1 must pass first.' },
-    '/admin/handoff/claude': { status: 'planned', method: 'POST', message: 'Claude handoff admin endpoint is planned. Current handoff is a repo Markdown file.' }
-  }[pathname];
-  return planned ? json({ ok: false, endpoint: pathname, ...planned, secret_values: false }, pathname.startsWith('/api/image/status') ? 200 : 501, { 'x-lsuperagen-runtime': 'planned-endpoint-v1' }) : null;
-}
-
 async function handleChat(request, env) {
   if (request.method !== 'POST') return json({ ok: false, status: 'method_not_allowed', message: 'Use POST /api/chat.' }, 405, { allow: 'POST, OPTIONS' });
   let body = {};
@@ -547,10 +522,12 @@ async function handleChat(request, env) {
   const message = typeof body.message === 'string' ? body.message.trim() : '';
   const mode = typeof body.mode === 'string' && body.mode.trim() ? body.mode.trim().slice(0, 32) : 'fast';
   const tool = inferTool(body, request);
+  const requestedProvider = typeof body.provider === 'string' && body.provider.trim() ? body.provider.trim().toLowerCase() : 'openai';
   const provider = 'openai';
   const hasKey = Boolean(env.OPENAI_API_KEY);
   const runtimeHeader = hasKey ? 'openai-runtime-v1-rate-limit-v1' : 'not-wired';
   const readiness = { frontend: true, api_route: true, tools_router: true, provider_router: true, secret_detected: hasKey, model_output: hasKey, rate_limit: true };
+  if (requestedProvider !== 'openai') return json({ ok: false, status: 'provider_not_live', message: 'Only OpenAI is live on /api/chat. Other providers must not be routed to OpenAI output.', requested_provider: requestedProvider, provider, readiness: { ...readiness, model_output: false } }, 409, { 'x-lsuperagen-runtime': 'provider-truth-guard-v1' });
   if (!message) return json({ ok: false, status: 'validation_error', message: 'message is required.', tool: tool === 'invalid' ? null : tool, provider, readiness }, 400, { 'x-lsuperagen-runtime': runtimeHeader });
   if (message.length > 4000) return json({ ok: false, status: 'validation_error', message: 'message is too long. Max 4000 characters.', tool: tool === 'invalid' ? null : tool, provider, readiness }, 413, { 'x-lsuperagen-runtime': runtimeHeader });
   if (tool === 'invalid') return json({ ok: false, status: 'validation_error', message: 'tool must be writer, image, research, code, or null.', provider, readiness }, 400, { 'x-lsuperagen-runtime': runtimeHeader });
@@ -562,7 +539,6 @@ async function handleChat(request, env) {
 
   const requestId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
   const candidates = modelCandidates(env);
-  const visibleModels = await listAccessibleModelIds(env, requestId);
   const attempted = [];
   let lastError = null;
   for (const model of candidates) {
@@ -577,8 +553,29 @@ async function handleChat(request, env) {
     lastError = { message: providerMessage, model, provider_status: providerResponse.status };
     if (!isModelAccessError(data)) return json({ ok: false, status: 'provider_error', message: providerMessage, tool, provider, model, request_id: requestId, provider_status: providerResponse.status, attempted_models: attempted, rate_limit: { limit: rate.limit, remaining: rate.remaining, reset_at: new Date(rate.resetAt).toISOString() } }, providerResponse.status >= 400 && providerResponse.status < 500 ? 502 : 503, { ...baseHeaders, 'x-lsuperagen-request-id': requestId });
   }
+  return json({ ok: false, status: 'model_not_available', message: 'OPENAI_API_KEY is valid, but every attempted model was rejected for this project. Tried: ' + attempted.join(', ') + '. Set OPENAI_MODEL to an exact model enabled in this OpenAI project.', tool, provider, request_id: requestId, attempted_models: attempted, configured_model: typeof env.OPENAI_MODEL === 'string' ? env.OPENAI_MODEL.trim() || null : null, last_error: lastError, rate_limit: { limit: rate.limit, remaining: rate.remaining, reset_at: new Date(rate.resetAt).toISOString() } }, 502, { ...baseHeaders, 'x-lsuperagen-request-id': requestId });
+}
 
-  return json({ ok: false, status: 'model_not_available', message: 'OPENAI_API_KEY is valid, but every attempted model was rejected for this project. Tried: ' + attempted.join(', ') + '. Set OPENAI_MODEL to an exact model enabled in this OpenAI project, or enable a supported model in OpenAI Platform.', tool, provider, request_id: requestId, attempted_models: attempted, configured_model: typeof env.OPENAI_MODEL === 'string' ? env.OPENAI_MODEL.trim() || null : null, visible_model_count: visibleModels ? visibleModels.size : null, last_error: lastError, rate_limit: { limit: rate.limit, remaining: rate.remaining, reset_at: new Date(rate.resetAt).toISOString() } }, 502, { ...baseHeaders, 'x-lsuperagen-request-id': requestId });
+function plannedEndpoint(pathname) {
+  const planned = {
+    '/api/image': { status: 'planned', method: 'POST', message: 'Image API is planned but not implemented. Current Image Generator is a prompt/spec compiler only.' },
+    '/api/image/status': { status: 'planned', method: 'GET', message: 'Image API provider is not wired yet. No image secret is exposed here.' },
+    '/admin/auth/github': { status: 'retired', method: 'GET', message: 'Use /dev. Owner workspace is protected by Google Owner Dev Gate V1.' },
+    '/admin/github/status': { status: 'retired', method: 'GET', message: 'Use /dev. Owner workspace is protected by Google Owner Dev Gate V1.' },
+    '/admin/github/files': { status: 'retired', method: 'GET', message: 'Use /dev. Owner workspace is protected by Google Owner Dev Gate V1.' },
+    '/admin/github/commit': { status: 'retired', method: 'POST', message: 'Use /dev. Owner workspace is protected by Google Owner Dev Gate V1.' },
+    '/admin/handoff/claude': { status: 'planned', method: 'POST', message: 'Claude handoff admin endpoint is planned. Current handoff should live under /dev.' }
+  }[pathname];
+  return planned ? json({ ok: false, endpoint: pathname, ...planned, secret_values: false }, pathname.startsWith('/api/image/status') ? 200 : 501, { 'x-lsuperagen-runtime': 'planned-endpoint-v1' }) : null;
+}
+
+async function fetchAsset(request, env, pathname) {
+  if (pathname === '/dev' || pathname === '/dev.html') {
+    const assetUrl = new URL(request.url);
+    assetUrl.pathname = '/dev.html';
+    return env.ASSETS.fetch(new Request(assetUrl.toString(), request));
+  }
+  return env.ASSETS.fetch(request);
 }
 
 export default {
@@ -586,11 +583,13 @@ export default {
     const url = new URL(request.url);
     const pathname = url.pathname.replace(/\/+$/, '') || '/';
 
+    if (pathname === '/admin' || pathname === '/admin.html') return redirectTo('/dev', 302, { 'x-lsuperagen-admin-gate': 'redirect-to-dev-v1' });
     if (ALIASES[pathname]) return redirectTo(new URL(ALIASES[pathname], url).toString(), 301);
 
     if (pathname === '/api/auth/status') return json(authStatusPayload(request, env), 200, { 'x-lsuperagen-auth': 'status-v1' });
     if (pathname === '/api/auth/session') return handleAuthSession(request, env);
     if (pathname === '/api/admin/status') return handleAdminStatus(request, env);
+    if (pathname === '/api/dev/status') return handleDevStatus(request, env);
     if (pathname === '/auth/logout') return handleAuthLogout();
     if (pathname === '/auth/github') return handleAuthStart('github', request, env);
     if (pathname === '/auth/google') return handleAuthStart('google', request, env);
@@ -603,24 +602,14 @@ export default {
     const planned = plannedEndpoint(pathname);
     if (planned) return planned;
 
-    const page = currentPage(pathname);
-    if (page === 'admin.html') {
-      const gate = await guardAdmin(request, env);
+    if (pathname === '/dev' || pathname === '/dev.html') {
+      const gate = await guardOwnerDev(request, env, 'html');
       if (gate) return gate;
     }
 
-    const response = await env.ASSETS.fetch(request);
+    const response = await fetchAsset(request, env, pathname);
     if (!(response.headers.get('content-type') || '').includes('text/html')) return response;
-
-    let html = await response.text();
-    if (page === 'index.html') html = applyHomePolish(applyHomeEnhancements(html));
-    if (page === 'tools.html') html = applyToolsRouter(html);
-    if (page === 'login.html') html = applyLoginAuthUi(html, env);
-    if (page === 'chat.html') {
-      html = applyChatRuntimeStatus(html, Boolean(env.OPENAI_API_KEY));
-      html = applyChatToolContext(html, url.searchParams.get('tool'));
-    }
-    html = mobilePolish(html, pathname);
-    return new Response(html, { status: response.status, headers: htmlHeaders(response, 'admin-gate-v1-login-auth-v1-openai-runtime-v1') });
+    const html = await response.text();
+    return new Response(html, { status: response.status, headers: htmlHeaders(response, 'owner-google-dev-gate-v1-openai-runtime-v1') });
   }
 };

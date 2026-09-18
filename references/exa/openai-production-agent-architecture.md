@@ -2,13 +2,17 @@
 
 Source type: Exa Markdown Reference
 Primary source family: OpenAI API Docs
-Status: Reference only
+Status: Reference only / docs-only architecture
 
-## Purpose
+## Scope Lock
 
-Use this reference to turn OpenAI official guidance on agents, tools, guardrails, approvals, tracing, evals, safety, and compaction into explicit architecture planes for AGENTS-SDK-LAB.
+This reference is documentation only.
 
-AGENTS-SDK-LAB must not be only a chat app. It should be a Production Agent Control Plane with visible runtime planes and evidence gates.
+It does not create D1, R2, KV, secrets, runtime actions, Zapier actions, Remote SDK actions, public completion status, or production claims.
+
+AGENTS-SDK-LAB must not be only a chat app. It should become a Production Agent Control Plane, but the current artifact is a docs/reference layer.
+
+A public release is not complete until every public category is genuinely usable, tested, and has evidence. UI cards, labels, links, or planned routes do not count as completion.
 
 ## Primary URLs
 
@@ -21,7 +25,7 @@ AGENTS-SDK-LAB must not be only a chat app. It should be a Production Agent Cont
 ## Architecture Lock
 
 ```text
-AGENTS-SDK-LAB Evidence-Gated Control Plane
+AGENTS-SDK-LAB Production Agent Control Plane
 
 Runtime
 Tools
@@ -35,17 +39,17 @@ Compaction
 
 ## Explicit Planes
 
-| Plane | Purpose | Storage |
+| Plane | Purpose | Current status |
 | --- | --- | --- |
-| Runtime Plane | Choose Agents SDK, Responses API, MCP bridge, or external operator per workflow. | code + config |
-| Tool Plane | Catalog tools, MCP servers, Zapier actions, Remote SDK operators, GitHub actions, endpoint contracts. | D1 index + KV flags |
-| Guardrail Plane | Validate input, output, tool arguments, policy scope, redaction, and risk before side effects. | D1 rules + events |
-| Approval Plane | Pause high-risk actions for owner approval or rejection with resumable state. | D1 |
-| Trace Plane | Record run-level events: model call, tool call, handoff, guardrail, interruption. | D1 index + R2 snapshot |
-| Eval Plane | Run graders, datasets, eval runs, and regression checks. | D1 |
-| Evidence Plane | Store proof of real execution: logs, screenshots, source bundles, deploy results. | R2 + D1 pointer |
-| Compaction Plane | Reduce long-running context into durable state summaries and handoff packets. | D1 summary + R2 archive |
-| Secrets Plane | Keep API keys, OAuth secrets, MCP tokens, signed URLs. | Cloudflare/Base44/Zapier secrets only |
+| Runtime Plane | Define where Agents SDK, Responses API, MCP bridge, or external operators fit. | Docs only |
+| Tool Plane | Catalog tools, MCP servers, Zapier actions, Remote SDK operators, GitHub actions, endpoint contracts. | Docs only |
+| Guardrail Plane | Define input, output, tool-argument, redaction, policy, and risk checks. | Docs only |
+| Approval Plane | Define pause/approve/reject flow for high-risk actions. | Docs only |
+| Trace Plane | Define what a run-level trace should record: model call, tool call, handoff, guardrail, interruption. | Docs only |
+| Eval Plane | Define grader, dataset, eval run, and regression criteria. | Docs only |
+| Evidence Plane | Define proof requirements for real execution: logs, screenshots, source bundles, deploy results. | Docs only |
+| Compaction Plane | Define state summaries and handoff packets for long-running work. | Docs only |
+| Secrets Plane | Define where secrets may live. | Provider secret stores only |
 
 ## Runtime Rule
 
@@ -60,18 +64,34 @@ Approval item is created if risk exists
 ↓
 Owner approves or rejects
 ↓
-Tool executes
+Tool executes only after approval
 ↓
 Evidence is captured
 ↓
 Trace and eval data update
 ```
 
-## Storage Rule
+## Public Completion Rule
 
-### D1
+A public category is complete only when it has:
 
-Use D1 for structured records:
+```text
+1. A real route
+2. A real action or clearly static documentation purpose
+3. Real error states
+4. Real evidence or verification output
+5. No fake live labels
+6. No hidden secret exposure
+7. A tested mobile path
+```
+
+## Future Storage Notes
+
+Storage is future architecture, not current implementation.
+
+### D1 later only when there is a concrete schema and data owner
+
+Possible structured records:
 
 ```text
 approval_requests
@@ -84,9 +104,9 @@ runtime_sessions
 compaction_summaries
 ```
 
-### R2
+### R2 later only when there are real artifacts
 
-Use R2 for large artifacts:
+Possible large artifacts:
 
 ```text
 evidence/traces/
@@ -96,9 +116,9 @@ evidence/screenshots/
 evidence/eval-runs/
 ```
 
-### KV
+### KV later only for operational config
 
-Use KV for small operational config:
+Possible small config:
 
 ```text
 feature_flags
@@ -132,14 +152,15 @@ Live: #A3FF12 lime signal
 Text: #EDEDED / #C8C8C8 / #8A8A8A
 ```
 
-## Current Implementation Pointer
+## Current Docs Pointer
 
-- Dev page: `/dev/control-plane/`
+- Docs page: `/dev/control-plane/`
 - Page file: `dev/control-plane/index.html`
 
 ## Non-goals
 
-- Do not create D1/R2 without concrete schema and data owner.
+- Do not create D1/R2/KV from this reference alone.
 - Do not mark Remote SDK/Zapier actions as live until tested.
 - Do not expose MCP tokens or signed URLs.
+- Do not call public completion until every public category actually works.
 - Do not turn this into a decorative dashboard with fake statuses.

@@ -20,7 +20,8 @@ const ALIASES = {
   '/auth': '/login',
   '/providers': '/provider-connect',
   '/provider': '/provider-connect',
-  '/ai-providers': '/provider-connect'
+  '/ai-providers': '/provider-connect',
+  '/dev-code-drop': '/dev-code-drop.html'
 };
 
 const TOOL_LABELS = {
@@ -33,11 +34,7 @@ const TOOL_LABELS = {
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data, null, 2), {
     status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'no-store',
-      ...headers
-    }
+    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers }
   });
 }
 
@@ -51,11 +48,7 @@ function redirectTo(location, status = 302, extraHeaders = {}) {
 function htmlResponse(body, status = 200, headers = {}) {
   return new Response(body, {
     status,
-    headers: {
-      'content-type': 'text/html; charset=utf-8',
-      'cache-control': 'no-store',
-      ...headers
-    }
+    headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', ...headers }
   });
 }
 
@@ -64,6 +57,11 @@ function htmlHeaders(response, tag) {
   headers.set('content-type', 'text/html; charset=utf-8');
   headers.set('x-lsuperagen-control', tag);
   return headers;
+}
+
+function currentPage(pathname) {
+  if (pathname === '/') return 'index.html';
+  return pathname.replace(/^\//, '').replace(/\/$/, '').replace(/\.html$/, '') + '.html';
 }
 
 function publicOrigin(url, env) {
@@ -81,17 +79,9 @@ function splitEnvList(value) {
   return new Set(String(value || '').split(/[\s,]+/).map((item) => item.trim().toLowerCase()).filter(Boolean));
 }
 
-function ownerEmails(env) {
-  return splitEnvList(env.OWNER_GOOGLE_EMAIL);
-}
-
-function ownerSubs(env) {
-  return splitEnvList(env.OWNER_GOOGLE_SUB);
-}
-
-function ownerGoogleConfigured(env) {
-  return ownerEmails(env).size > 0 || ownerSubs(env).size > 0;
-}
+function ownerEmails(env) { return splitEnvList(env.OWNER_GOOGLE_EMAIL); }
+function ownerSubs(env) { return splitEnvList(env.OWNER_GOOGLE_SUB); }
+function ownerGoogleConfigured(env) { return ownerEmails(env).size > 0 || ownerSubs(env).size > 0; }
 
 function authProviderStatus(env) {
   const sessionReady = truthySecret(env, 'AUTH_SESSION_SECRET');
@@ -118,7 +108,7 @@ function authStatusPayload(request, env) {
   const origin = publicOrigin(url, env);
   return {
     ok: true,
-    surface: 'login_backend_ui_v1_owner_google_dev_gate_v1',
+    surface: 'login_backend_ui_v1_owner_google_dev_gate_v1_mobile_fix_v1',
     public_trial: true,
     origin,
     login_urls: {
@@ -203,28 +193,18 @@ function safeReturnTo(value) {
   return value.slice(0, 180);
 }
 
-async function currentSession(request, env) {
-  return verifySignedToken(cookieValue(request, AUTH_COOKIE), env, 'auth_session');
-}
-
-function adminAllowlist(env) {
-  return splitEnvList(env.ADMIN_ALLOWED_LOGINS);
-}
+async function currentSession(request, env) { return verifySignedToken(cookieValue(request, AUTH_COOKIE), env, 'auth_session'); }
+function adminAllowlist(env) { return splitEnvList(env.ADMIN_ALLOWED_LOGINS); }
 
 function adminIdentityCandidates(session) {
   if (!session) return [];
   const provider = String(session.provider || '').toLowerCase();
   const values = [];
   const add = (value) => { if (value !== undefined && value !== null && String(value).trim()) values.push(String(value).trim().toLowerCase()); };
-  add(session.login);
-  add(session.email);
-  add(session.id);
+  add(session.login); add(session.email); add(session.id);
   const raw = Array.from(new Set(values));
   const namespaced = [];
-  for (const value of raw) {
-    namespaced.push(value);
-    if (provider) namespaced.push(`${provider}:${value}`);
-  }
+  for (const value of raw) { namespaced.push(value); if (provider) namespaced.push(`${provider}:${value}`); }
   if (provider && session.id) namespaced.push(`${provider}:id:${String(session.id).toLowerCase()}`);
   if (provider && session.login) namespaced.push(`${provider}:login:${String(session.login).toLowerCase()}`);
   if (provider && session.email) namespaced.push(`${provider}:email:${String(session.email).toLowerCase()}`);
@@ -245,9 +225,7 @@ function isOwnerGoogleSession(session, env) {
   const email = String(session.email || session.login || '').trim().toLowerCase();
   const sub = String(session.id || '').trim().toLowerCase();
   const emailVerified = session.email_verified === true || session.email_verified === 'true';
-  const emailMatch = emailVerified && email && emails.has(email);
-  const subMatch = sub && subs.has(sub);
-  return Boolean(emailMatch || subMatch);
+  return Boolean((emailVerified && email && emails.has(email)) || (sub && subs.has(sub)));
 }
 
 function devDeniedPage(reason, session, env) {
@@ -332,12 +310,10 @@ async function handleAuthStart(provider, request, env) {
   const url = new URL(request.url);
   const providerStatus = authProviderStatus(env)[provider];
   if (!providerStatus || !providerStatus.ready) return redirectTo(`/login?auth_error=${provider}_not_configured`);
-
   const origin = publicOrigin(url, env);
   const redirectUri = `${origin}/auth/${provider}/callback`;
   const returnTo = safeReturnTo(url.searchParams.get('return_to') || '/chat?auth=' + provider);
   const state = await createSignedToken({ provider, return_to: returnTo, nonce: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) }, env, 'oauth_state', AUTH_STATE_TTL_SECONDS);
-
   const authUrl = provider === 'github' ? new URL('https://github.com/login/oauth/authorize') : new URL('https://accounts.google.com/o/oauth2/v2/auth');
   if (provider === 'github') {
     authUrl.searchParams.set('client_id', env.GITHUB_CLIENT_ID.trim());
@@ -357,11 +333,7 @@ async function handleAuthStart(provider, request, env) {
 }
 
 async function exchangeGithubCode(code, redirectUri, env) {
-  const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
-    method: 'POST',
-    headers: { accept: 'application/json', 'content-type': 'application/json', 'user-agent': 'lsuperagen.docs' },
-    body: JSON.stringify({ client_id: env.GITHUB_CLIENT_ID, client_secret: env.GITHUB_CLIENT_SECRET, code, redirect_uri: redirectUri })
-  });
+  const tokenRes = await fetch('https://github.com/login/oauth/access_token', { method: 'POST', headers: { accept: 'application/json', 'content-type': 'application/json', 'user-agent': 'lsuperagen.docs' }, body: JSON.stringify({ client_id: env.GITHUB_CLIENT_ID, client_secret: env.GITHUB_CLIENT_SECRET, code, redirect_uri: redirectUri }) });
   const tokenData = await tokenRes.json().catch(() => ({}));
   if (!tokenRes.ok || !tokenData.access_token) throw new Error('github_exchange_failed');
   const userRes = await fetch('https://api.github.com/user', { headers: { authorization: 'Bearer ' + tokenData.access_token, accept: 'application/vnd.github+json', 'user-agent': 'lsuperagen.docs' } });
@@ -371,11 +343,7 @@ async function exchangeGithubCode(code, redirectUri, env) {
 }
 
 async function exchangeGoogleCode(code, redirectUri, env) {
-  const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ client_id: env.GOOGLE_CLIENT_ID, client_secret: env.GOOGLE_CLIENT_SECRET, code, redirect_uri: redirectUri, grant_type: 'authorization_code' })
-  });
+  const tokenRes = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: env.GOOGLE_CLIENT_ID, client_secret: env.GOOGLE_CLIENT_SECRET, code, redirect_uri: redirectUri, grant_type: 'authorization_code' }) });
   const tokenData = await tokenRes.json().catch(() => ({}));
   if (!tokenRes.ok || !tokenData.access_token) throw new Error('google_exchange_failed');
   const userRes = await fetch('https://openidconnect.googleapis.com/v1/userinfo', { headers: { authorization: 'Bearer ' + tokenData.access_token } });
@@ -394,7 +362,6 @@ async function handleAuthCallback(provider, request, env) {
   if (!code || !state || !cookieState || state !== cookieState) return redirectTo(`/login?auth_error=${provider}_invalid_state`);
   const payload = await verifySignedToken(state, env, 'oauth_state');
   if (!payload || payload.provider !== provider) return redirectTo(`/login?auth_error=${provider}_state_rejected`);
-
   let user;
   try {
     const redirectUri = `${publicOrigin(url, env)}/auth/${provider}/callback`;
@@ -402,7 +369,6 @@ async function handleAuthCallback(provider, request, env) {
   } catch (err) {
     return redirectTo(`/login?auth_error=${encodeURIComponent(err && err.message ? err.message : provider + '_failed')}`, 302, { 'set-cookie': clearCookie(AUTH_STATE_COOKIE) });
   }
-
   const session = await createSignedToken(user, env, 'auth_session', AUTH_SESSION_TTL_SECONDS);
   const headers = new Headers();
   headers.append('set-cookie', clearCookie(AUTH_STATE_COOKIE));
@@ -414,21 +380,10 @@ async function handleAuthCallback(provider, request, env) {
 async function handleAuthSession(request, env) {
   const session = await currentSession(request, env);
   if (!session) return json({ ok: true, authenticated: false, surface: 'public_trial_auth_v1', user: null, admin: false, owner_google: false, secret_values_exposed: false });
-  return json({
-    ok: true,
-    authenticated: true,
-    surface: 'public_trial_auth_v1',
-    user: { provider: session.provider, id: session.id, login: session.login, email: session.email, email_verified: session.email_verified, name: session.name, avatar: session.avatar },
-    admin: isAdminSession(session, env),
-    owner_google: isOwnerGoogleSession(session, env),
-    expires_at: session.exp ? new Date(session.exp * 1000).toISOString() : null,
-    secret_values_exposed: false
-  });
+  return json({ ok: true, authenticated: true, surface: 'public_trial_auth_v1', user: { provider: session.provider, id: session.id, login: session.login, email: session.email, email_verified: session.email_verified, name: session.name, avatar: session.avatar }, admin: isAdminSession(session, env), owner_google: isOwnerGoogleSession(session, env), expires_at: session.exp ? new Date(session.exp * 1000).toISOString() : null, secret_values_exposed: false });
 }
 
-function handleAuthLogout() {
-  return redirectTo('/login?auth=logged_out', 302, clearAuthHeaders());
-}
+function handleAuthLogout() { return redirectTo('/login?auth=logged_out', 302, clearAuthHeaders()); }
 
 function normalizeTool(value) {
   if (value === undefined || value === null || value === '') return null;
@@ -477,9 +432,7 @@ function modelCandidates(env) {
   return Array.from(new Set([configured, 'gpt-6-astra', 'gpt-5-nano-2025-08-07', 'gpt-5.3-codex', 'gpt-4.1', 'gpt-4o', 'gpt-4.1-mini', 'gpt-4.1-nano', 'gpt-4o-mini', 'gpt-5-nano', 'gpt-5-mini'].filter(Boolean)));
 }
 
-function clientIp(request) {
-  return request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-}
+function clientIp(request) { return request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'; }
 
 function checkRateLimit(request, tool) {
   const now = Date.now();
@@ -531,12 +484,10 @@ async function handleChat(request, env) {
   if (!message) return json({ ok: false, status: 'validation_error', message: 'message is required.', tool: tool === 'invalid' ? null : tool, provider, readiness }, 400, { 'x-lsuperagen-runtime': runtimeHeader });
   if (message.length > 4000) return json({ ok: false, status: 'validation_error', message: 'message is too long. Max 4000 characters.', tool: tool === 'invalid' ? null : tool, provider, readiness }, 413, { 'x-lsuperagen-runtime': runtimeHeader });
   if (tool === 'invalid') return json({ ok: false, status: 'validation_error', message: 'tool must be writer, image, research, code, or null.', provider, readiness }, 400, { 'x-lsuperagen-runtime': runtimeHeader });
-
   const rate = checkRateLimit(request, tool);
   const baseHeaders = { 'x-lsuperagen-runtime': runtimeHeader, ...rateLimitHeaders(rate) };
   if (rate.limited) return json({ ok: false, status: 'rate_limited', message: 'Rate limit reached. Public Chat V1 allows 10 requests per 10 minutes per IP/tool. Please wait before sending another message.', tool, provider, limit: { requests: rate.limit, window_seconds: RATE_LIMIT_WINDOW_MS / 1000, retry_after_seconds: rate.retryAfter, reset_at: new Date(rate.resetAt).toISOString() }, readiness }, 429, baseHeaders);
   if (!hasKey) return json({ ok: false, status: 'runtime_not_wired', message: 'Runtime not wired. No fake AI response generated. Set OPENAI_API_KEY as a Cloudflare Secret before public model output.', requested: { mode, provider: body.provider || 'OpenAI route', tool, has_message: true }, readiness: { ...readiness, model_output: false } }, 503, baseHeaders);
-
   const requestId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
   const candidates = modelCandidates(env);
   const attempted = [];
@@ -569,10 +520,52 @@ function plannedEndpoint(pathname) {
   return planned ? json({ ok: false, endpoint: pathname, ...planned, secret_values: false }, pathname.startsWith('/api/image/status') ? 200 : 501, { 'x-lsuperagen-runtime': 'planned-endpoint-v1' }) : null;
 }
 
+function injectHead(html, content) {
+  return /<\/head>/i.test(html) ? html.replace(/<\/head>/i, content + '\n</head>') : content + html;
+}
+
+function injectBody(html, content) {
+  return /<\/body>/i.test(html) ? html.replace(/<\/body>/i, content + '\n</body>') : html + content;
+}
+
+function publicMobileLinks(page) {
+  const items = [
+    ['/', 'Home', 'index.html'],
+    ['/chat', 'Chat', 'chat.html'],
+    ['/login', 'Login', 'login.html'],
+    ['/tools', 'Tools', 'tools.html'],
+    ['/examples', 'Examples', 'examples.html'],
+    ['/getting-started', 'Docs', 'getting-started.html'],
+    ['/api', 'API', 'api.html'],
+    ['/guides', 'Guides', 'guides.html'],
+    ['/changelog', 'Changelog', 'changelog.html']
+  ];
+  return items.map(([href, label, file]) => `<a href="${href}" ${page === file ? 'aria-current="page"' : ''}>${label}<span>→</span></a>`).join('');
+}
+
+function enhancePublicHtml(html, pathname) {
+  if (html.includes('data-ls-mobile-menu-fix="v1"')) return html;
+  const page = currentPage(pathname);
+  const style = `<style data-ls-mobile-menu-fix="v1">
+html,body{max-width:100%;overflow-x:hidden!important}.code,pre,code{max-width:100%}pre{white-space:pre-wrap!important;overflow-wrap:anywhere!important;word-break:break-word}.code{overflow-x:auto!important}main,section,.wrap,.content{max-width:100%}img,svg{max-width:100%;height:auto}.ls-mobile-menu{display:none}.ls-mobile-note{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.68rem;letter-spacing:.12em;color:#7c828c;border-left:2px solid #63b3ff;padding-left:10px;margin-top:4px}.ls-mobile-panel{box-sizing:border-box}.ls-mobile-links a span{color:#7c828c}@media(max-width:899px){.primary-nav,.pnav,.nav,.menu-btn,.mbtn,button[aria-label*="menu"],button[aria-label*="เมนู"]{display:none!important}.site-header,.hdr{position:sticky!important;top:0!important;z-index:500!important}.ls-mobile-menu{display:block;position:fixed;z-index:9999;top:20px;right:28px;color:#f5f7f9;font-family:Inter,"Noto Sans Thai",system-ui,sans-serif}.ls-mobile-menu>summary{list-style:none;width:52px;height:52px;border-radius:14px;border:1px solid #26292f;background:rgba(10,10,11,.96);display:grid;place-items:center;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,.34)}.ls-mobile-menu>summary::-webkit-details-marker{display:none}.ls-mobile-menu[open]::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,.58);backdrop-filter:blur(5px);z-index:-1}.ls-mobile-panel{position:fixed;top:84px;right:16px;left:16px;max-height:calc(100vh - 110px);overflow:auto;border:1px solid #26292f;border-radius:18px;background:linear-gradient(180deg,rgba(18,19,22,.99),rgba(6,6,6,.99));box-shadow:0 22px 70px rgba(0,0,0,.58);padding:14px;display:grid;gap:12px}.ls-mobile-title{font-weight:900;letter-spacing:-.02em}.ls-mobile-sub{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.68rem;color:#7c828c;letter-spacing:.16em}.ls-mobile-links{display:grid;gap:8px}.ls-mobile-links a{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid #1c1e22;border-radius:13px;padding:13px 14px;background:#0a0a0b;color:#a2a7b0;text-decoration:none;font-weight:750}.ls-mobile-links a[aria-current="page"],.ls-mobile-links a:hover{border-color:#63b3ff;background:rgba(99,179,255,.07);color:#f5f7f9}.page-hero{padding-top:40px!important}.page-hero h1{font-size:clamp(2.45rem,13vw,4rem)!important;line-height:1.02!important;overflow-wrap:anywhere}.page-hero p,.lede{overflow-wrap:anywhere}.docs,.content{display:block!important;padding-inline:0!important}.content{min-width:0!important}.content h2{font-size:clamp(1.45rem,8vw,2.1rem)!important}.content p,.content li{overflow-wrap:anywhere}.footer,.site-footer,footer{max-width:100%;overflow:hidden}}
+</style>`;
+  const menu = `<details class="ls-mobile-menu" data-ls-mobile-menu-fix="v1"><summary aria-label="เปิดเมนู"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="ls-mobile-panel" role="navigation" aria-label="Mobile menu"><div><div class="ls-mobile-title">lsuperagen.docs</div><div class="ls-mobile-sub">PUBLIC NAV · MOBILE FIX V1</div></div><nav class="ls-mobile-links">${publicMobileLinks(page)}</nav><div class="ls-mobile-note">Private /dev ไม่อยู่ใน public menu</div></div></details>`;
+  return injectBody(injectHead(html, style), menu);
+}
+
+function isDevOnlyPath(pathname) {
+  return pathname === '/dev' || pathname === '/dev.html' || pathname === '/dev-code-drop' || pathname === '/dev-code-drop.html';
+}
+
 async function fetchAsset(request, env, pathname) {
   if (pathname === '/dev' || pathname === '/dev.html') {
     const assetUrl = new URL(request.url);
     assetUrl.pathname = '/dev.html';
+    return env.ASSETS.fetch(new Request(assetUrl.toString(), request));
+  }
+  if (pathname === '/dev-code-drop') {
+    const assetUrl = new URL(request.url);
+    assetUrl.pathname = '/dev-code-drop.html';
     return env.ASSETS.fetch(new Request(assetUrl.toString(), request));
   }
   return env.ASSETS.fetch(request);
@@ -602,14 +595,15 @@ export default {
     const planned = plannedEndpoint(pathname);
     if (planned) return planned;
 
-    if (pathname === '/dev' || pathname === '/dev.html') {
+    if (isDevOnlyPath(pathname)) {
       const gate = await guardOwnerDev(request, env, 'html');
       if (gate) return gate;
     }
 
     const response = await fetchAsset(request, env, pathname);
     if (!(response.headers.get('content-type') || '').includes('text/html')) return response;
-    const html = await response.text();
-    return new Response(html, { status: response.status, headers: htmlHeaders(response, 'owner-google-dev-gate-v1-openai-runtime-v1') });
+    let html = await response.text();
+    if (!isDevOnlyPath(pathname)) html = enhancePublicHtml(html, pathname);
+    return new Response(html, { status: response.status, headers: htmlHeaders(response, 'owner-google-dev-gate-v1-openai-runtime-v1-mobile-fix-v1') });
   }
 };

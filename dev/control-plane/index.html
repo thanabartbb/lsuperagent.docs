@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AGENTS-SDK-LAB — Production Agent Control Plane</title>
+<meta name="description" content="Production Agent Control Plane for AGENTS-SDK-LAB: Runtime, Tools, Guardrails, Approvals, Traces, Evals, Evidence, and Compaction."/>
+<meta name="robots" content="noindex,nofollow"/>
+<style>
+:root{
+  --bg:#000000;
+  --surface:#050505;
+  --raised:#0A0A0A;
+  --border:#1A1A1A;
+  --border-2:#262626;
+  --text:#EDEDED;
+  --muted:#8A8A8A;
+  --soft:#C8C8C8;
+  --rose:#E11D48;
+  --rose-soft:#FB7185;
+  --green:#22C55E;
+  --lime:#A3FF12;
+  --warn:#F59E0B;
+  --disabled:#3A3A3A;
+  --max:1220px;
+  --pad:clamp(18px,4vw,44px);
+  --sans:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans Thai","Segoe UI",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+.bg{position:fixed;inset:0;pointer-events:none;z-index:0;background:
+  linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:56px 56px;mask-image:radial-gradient(ellipse 90% 58% at 50% 0,#000 30%,transparent 100%)}
+.scan{position:fixed;inset:0;pointer-events:none;z-index:0;background:linear-gradient(180deg,rgba(163,255,18,.035),transparent 15%,transparent 80%,rgba(225,29,72,.035));opacity:.72}
+.wrap{position:relative;z-index:1;max-width:var(--max);margin:0 auto;padding-inline:var(--pad)}
+header{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--border);background:rgba(0,0,0,.86);backdrop-filter:blur(14px)}
+.nav{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:900;letter-spacing:-.045em}
+.logo{width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--border-2);border-radius:14px;background:#050505;color:var(--lime);font-family:var(--mono);box-shadow:0 0 0 1px rgba(163,255,18,.05),0 0 32px rgba(163,255,18,.08)}
+.brand small{display:block;color:var(--muted);letter-spacing:.12em;font:700 .66rem var(--mono);text-transform:uppercase;margin-top:2px}
+.links{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.pill{border:1px solid var(--border-2);border-radius:999px;min-height:38px;padding:0 13px;display:inline-flex;align-items:center;color:var(--soft);font:800 .76rem var(--mono);background:rgba(10,10,10,.78)}
+.pill.live{color:var(--lime);border-color:rgba(163,255,18,.28)}
+.hero{padding:clamp(54px,8vw,100px) 0 26px}
+.eyebrow{font:800 .72rem var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.eyebrow b{color:var(--lime);font-weight:900}
+h1{margin:14px 0 0;font-size:clamp(3rem,10.5vw,7.2rem);line-height:.88;letter-spacing:-.075em;max-width:980px}
+.subtitle{margin:20px 0 0;max-width:830px;color:var(--soft);font-size:clamp(1rem,2.8vw,1.28rem)}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-top:34px}
+.card{border:1px solid var(--border);border-radius:22px;background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(5,5,5,.98));box-shadow:0 24px 70px rgba(0,0,0,.42);padding:clamp(18px,3vw,28px)}
+.card.rose{border-color:rgba(225,29,72,.28);box-shadow:0 24px 70px rgba(225,29,72,.08)}
+.card.green{border-color:rgba(34,197,94,.28);box-shadow:0 24px 70px rgba(34,197,94,.08)}
+.kicker{font:900 .68rem var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.card h2{margin:0;font-size:clamp(1.45rem,4vw,2.25rem);letter-spacing:-.05em;line-height:1.05}.card p{color:var(--muted);margin:10px 0 0}.signal-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}.signal{border:1px solid var(--border);border-radius:16px;background:#050505;padding:14px}.signal span{display:block;font:850 .66rem var(--mono);letter-spacing:.12em;color:var(--muted);text-transform:uppercase}.signal b{display:block;margin-top:8px;font:900 1.35rem var(--mono)}.green-text{color:var(--green)}.lime-text{color:var(--lime)}.rose-text{color:var(--rose)}
+.section{padding:18px 0}.section-title{display:flex;align-items:end;justify-content:space-between;gap:18px;margin:22px 0 14px}.section-title h2{margin:0;font-size:clamp(1.7rem,5vw,3rem);letter-spacing:-.06em}.section-title p{margin:0;color:var(--muted);max-width:520px}.planes{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.plane{position:relative;min-height:210px;border:1px solid var(--border);border-radius:20px;background:var(--surface);padding:18px;overflow:hidden}.plane:before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--accent,#C8C8C8)}.plane h3{margin:8px 0 0;font-size:1.22rem;letter-spacing:-.04em}.plane p{margin:9px 0 0;color:var(--muted);font-size:.93rem}.plane code{display:inline-block;margin-top:14px;color:var(--accent,#C8C8C8);font-family:var(--mono);font-size:.74rem}.runtime{--accent:#C8C8C8}.tools{--accent:#A3FF12}.guardrails{--accent:#E11D48}.approvals{--accent:#FB7185}.traces{--accent:#8A8A8A}.evals{--accent:#22C55E}.evidence{--accent:#C8C8C8}.compaction{--accent:#A3FF12}
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.step{border:1px solid var(--border);border-radius:18px;background:#050505;padding:16px;min-height:142px}.step strong{display:block;color:var(--soft);font-size:.98rem}.step small{display:block;margin-top:9px;color:var(--muted);font-size:.84rem}.step .num{font:900 .75rem var(--mono);color:var(--lime);letter-spacing:.12em;margin-bottom:10px}.step.risk .num{color:var(--rose)}.step.safe .num{color:var(--green)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.pre{white-space:pre-wrap;word-break:break-word;border:1px solid var(--border);border-radius:18px;background:#030303;padding:18px;color:#d8d8d8;font:13px/1.65 var(--mono);min-height:240px}.tag-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.tag{border:1px solid var(--border-2);border-radius:999px;padding:6px 10px;font:800 .66rem var(--mono);letter-spacing:.1em;color:var(--soft);background:#050505}.tag.live{color:var(--lime);border-color:rgba(163,255,18,.34)}.tag.blocked{color:var(--rose);border-color:rgba(225,29,72,.34)}.tag.ok{color:var(--green);border-color:rgba(34,197,94,.34)}
+.palette{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.swatch{border:1px solid var(--border);border-radius:18px;overflow:hidden;background:#050505}.color{height:76px;background:var(--c)}.swatch div:last-child{padding:12px}.swatch b{display:block;font:900 .75rem var(--mono)}.swatch span{display:block;margin-top:4px;color:var(--muted);font:700 .68rem var(--mono)}
+footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24px 0 42px;color:var(--muted);font:800 .68rem var(--mono);letter-spacing:.14em;text-transform:uppercase}
+@media(max-width:960px){.hero-grid,.two{grid-template-columns:1fr}.planes{grid-template-columns:repeat(2,1fr)}.flow{grid-template-columns:repeat(2,1fr)}.palette{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:620px){.nav{align-items:flex-start;flex-direction:column;padding:14px 0}.links{width:100%;justify-content:flex-start}.pill{flex:1;justify-content:center}.planes,.flow,.signal-row,.palette{grid-template-columns:1fr}h1{font-size:clamp(3.15rem,16vw,4.2rem)}.card{border-radius:18px}.section-title{display:block}.section-title p{margin-top:8px}}
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="scan"></div>
+<header><div class="wrap nav"><a class="brand" href="/dev"><span class="logo">LS</span><span>AGENTS-SDK-LAB<small>Production Control Plane</small></span></a><nav class="links"><a class="pill live" href="#planes">PLANES</a><a class="pill" href="#storage">D1 / R2 / KV</a><a class="pill" href="/dev-code-drop.html">CODE DROP</a><a class="pill" href="/auth/logout">LOGOUT</a></nav></div></header>
+<main>
+<section class="wrap hero">
+  <div class="eyebrow">AGENTS-SDK-LAB · <b>CONTROL PLANE</b></div>
+  <h1>Production Agent Control Plane</h1>
+  <p class="subtitle">ไม่ใช่ chat app. หน้านี้ล็อก AGENTS-SDK-LAB ให้เป็นระบบควบคุม agent ระดับ production: Runtime · Tools · Guardrails · Approvals · Traces · Evals · Evidence · Compaction</p>
+  <div class="hero-grid">
+    <div class="card green"><div class="kicker">SYSTEM IDENTITY</div><h2>Evidence-Gated Agent Runtime</h2><p>ทุก action สำคัญต้องมี decision, trace, และ evidence แยกเป็น plane ชัดเจน ไม่ซ่อนอยู่หลังปุ่ม chat เดียว</p><div class="tag-row"><span class="tag live">LIVE SIGNAL #A3FF12</span><span class="tag ok">APPROVED #22C55E</span><span class="tag blocked">RISK #E11D48</span></div></div>
+    <div class="card rose"><div class="kicker">CONTROL CONTRACT</div><h2>No blind execution</h2><p>Zapier, Remote SDK, GitHub, Deploy, MCP actions ต้องเข้าชั้น guardrail / approval / evidence ก่อนขยายเป็น D1/R2 runtime จริง</p><div class="signal-row"><div class="signal"><span>Planes</span><b class="lime-text">8</b></div><div class="signal"><span>Storage</span><b class="green-text">3</b></div><div class="signal"><span>Risk Gate</span><b class="rose-text">ON</b></div></div></div>
+  </div>
+</section>
+<section class="wrap section" id="planes"><div class="section-title"><h2>Explicit Planes</h2><p>ทุกส่วนต้องเป็น module ที่มองเห็น ตรวจได้ และย้าย runtime ได้ภายหลัง</p></div>
+  <div class="planes">
+    <article class="plane runtime"><code>RUNTIME</code><h3>Runtime Plane</h3><p>เลือก Agents SDK, Responses API, MCP bridge หรือ external operator ตามงาน</p></article>
+    <article class="plane tools"><code>TOOLS</code><h3>Tool Plane</h3><p>catalog ของ tools, Zapier, Remote SDK, MCP, GitHub actions และ endpoint contract</p></article>
+    <article class="plane guardrails"><code>GUARDRAILS</code><h3>Guardrail Plane</h3><p>ตรวจ input, output, tool args, policy, redaction และ risk ก่อน side effect</p></article>
+    <article class="plane approvals"><code>APPROVALS</code><h3>Approval Plane</h3><p>pause action สำคัญให้ owner approve / reject พร้อม state ที่ resume ได้</p></article>
+    <article class="plane traces"><code>TRACES</code><h3>Trace Plane</h3><p>index การรัน: model call, tool call, handoff, guardrail และ interruption</p></article>
+    <article class="plane evals"><code>EVALS</code><h3>Eval Plane</h3><p>grader, datasets, regression checks และ score ของ workflow</p></article>
+    <article class="plane evidence"><code>EVIDENCE</code><h3>Evidence Plane</h3><p>หลักฐาน deploy, logs, screenshots, source bundle และ output archive</p></article>
+    <article class="plane compaction"><code>COMPACTION</code><h3>Compaction Plane</h3><p>สรุป state งานยาว ลด context cost และทำ handoff ข้าม agent</p></article>
+  </div>
+</section>
+<section class="wrap section"><div class="section-title"><h2>Execution Flow</h2><p>จาก intent ไป action จริงโดยไม่ปล่อยให้ agent ยิง side effect แบบมืด</p></div>
+  <div class="flow"><div class="step"><div class="num">01</div><strong>Intent</strong><small>รับคำสั่งจาก owner / app / external agent</small></div><div class="step"><div class="num">02</div><strong>Propose</strong><small>agent เสนอ tool/action และ arguments</small></div><div class="step risk"><div class="num">03</div><strong>Guardrail</strong><small>ตรวจ secret, scope, route, policy, risk</small></div><div class="step risk"><div class="num">04</div><strong>Approval</strong><small>งานเสี่ยงสร้าง approval item ก่อน run</small></div><div class="step safe"><div class="num">05</div><strong>Execute</strong><small>Zapier / MCP / GitHub / Worker run จริง</small></div><div class="step safe"><div class="num">06</div><strong>Evidence</strong><small>เก็บ trace, result, eval, artifact pointer</small></div></div>
+</section>
+<section class="wrap section" id="storage"><div class="section-title"><h2>D1 / R2 / KV Contract</h2><p>สร้าง storage เฉพาะเมื่อรู้ชนิดข้อมูล ไม่เก็บ secret ใน storage เหล่านี้</p></div><div class="two"><div class="pre">D1 tables
+─────────
+approval_requests
+tool_runs
+trace_index
+eval_results
+guardrail_events
+evidence_index
+runtime_sessions
+compaction_summaries</div><div class="pre">R2 buckets / prefixes
+────────────────────
+evidence/traces/
+evidence/logs/
+evidence/source-bundles/
+evidence/screenshots/
+evidence/eval-runs/
+
+KV namespaces
+─────────────
+feature_flags
+tool_availability
+route_status
+provider_labels</div></div></section>
+<section class="wrap section"><div class="section-title"><h2>Palette Lock</h2><p>ดำสนิทเป็นฐาน กุหลาบแดงเป็น risk-control เขียวเป็น approved/live signal</p></div><div class="palette"><div class="swatch" style="--c:#000000"><div class="color"></div><div><b>#000000</b><span>Absolute Black</span></div></div><div class="swatch" style="--c:#0A0A0A"><div class="color"></div><div><b>#0A0A0A</b><span>Raised Surface</span></div></div><div class="swatch" style="--c:#1A1A1A"><div class="color"></div><div><b>#1A1A1A</b><span>Border Grid</span></div></div><div class="swatch" style="--c:#E11D48"><div class="color"></div><div><b>#E11D48</b><span>Rose Risk</span></div></div><div class="swatch" style="--c:#22C55E"><div class="color"></div><div><b>#22C55E</b><span>Control Green</span></div></div><div class="swatch" style="--c:#A3FF12"><div class="color"></div><div><b>#A3FF12</b><span>Live Signal</span></div></div></div></section>
+</main>
+<footer><div class="wrap">AGENTS-SDK-LAB · Production Agent Control Plane · Runtime / Tools / Guardrails / Approvals / Traces / Evals / Evidence / Compaction</div></footer>
+</body>
+</html>

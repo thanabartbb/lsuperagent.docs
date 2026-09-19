@@ -1,8 +1,11 @@
 # Cloudflare Workers Static Assets handles clean HTML URLs automatically.
 # Do not redirect /page -> /page.html because html_handling redirects /page.html -> /page.
+# Route decision 2026-09-19:
+# /control stays owner/dev workspace.
+# /dev/control-plane/ is docs-only public reference and contains no secret/action runtime.
 
 /sdk /examples 301
-/control /admin 301
+/control /dev 301
 /routes /endpoints 301
 /endpoint /endpoints 301
 /secret /secret-handoff 301

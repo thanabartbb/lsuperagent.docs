@@ -2,8 +2,8 @@
 
 AI Framework: **AGENTS-SDK-LAB / lsuperagen.docs**
 
-Last updated: **2026-09-19T16:07:00+07:00 Asia/Bangkok**  
-Last update task: **Create repository-level AI operating contract for ChatGPT + GitHub workflows.**
+Last updated: **2026-09-19T22:53:21+07:00 Asia/Bangkok**
+Last update task: **Clean full-screen chat and on-demand reference UI.**
 
 This repository is the docs/reference and control-surface source for AGENTS-SDK-LAB. It is not a playground for unrelated templates, Firebase experiments, or cross-chat prototype work unless the target path is explicitly declared first.
 
@@ -95,3 +95,12 @@ Two maintenance loops exist conceptually for this repository:
 2. **Prompt Stack Loop** — every 6 hours, update the AI framework layers: pinned stack, feature goal, data contract, acceptance criteria, and negative constraints.
 
 Both loops must write real updates when there is a real state change. If there is no state change, the loop must still update the audit timestamp and say `No material change observed`.
+
+## Public UI contract — clean chat
+
+- `/chat` fills the viewport; no automatic assistant/system message or API request on entry.
+- Navigation and answer modes open on user action. Operational guidance stays outside the conversation.
+- Preserve existing dark/graphite tokens and homepage daily accents. Use the owner-supplied mascot asset.
+- Show actual API output/errors only; never infer secret detection or provider health from static labels.
+- Keep `/api/chat`, auth, `/control -> /dev`, and docs routes intact.
+- Frontend mode selection does not enable additional providers; current chat implementation routes OpenAI only.

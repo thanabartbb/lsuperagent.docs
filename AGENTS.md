@@ -2,8 +2,8 @@
 
 AI Framework: **ChatGPT + GitHub Operating Instructions**
 
-Last updated: **2026-09-19T16:07:00+07:00 Asia/Bangkok**  
-Last update task: **Create agent-level write contract for AGENTS-SDK-LAB repository operations.**
+Last updated: **2026-09-19T22:53:21+07:00 Asia/Bangkok**
+Last update task: **Clean full-screen chat and on-demand reference UI.**
 
 This file is the first file every AI agent must read before modifying this repository. It defines the repo memory boundary, write protocol, data contract discipline, and negative constraints.
 
@@ -171,3 +171,12 @@ prompt_stack_loop:
   last_run_task: Initial five-layer AI framework lock
   required_action: keep_contract_current_and_write_actual_update
 ```
+
+## Public UI contract — clean chat
+
+- `/chat` fills the viewport; no automatic assistant/system message or API request on entry.
+- Navigation and answer modes open on user action. Operational guidance stays outside the conversation.
+- Preserve existing dark/graphite tokens and homepage daily accents. Use the owner-supplied mascot asset.
+- Show actual API output/errors only; never infer secret detection or provider health from static labels.
+- Keep `/api/chat`, auth, `/control -> /dev`, and docs routes intact.
+- Frontend mode selection does not enable additional providers; current chat implementation routes OpenAI only.

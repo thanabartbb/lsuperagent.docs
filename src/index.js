@@ -544,6 +544,8 @@ function publicMobileLinks(page) {
 }
 
 function enhancePublicHtml(html, pathname) {
+  // Refreshed public surfaces own their accessible responsive navigation.
+  if (html.includes('data-responsive-nav="v2"')) return html;
   if (html.includes('data-ls-mobile-menu-fix="v1"')) return html;
   const page = currentPage(pathname);
   const style = `<style data-ls-mobile-menu-fix="v1">

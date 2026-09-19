@@ -2,8 +2,8 @@
 
 AI Framework: **ChatGPT + GitHub Operating Instructions**
 
-Last updated: **2026-09-19T16:07:00+07:00 Asia/Bangkok**  
-Last update task: **Create agent-level write contract for AGENTS-SDK-LAB repository operations.**
+Last updated: **2026-09-20T02:58:01+07:00 Asia/Bangkok**
+Last update task: **Stabilize public HTML delivery with selective Worker-first routing.**
 
 This file is the first file every AI agent must read before modifying this repository. It defines the repo memory boundary, write protocol, data contract discipline, and negative constraints.
 
@@ -29,7 +29,8 @@ repo: thanabartbb/lsuperagent.docs
 site: https://agents-sdk.space
 host: Cloudflare Workers Static Assets
 worker: lsuperagent-docs
-entrypoint: src/index.js
+entrypoint: src/firebase-worker.js -> src/index.js
+asset_routing: public_asset_first; api_auth_and_protected_routes_worker_first
 frontend: static_html_css_js
 primary_runtime_endpoint: /api/chat
 owner_workspace: /dev

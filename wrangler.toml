@@ -1,5 +1,5 @@
 name = "lsuperagent-docs"
-main = "src/index.js"
+main = "src/firebase-worker.js"
 compatibility_date = "2026-09-17"
 
 [assets]

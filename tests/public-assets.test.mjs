@@ -37,6 +37,16 @@ test('public HTML loads the static responsive navigation assets', async () => {
   }
 });
 
+test('homepage uses the locked black, white, and blue color contract', async () => {
+  const html = await read('index.html');
+  assert.match(html, /--bg:#000000;/);
+  assert.match(html, /--text:#FFFFFF;/);
+  assert.match(html, /--accent:#0FA3D9;/);
+  assert.doesNotMatch(html, /data-theme=/);
+  assert.doesNotMatch(html, /new Date\(\)\.getDay\(\)/);
+  assert.match(html, /overflow-x:hidden/);
+});
+
 test('admin and dev routes remain protected when the Worker runs first', async () => {
   const env = { ASSETS: { fetch: async () => new Response('asset') } };
 

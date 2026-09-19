@@ -2,8 +2,8 @@
 
 AI Framework: **AGENTS-SDK-LAB / lsuperagen.docs**
 
-Last updated: **2026-09-20T02:58:01+07:00 Asia/Bangkok**
-Last update task: **Stabilize public HTML delivery with selective Worker-first routing.**
+Last updated: **2026-09-20T03:37:29+07:00 Asia/Bangkok**
+Last update task: **Lock the homepage to black, white, and blue without changing other pages.**
 
 This repository is the docs/reference and control-surface source for AGENTS-SDK-LAB. It is not a playground for unrelated templates, Firebase experiments, or cross-chat prototype work unless the target path is explicitly declared first.
 
@@ -28,7 +28,8 @@ Agents working in this repository must treat this stack as pinned unless the own
 | Control-plane reference | `/dev/control-plane/` |
 | Route decision | `/control` redirects to `/dev` |
 | Database/storage | No D1/R2/KV unless owner approves a data model |
-| Design base | Dark technical, near-black, graphite, petroleum/oxidized accent system |
+| Homepage colors | Background `#000000`, text `#FFFFFF`, interaction/focus `#0FA3D9` |
+| Other page colors | Migrate one reviewed page at a time; do not apply a global redesign implicitly |
 | Deployment rule | Do not claim live/deployed without verifiable evidence |
 
 ### 2. Feature Goal

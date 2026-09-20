@@ -2,8 +2,8 @@
 
 AI Framework: **ChatGPT + GitHub Operating Instructions**
 
-Last updated: **2026-09-19T16:07:00+07:00 Asia/Bangkok**  
-Last update task: **Create agent-level write contract for AGENTS-SDK-LAB repository operations.**
+Last updated: **2026-09-20T03:37:29+07:00 Asia/Bangkok**
+Last update task: **Lock the homepage to black, white, and blue without changing other pages.**
 
 This file is the first file every AI agent must read before modifying this repository. It defines the repo memory boundary, write protocol, data contract discipline, and negative constraints.
 
@@ -29,8 +29,11 @@ repo: thanabartbb/lsuperagent.docs
 site: https://agents-sdk.space
 host: Cloudflare Workers Static Assets
 worker: lsuperagent-docs
-entrypoint: src/index.js
+entrypoint: src/firebase-worker.js -> src/index.js
+asset_routing: public_asset_first; api_auth_and_protected_routes_worker_first
 frontend: static_html_css_js
+homepage_colors: background_#000000; text_#FFFFFF; interaction_#0FA3D9
+color_migration: one_reviewed_page_at_a_time
 primary_runtime_endpoint: /api/chat
 owner_workspace: /dev
 control_reference: /dev/control-plane/

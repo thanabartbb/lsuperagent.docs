@@ -6,4 +6,4 @@ compatibility_date = "2026-09-17"
 directory = "."
 binding = "ASSETS"
 html_handling = "auto-trailing-slash"
-run_worker_first = true
+run_worker_first = ["/api/*", "/auth/*", "/dev", "/dev.html", "/dev/*", "/dev-code-drop", "/dev-code-drop.html", "/admin", "/admin.html", "/admin/*", "/control", "/owner"]

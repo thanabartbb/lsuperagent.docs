@@ -52,18 +52,6 @@ function htmlResponse(body, status = 200, headers = {}) {
   });
 }
 
-function htmlHeaders(response, tag) {
-  const headers = new Headers(response.headers);
-  headers.set('content-type', 'text/html; charset=utf-8');
-  headers.set('x-lsuperagen-control', tag);
-  return headers;
-}
-
-function currentPage(pathname) {
-  if (pathname === '/') return 'index.html';
-  return pathname.replace(/^\//, '').replace(/\/$/, '').replace(/\.html$/, '') + '.html';
-}
-
 function publicOrigin(url, env) {
   try {
     if (typeof env.PUBLIC_SITE_URL === 'string' && env.PUBLIC_SITE_URL.trim()) return new URL(env.PUBLIC_SITE_URL.trim()).origin;
@@ -520,39 +508,6 @@ function plannedEndpoint(pathname) {
   return planned ? json({ ok: false, endpoint: pathname, ...planned, secret_values: false }, pathname.startsWith('/api/image/status') ? 200 : 501, { 'x-lsuperagen-runtime': 'planned-endpoint-v1' }) : null;
 }
 
-function injectHead(html, content) {
-  return /<\/head>/i.test(html) ? html.replace(/<\/head>/i, content + '\n</head>') : content + html;
-}
-
-function injectBody(html, content) {
-  return /<\/body>/i.test(html) ? html.replace(/<\/body>/i, content + '\n</body>') : html + content;
-}
-
-function publicMobileLinks(page) {
-  const items = [
-    ['/', 'Home', 'index.html'],
-    ['/chat', 'Chat', 'chat.html'],
-    ['/login', 'Login', 'login.html'],
-    ['/tools', 'Tools', 'tools.html'],
-    ['/examples', 'Examples', 'examples.html'],
-    ['/getting-started', 'Docs', 'getting-started.html'],
-    ['/api', 'API', 'api.html'],
-    ['/guides', 'Guides', 'guides.html'],
-    ['/changelog', 'Changelog', 'changelog.html']
-  ];
-  return items.map(([href, label, file]) => `<a href="${href}" ${page === file ? 'aria-current="page"' : ''}>${label}<span>→</span></a>`).join('');
-}
-
-function enhancePublicHtml(html, pathname) {
-  if (html.includes('data-ls-mobile-menu-fix="v1"')) return html;
-  const page = currentPage(pathname);
-  const style = `<style data-ls-mobile-menu-fix="v1">
-html,body{max-width:100%;overflow-x:hidden!important}.code,pre,code{max-width:100%}pre{white-space:pre-wrap!important;overflow-wrap:anywhere!important;word-break:break-word}.code{overflow-x:auto!important}main,section,.wrap,.content{max-width:100%}img,svg{max-width:100%;height:auto}.ls-mobile-menu{display:none}.ls-mobile-note{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.68rem;letter-spacing:.12em;color:#7c828c;border-left:2px solid #63b3ff;padding-left:10px;margin-top:4px}.ls-mobile-panel{box-sizing:border-box}.ls-mobile-links a span{color:#7c828c}@media(max-width:899px){.primary-nav,.pnav,.nav,.menu-btn,.mbtn,button[aria-label*="menu"],button[aria-label*="เมนู"]{display:none!important}.site-header,.hdr{position:sticky!important;top:0!important;z-index:500!important}.ls-mobile-menu{display:block;position:fixed;z-index:9999;top:20px;right:28px;color:#f5f7f9;font-family:Inter,"Noto Sans Thai",system-ui,sans-serif}.ls-mobile-menu>summary{list-style:none;width:52px;height:52px;border-radius:14px;border:1px solid #26292f;background:rgba(10,10,11,.96);display:grid;place-items:center;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,.34)}.ls-mobile-menu>summary::-webkit-details-marker{display:none}.ls-mobile-menu[open]::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,.58);backdrop-filter:blur(5px);z-index:-1}.ls-mobile-panel{position:fixed;top:84px;right:16px;left:16px;max-height:calc(100vh - 110px);overflow:auto;border:1px solid #26292f;border-radius:18px;background:linear-gradient(180deg,rgba(18,19,22,.99),rgba(6,6,6,.99));box-shadow:0 22px 70px rgba(0,0,0,.58);padding:14px;display:grid;gap:12px}.ls-mobile-title{font-weight:900;letter-spacing:-.02em}.ls-mobile-sub{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.68rem;color:#7c828c;letter-spacing:.16em}.ls-mobile-links{display:grid;gap:8px}.ls-mobile-links a{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid #1c1e22;border-radius:13px;padding:13px 14px;background:#0a0a0b;color:#a2a7b0;text-decoration:none;font-weight:750}.ls-mobile-links a[aria-current="page"],.ls-mobile-links a:hover{border-color:#63b3ff;background:rgba(99,179,255,.07);color:#f5f7f9}.page-hero{padding-top:40px!important}.page-hero h1{font-size:clamp(2.45rem,13vw,4rem)!important;line-height:1.02!important;overflow-wrap:anywhere}.page-hero p,.lede{overflow-wrap:anywhere}.docs,.content{display:block!important;padding-inline:0!important}.content{min-width:0!important}.content h2{font-size:clamp(1.45rem,8vw,2.1rem)!important}.content p,.content li{overflow-wrap:anywhere}.footer,.site-footer,footer{max-width:100%;overflow:hidden}}
-</style>`;
-  const menu = `<details class="ls-mobile-menu" data-ls-mobile-menu-fix="v1"><summary aria-label="เปิดเมนู"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="ls-mobile-panel" role="navigation" aria-label="Mobile menu"><div><div class="ls-mobile-title">lsuperagen.docs</div><div class="ls-mobile-sub">PUBLIC NAV · MOBILE FIX V1</div></div><nav class="ls-mobile-links">${publicMobileLinks(page)}</nav><div class="ls-mobile-note">Private /dev ไม่อยู่ใน public menu</div></div></details>`;
-  return injectBody(injectHead(html, style), menu);
-}
-
 function isDevOnlyPath(pathname) {
   return pathname === '/dev' || pathname === '/dev.html' || pathname === '/dev-code-drop' || pathname === '/dev-code-drop.html';
 }
@@ -600,10 +555,23 @@ export default {
       if (gate) return gate;
     }
 
-    const response = await fetchAsset(request, env, pathname);
-    if (!(response.headers.get('content-type') || '').includes('text/html')) return response;
-    let html = await response.text();
-    if (!isDevOnlyPath(pathname)) html = enhancePublicHtml(html, pathname);
-    return new Response(html, { status: response.status, headers: htmlHeaders(response, 'owner-google-dev-gate-v1-openai-runtime-v1-mobile-fix-v1') });
+    try {
+      return await fetchAsset(request, env, pathname);
+    } catch (error) {
+      const requestId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+      console.error(JSON.stringify({
+        event: 'asset_fetch_failed',
+        request_id: requestId,
+        pathname,
+        cf_ray: request.headers.get('cf-ray') || null,
+        error_name: error instanceof Error ? error.name : 'Error',
+        error_message: error instanceof Error ? error.message : String(error),
+      }));
+      return htmlResponse('Temporary asset error. Request ID: ' + requestId, 503, {
+        'retry-after': '5',
+        'x-lsuperagen-request-id': requestId,
+        'x-lsuperagen-runtime': 'asset-fetch-failed',
+      });
+    }
   }
 };

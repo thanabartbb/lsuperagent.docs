@@ -2,8 +2,8 @@
 
 AI Framework: **AGENTS-SDK-LAB / lsuperagen.docs**
 
-Last updated: **2026-09-19T16:07:00+07:00 Asia/Bangkok**  
-Last update task: **Create repository-level AI operating contract for ChatGPT + GitHub workflows.**
+Last updated: **2026-09-20T03:37:29+07:00 Asia/Bangkok**
+Last update task: **Lock the homepage to black, white, and blue without changing other pages.**
 
 This repository is the docs/reference and control-surface source for AGENTS-SDK-LAB. It is not a playground for unrelated templates, Firebase experiments, or cross-chat prototype work unless the target path is explicitly declared first.
 
@@ -19,7 +19,8 @@ Agents working in this repository must treat this stack as pinned unless the own
 | Public target | `https://agents-sdk.space` |
 | Runtime host | Cloudflare Workers Static Assets |
 | Worker name | `lsuperagent-docs` |
-| Worker entry | `src/index.js` |
+| Worker entry | `src/firebase-worker.js` delegating to `src/index.js` |
+| Asset routing | Public files are asset-first; `/api/*`, `/auth/*`, and protected control routes are Worker-first |
 | Frontend surface | Static HTML/CSS/JS files |
 | Primary runtime endpoint | `POST /api/chat` |
 | Auth surfaces | GitHub OAuth, Google OAuth, Owner Google Dev Gate |
@@ -27,7 +28,8 @@ Agents working in this repository must treat this stack as pinned unless the own
 | Control-plane reference | `/dev/control-plane/` |
 | Route decision | `/control` redirects to `/dev` |
 | Database/storage | No D1/R2/KV unless owner approves a data model |
-| Design base | Dark technical, near-black, graphite, petroleum/oxidized accent system |
+| Homepage colors | Background `#000000`, text `#FFFFFF`, interaction/focus `#0FA3D9` |
+| Other page colors | Migrate one reviewed page at a time; do not apply a global redesign implicitly |
 | Deployment rule | Do not claim live/deployed without verifiable evidence |
 
 ### 2. Feature Goal
@@ -44,7 +46,7 @@ Every feature or page must declare its data contract before implementation.
 | `status` | string | API response, docs state, or route contract | Must be one of `docs`, `planned`, `ready`, `live`, `blocked`, `retired`. |
 | `last_updated_at` | ISO datetime | manual update or automation update | Must include timezone when written by an agent. |
 | `last_update_task` | string | agent-written update log | Must state the concrete task performed. |
-| `route` | string | `src/index.js`, `_redirects`, or static link | Must match the actual route used in the repo. |
+| `route` | string | `src/firebase-worker.js`, `src/index.js`, `_redirects`, or static link | Must match the actual route used in the repo. |
 | `source_path` | string | repository path | Must point to the file being described. |
 | `evidence` | string | commit SHA, file path, route, or observed result | Must not be invented. |
 | `secret_values_exposed` | boolean | API response/docs statement | Must be `false` for any public or docs-only surface. |

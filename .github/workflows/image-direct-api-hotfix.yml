@@ -85,6 +85,32 @@ jobs:
           if old not in tests:
               raise SystemExit('expected image assertions not found')
           test_path.write_text(tests.replace(old, new, 1))
+
+          runtime_path = Path('tests/worker-runtime.test.mjs')
+          runtime = runtime_path.read_text()
+          runtime_replacement = r'''test('image route calls the Images API and returns downloadable base64 image data', async () => {
+            const encoded = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB';
+            await withFetchStub(async (url, init) => {
+              assert.equal(String(url), 'https://api.openai.com/v1/images/generations');
+              const payload = JSON.parse(init.body);
+              assert.equal(payload.model, 'gpt-image-2.5-flare');
+              assert.equal(payload.prompt, 'วาดแมวดำ');
+              return jsonResponse({ data: [{ b64_json: encoded, revised_prompt: 'revised' }] });
+            }, async () => {
+              const response = await worker.fetch(request('/api/image', { prompt: 'วาดแมวดำ' }), { OPENAI_API_KEY: 'test-key' });
+              assert.equal(response.status, 200);
+              const body = await response.json();
+              assert.equal(body.image.mime_type, 'image/png');
+              assert.equal(body.image.data_base64, encoded);
+              assert.match(body.image.filename, /\.png$/);
+            });
+          });
+
+          test('large code input'''
+          runtime_updated, runtime_count = re.subn(r"test\('image route forces image_generation[\s\S]*?\n\}\);\n\ntest\('large code input", runtime_replacement, runtime, count=1)
+          if runtime_count != 1:
+              raise SystemExit(f'expected one image runtime test, replaced {runtime_count}')
+          runtime_path.write_text(runtime_updated)
           PY
       - name: Verify before commit
         run: |
@@ -94,7 +120,7 @@ jobs:
         run: |
           git config user.name 'THNB SMK'
           git config user.email '326990420+thanabartbb@users.noreply.github.com'
-          git add src/index.js tests/public-product.test.mjs
+          git add src/index.js tests/public-product.test.mjs tests/worker-runtime.test.mjs
           git rm .github/workflows/image-direct-api-hotfix.yml
           git commit -m 'fix: generate images through the Images API'
           git push

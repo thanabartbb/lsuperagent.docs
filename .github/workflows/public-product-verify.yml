@@ -1,0 +1,30 @@
+name: Public Product Verify
+
+on:
+  push:
+    branches:
+      - audit/public-ai-workspace
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Worker syntax
+        run: node --check src/index.js
+      - name: Browser script syntax
+        run: |
+          node --check firebase-auth.js
+          node --check src/firebase-worker.js
+      - name: Tests
+        run: node --test tests/*.test.mjs

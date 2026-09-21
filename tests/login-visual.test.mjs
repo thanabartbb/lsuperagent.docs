@@ -10,11 +10,19 @@ function visibleHtml(html) {
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
 }
 
+function visibleText(html) {
+  return visibleHtml(html)
+    .replace(/<[^>]+>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 test('login matches the locked lsuperagen.docs mobile-first spec', async () => {
   const html = await read('login.html');
   const visible = visibleHtml(html);
+  const text = visibleText(html);
 
-  for (const text of [
+  for (const copy of [
     'lsuperagen.docs',
     'YOUR AI WORKSPACE',
     'เริ่มต้นใช้งาน',
@@ -31,7 +39,7 @@ test('login matches the locked lsuperagen.docs mobile-first spec', async () => {
     'ยังไม่มีบัญชีใช่ไหม?',
     'สมัครใช้งาน',
   ]) {
-    assert.equal(visible.includes(text), true, `missing locked login copy: ${text}`);
+    assert.equal(text.includes(copy), true, `missing locked login copy: ${copy}`);
   }
 
   assert.match(html, /name=["']email["']/i);

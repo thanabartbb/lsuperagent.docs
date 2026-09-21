@@ -3,8 +3,8 @@ name: Public Product Verify
 on:
   push:
     branches:
-      - audit/public-ai-workspace
       - main
+      - 'audit/**'
   pull_request:
     branches:
       - main
@@ -45,3 +45,20 @@ jobs:
           node-version: '22'
       - name: Wait for production and exercise public user flows
         run: node scripts/live-smoke.mjs
+
+  browser-smoke:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[browser-smoke]')
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright test runner
+        run: npm install --no-save --no-package-lock @playwright/test@latest
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Exercise desktop flows and mobile layout
+        run: npx playwright test browser-tests/product.spec.mjs --reporter=line --workers=1

@@ -29,7 +29,10 @@ async function post(path, body, timeout = 90000) {
     signal: AbortSignal.timeout(timeout),
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(`${path} HTTP ${response.status}: ${data.status || 'error'} ${data.message || ''}`.trim());
+  if (!response.ok) {
+    const classification = [data.error_code, data.error_type, data.provider_status].filter((value) => value !== null && value !== undefined && value !== '').join('/');
+    throw new Error(`${path} HTTP ${response.status}: ${data.status || 'error'} ${data.message || ''}${classification ? ` [${classification}]` : ''}`.trim());
+  }
   return data;
 }
 

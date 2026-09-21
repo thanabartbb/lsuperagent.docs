@@ -567,7 +567,7 @@ async function handleImage(request, env) {
   if (!env.OPENAI_API_KEY) return json({ ok: false, status: 'service_unavailable', message: 'บริการสร้างภาพยังไม่พร้อมใช้งานในขณะนี้' }, 503, baseHeaders);
 
   const requestId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
-  const models = ['gpt-image-2.5-flare', 'gpt-image-2'];
+  const models = ['gpt-image-2', 'gpt-image-1.5', 'gpt-image-1', 'gpt-image-1-mini'];
   let lastData = {};
   let lastStatus = 502;
   for (const model of models) {
@@ -589,7 +589,10 @@ async function handleImage(request, env) {
     }
     lastData = data;
     lastStatus = response.status;
-    if (response.status === 401 || response.status === 403 || response.status === 429) break;
+    const providerCode = data && data.error && data.error.code ? String(data.error.code) : '';
+    const providerMessage = data && data.error && data.error.message ? String(data.error.message) : '';
+    const modelUnavailable = /model_not_found|invalid model|model .* not found|does not have access/i.test(providerCode + ' ' + providerMessage);
+    if (response.status === 401 || response.status === 429 || (response.status >= 400 && response.status < 500 && !modelUnavailable)) break;
   }
   return json({
     ok: false,

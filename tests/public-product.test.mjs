@@ -52,7 +52,7 @@ test('worker enables real web research and URL reading with returned sources', a
 test('worker enables real image generation instead of planned prompt-only image mode', async () => {
   const source = await read('src/index.js');
   assert.match(source, /\/v1\/images\/generations/);
-  assert.match(source, /gpt-image-2\.5-flare/);
+  assert.match(source, /gpt-image-2/);
   assert.match(source, /b64_json/);
   assert.equal(source.includes("'/api/image': { status: 'planned'"), false);
 });

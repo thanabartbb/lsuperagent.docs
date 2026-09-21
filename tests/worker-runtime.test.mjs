@@ -75,13 +75,19 @@ test('read URL uses the same forced web_search contract', async () => {
   });
 });
 
-test('image route calls the Images API and returns downloadable base64 image data', async () => {
+test('image route uses current GPT Image models and falls back after model_not_found', async () => {
   const encoded = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB';
+  let calls = 0;
   await withFetchStub(async (url, init) => {
     assert.equal(String(url), 'https://api.openai.com/v1/images/generations');
     const payload = JSON.parse(init.body);
-    assert.equal(payload.model, 'gpt-image-2.5-flare');
-    assert.equal(payload.prompt, 'วาดแมวดำ');
+    calls += 1;
+    if (calls === 1) {
+      assert.equal(payload.model, 'gpt-image-2');
+      assert.equal(payload.prompt, 'วาดแมวดำ');
+      return jsonResponse({ error: { code: 'model_not_found', type: 'invalid_request_error' } }, 403);
+    }
+    assert.equal(payload.model, 'gpt-image-1.5');
     return jsonResponse({ data: [{ b64_json: encoded, revised_prompt: 'revised' }] });
   }, async () => {
     const response = await worker.fetch(request('/api/image', { prompt: 'วาดแมวดำ' }), { OPENAI_API_KEY: 'test-key' });
@@ -90,6 +96,7 @@ test('image route calls the Images API and returns downloadable base64 image dat
     assert.equal(body.image.mime_type, 'image/png');
     assert.equal(body.image.data_base64, encoded);
     assert.match(body.image.filename, /\.png$/);
+    assert.equal(calls, 2);
   });
 });
 

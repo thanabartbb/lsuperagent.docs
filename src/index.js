@@ -565,27 +565,41 @@ async function handleImage(request, env) {
   const baseHeaders = rateLimitHeaders(rate);
   if (rate.limited) return json({ ok: false, status: 'rate_limited', message: 'ส่งคำขอถี่เกินไป กรุณารอสักครู่แล้วลองอีกครั้ง' }, 429, baseHeaders);
   if (!env.OPENAI_API_KEY) return json({ ok: false, status: 'service_unavailable', message: 'บริการสร้างภาพยังไม่พร้อมใช้งานในขณะนี้' }, 503, baseHeaders);
+
   const requestId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
-  const response = await fetch('https://api.openai.com/v1/responses', {
-    method: 'POST',
-    headers: { authorization: 'Bearer ' + env.OPENAI_API_KEY, 'content-type': 'application/json', 'x-client-request-id': requestId },
-    body: JSON.stringify({
-      model: 'gpt-6-astra',
-      input: prompt,
-      tools: [{ type: 'image_generation' }],
-      tool_choice: { type: 'image_generation' },
-      store: false,
-      metadata: { app: 'lsuperagen.docs', surface: 'public-workspace', tool: 'image' }
-    })
-  }).catch(() => null);
-  if (!response) return json({ ok: false, status: 'service_error', message: 'เชื่อมต่อบริการสร้างภาพไม่สำเร็จ กรุณาลองใหม่' }, 502, baseHeaders);
-  const raw = await response.text();
-  let data = {};
-  try { data = raw ? JSON.parse(raw) : {}; } catch (_) { data = {}; }
-  if (!response.ok) return json({ ok: false, status: 'service_error', message: response.status === 429 ? 'บริการสร้างภาพถูกใช้งานหนาแน่น กรุณาลองใหม่อีกครั้ง' : 'ไม่สามารถสร้างภาพจากคำขอนี้ได้ กรุณาลองปรับคำอธิบาย', error_code: data && data.error && data.error.code ? String(data.error.code).slice(0, 80) : null, error_type: data && data.error && data.error.type ? String(data.error.type).slice(0, 80) : null, provider_status: response.status }, response.status === 429 ? 429 : 502, baseHeaders);
-  const image = extractGeneratedImage(data);
-  if (!image) return json({ ok: false, status: 'empty_result', message: 'บริการสร้างภาพไม่ได้ส่งไฟล์ภาพกลับมา กรุณาลองใหม่' }, 502, baseHeaders);
-  return json({ ok: true, status: 'completed', image: { mime_type: 'image/png', data_base64: image.data_base64, filename: 'lsuperagen-image.png', revised_prompt: image.revised_prompt } }, 200, baseHeaders);
+  const models = ['gpt-image-2.5-flare', 'gpt-image-2'];
+  let lastData = {};
+  let lastStatus = 502;
+  for (const model of models) {
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: { authorization: 'Bearer ' + env.OPENAI_API_KEY, 'content-type': 'application/json', 'x-client-request-id': requestId },
+      body: JSON.stringify({ model, prompt })
+    }).catch(() => null);
+    if (!response) return json({ ok: false, status: 'service_error', message: 'เชื่อมต่อบริการสร้างภาพไม่สำเร็จ กรุณาลองใหม่' }, 502, baseHeaders);
+
+    const raw = await response.text();
+    let data = {};
+    try { data = raw ? JSON.parse(raw) : {}; } catch (_) { data = {}; }
+    if (response.ok) {
+      const item = Array.isArray(data.data) ? data.data[0] : null;
+      const imageBase64 = item && typeof item.b64_json === 'string' ? item.b64_json : '';
+      if (!imageBase64) return json({ ok: false, status: 'empty_result', message: 'บริการสร้างภาพไม่ได้ส่งไฟล์ภาพกลับมา กรุณาลองใหม่' }, 502, baseHeaders);
+      return json({ ok: true, status: 'completed', image: { mime_type: 'image/png', data_base64: imageBase64, filename: 'lsuperagen-image.png', revised_prompt: item && typeof item.revised_prompt === 'string' ? item.revised_prompt : null } }, 200, baseHeaders);
+    }
+    lastData = data;
+    lastStatus = response.status;
+    if (response.status === 401 || response.status === 403 || response.status === 429) break;
+  }
+  return json({
+    ok: false,
+    status: 'service_error',
+    message: lastStatus === 429 ? 'บริการสร้างภาพถูกใช้งานหนาแน่น กรุณาลองใหม่อีกครั้ง' : 'ไม่สามารถสร้างภาพจากคำขอนี้ได้ กรุณาลองปรับคำอธิบาย',
+    error_code: lastData && lastData.error && lastData.error.code ? String(lastData.error.code).slice(0, 80) : null,
+    error_type: lastData && lastData.error && lastData.error.type ? String(lastData.error.type).slice(0, 80) : null,
+    error_param: lastData && lastData.error && lastData.error.param ? String(lastData.error.param).slice(0, 80) : null,
+    provider_status: lastStatus
+  }, lastStatus === 429 ? 429 : 502, baseHeaders);
 }
 
 function plannedEndpoint(pathname) {

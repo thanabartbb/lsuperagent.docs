@@ -75,14 +75,14 @@ test('read URL uses the same forced web_search contract', async () => {
   });
 });
 
-test('image route forces image_generation and returns downloadable base64 image data', async () => {
+test('image route calls the Images API and returns downloadable base64 image data', async () => {
   const encoded = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB';
-  await withFetchStub(async (_url, init) => {
+  await withFetchStub(async (url, init) => {
+    assert.equal(String(url), 'https://api.openai.com/v1/images/generations');
     const payload = JSON.parse(init.body);
-    assert.equal(payload.model, 'gpt-6-astra');
-    assert.equal(payload.tools?.[0]?.type, 'image_generation');
-    assert.equal(payload.tool_choice?.type, 'image_generation');
-    return jsonResponse({ output: [{ type: 'image_generation_call', result: encoded, revised_prompt: 'revised' }] });
+    assert.equal(payload.model, 'gpt-image-2.5-flare');
+    assert.equal(payload.prompt, 'วาดแมวดำ');
+    return jsonResponse({ data: [{ b64_json: encoded, revised_prompt: 'revised' }] });
   }, async () => {
     const response = await worker.fetch(request('/api/image', { prompt: 'วาดแมวดำ' }), { OPENAI_API_KEY: 'test-key' });
     assert.equal(response.status, 200);

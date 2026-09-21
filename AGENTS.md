@@ -1,9 +1,9 @@
 # AGENTS.md
 
-AI Framework: **ChatGPT + GitHub Operating Instructions**
+AI Framework: **LSUPERAGENT Public Workspace Operating Instructions**
 
-Last updated: **2026-09-19T16:07:00+07:00 Asia/Bangkok**  
-Last update task: **Create agent-level write contract for AGENTS-SDK-LAB repository operations.**
+Last updated: **2026-09-21T14:15:54+07:00 Asia/Bangkok**
+Last update task: **Require Google or GitHub sign-in before public AI Workspace access.**
 
 This file is the first file every AI agent must read before modifying this repository. It defines the repo memory boundary, write protocol, data contract discipline, and negative constraints.
 
@@ -29,7 +29,7 @@ repo: thanabartbb/lsuperagent.docs
 site: https://agents-sdk.space
 host: Cloudflare Workers Static Assets
 worker: lsuperagent-docs
-entrypoint: src/index.js
+entrypoint: src/firebase-worker.js -> src/index.js
 frontend: static_html_css_js
 primary_runtime_endpoint: /api/chat
 owner_workspace: /dev
@@ -46,6 +46,8 @@ forbidden_without_approval:
   - new Railway migration
   - unrelated markdown template overwrite
 ```
+
+Public route policy: `/` opens `/login` without a valid signed session; `/chat`, `/tools`, `/api/chat`, and `/api/image` require that session. The login page may offer only Google OAuth and GitHub OAuth—no guest path or duplicate registration path.
 
 ## Feature Goal Template
 
@@ -157,8 +159,8 @@ repo_contract_loop:
   target_files:
     - README.md
     - AGENTS.md
-  last_run_at: 2026-09-21T07:18:51+07:00
-  last_run_task: Record standing owner authorization for validated automatic commits
+  last_run_at: 2026-09-21T14:15:54+07:00
+  last_run_task: Require Google or GitHub sign-in before public AI Workspace access
   required_action: write_real_timestamp_and_task_summary
 
 prompt_stack_loop:
@@ -169,7 +171,7 @@ prompt_stack_loop:
     - Data Contract Template
     - Acceptance Criteria Template
     - Negative Constraints
-  last_run_at: 2026-09-19T16:07:00+07:00
-  last_run_task: Initial five-layer AI framework lock
+  last_run_at: 2026-09-21T14:15:54+07:00
+  last_run_task: Replace the public-entry contract with account-first access
   required_action: keep_contract_current_and_write_actual_update
 ```

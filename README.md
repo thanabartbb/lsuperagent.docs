@@ -1,11 +1,11 @@
-# lsuperagent.docs
+# LSUPERAGENT
 
-AI Framework: **AGENTS-SDK-LAB / lsuperagen.docs**
+AI Framework: **LSUPERAGENT public AI workspace**
 
-Last updated: **2026-09-19T16:07:00+07:00 Asia/Bangkok**  
-Last update task: **Create repository-level AI operating contract for ChatGPT + GitHub workflows.**
+Last updated: **2026-09-21T14:15:54+07:00 Asia/Bangkok**
+Last update task: **Make Google/GitHub sign-in the required public entry to the AI Workspace.**
 
-This repository is the docs/reference and control-surface source for AGENTS-SDK-LAB. It is not a playground for unrelated templates, Firebase experiments, or cross-chat prototype work unless the target path is explicitly declared first.
+This repository powers the public LSUPERAGENT AI Workspace. Users sign in with Google or GitHub before they can use chat, code, research, URL reading, or image generation.
 
 ## AI Framework Contract
 
@@ -19,10 +19,10 @@ Agents working in this repository must treat this stack as pinned unless the own
 | Public target | `https://agents-sdk.space` |
 | Runtime host | Cloudflare Workers Static Assets |
 | Worker name | `lsuperagent-docs` |
-| Worker entry | `src/index.js` |
+| Worker entry | `src/firebase-worker.js` → `src/index.js` |
 | Frontend surface | Static HTML/CSS/JS files |
 | Primary runtime endpoint | `POST /api/chat` |
-| Auth surfaces | GitHub OAuth, Google OAuth, Owner Google Dev Gate |
+| Auth surfaces | Google OAuth, GitHub OAuth, signed user session, Owner Google Dev Gate |
 | Owner workspace | `/dev` |
 | Control-plane reference | `/dev/control-plane/` |
 | Route decision | `/control` redirects to `/dev` |
@@ -32,7 +32,7 @@ Agents working in this repository must treat this stack as pinned unless the own
 
 ### 2. Feature Goal
 
-Build and maintain a real docs/reference control surface that helps the owner inspect, document, and safely evolve AGENTS-SDK-LAB without fake runtime claims or accidental cross-project writes.
+Build a public AI Workspace so signed-in Google or GitHub users can safely use real AI capabilities without an anonymous access path.
 
 ### 3. Data Contract
 
@@ -48,6 +48,8 @@ Every feature or page must declare its data contract before implementation.
 | `source_path` | string | repository path | Must point to the file being described. |
 | `evidence` | string | commit SHA, file path, route, or observed result | Must not be invented. |
 | `secret_values_exposed` | boolean | API response/docs statement | Must be `false` for any public or docs-only surface. |
+| `authenticated` | boolean | signed session cookie verification | Must be `true` before `/chat`, `/tools`, `/api/chat`, or `/api/image` are available. |
+| `return_to` | relative path | login query/state | Must remain an internal, safe path and defaults to `/chat`. |
 
 Mock fixtures are allowed only when named as fixtures. Placeholder content must not be presented as live functionality.
 
@@ -64,6 +66,8 @@ And no secret, token, OAuth client secret, API key, signed URL, or private crede
 And no unrelated framework is introduced without owner approval
 And no page claims "coming soon" as a substitute for a real state
 And no page claims live production behavior unless verified
+And anonymous users are redirected from the workspace to `/login`
+And only Google and GitHub are offered on the public login surface
 And /control remains aligned with the route policy
 And /dev remains owner workspace
 And /dev/control-plane/ remains docs/reference unless explicitly changed

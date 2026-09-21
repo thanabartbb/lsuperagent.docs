@@ -1,26 +1,48 @@
 <!doctype html>
 <html lang="th">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>เข้าสู่ระบบ — lsuperagen.docs</title>
-<meta name="description" content="เข้าสู่ระบบ lsuperagen.docs"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-<style>
-:root{--bg:#060606;--panel:#0d0e10;--panel2:#121316;--line:#1c1e22;--line2:#26292f;--line3:#33373f;--fg:#f5f7f9;--fg2:#a2a7b0;--fg3:#7c828c;--acc:#8ec6ff;--gut:clamp(22px,5vw,46px);--sans:"Inter","Noto Sans Thai",system-ui,sans-serif}*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.6;overflow-x:hidden}a{color:inherit;text-decoration:none}.thai,:lang(th){font-family:"Noto Sans Thai","Inter",system-ui,sans-serif}.bp{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(140,150,165,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(140,150,165,.07) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse 90% 62% at 50% 0,#000 30%,transparent 100%)}.orb{position:fixed;top:-260px;right:-180px;width:620px;height:620px;border-radius:50%;background:radial-gradient(circle,rgba(99,179,255,.14),rgba(99,179,255,0) 62%);pointer-events:none}.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding-inline:var(--gut)}.hdr{position:sticky;top:0;z-index:10;border-bottom:1px solid var(--line);background:rgba(6,6,6,.86);backdrop-filter:blur(16px)}.hdrin{height:72px;display:flex;align-items:center;gap:14px}.brand{display:flex;align-items:center;gap:12px;font-size:1.18rem;font-weight:900;letter-spacing:-.04em}.brand span{color:var(--fg3);font-weight:750}.mark{width:46px;height:46px;border:1px solid var(--line3);border-radius:15px;background:linear-gradient(180deg,#121316,#0a0a0b);display:grid;place-items:center;font-weight:900}.nav{margin-left:auto;display:none;gap:6px}.nav a{padding:8px 12px;border-radius:10px;color:var(--fg2);font-size:.92rem}.nav a:hover,.nav a.cur{background:var(--panel2);color:var(--fg)}.menu{margin-left:auto;width:54px;height:54px;border:1px solid var(--line2);border-radius:16px;background:rgba(10,10,11,.92);display:grid;place-items:center}.menu span,.menu span:before,.menu span:after{display:block;width:20px;height:2px;background:#fff;border-radius:2px;content:""}.menu span:before{transform:translateY(-7px)}.menu span:after{transform:translateY(5px)}@media(min-width:860px){.nav{display:flex}.menu{display:none}}
-.hero{padding:clamp(44px,8vw,92px) 0 16px}.ey{font-size:.75rem;letter-spacing:.28em;color:var(--fg3);text-transform:uppercase}.ey b{color:var(--acc)}h1{margin:14px 0 0;font-size:clamp(2.55rem,11vw,5.1rem);line-height:.98;letter-spacing:-.06em}.lede{margin:16px 0 0;max-width:660px;color:var(--fg2);font-size:clamp(1rem,3.4vw,1.22rem)}.shell{padding:18px 0 80px;max-width:680px}.panel{border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(18,19,22,.74),rgba(7,7,8,.92));padding:clamp(20px,4vw,30px);box-shadow:0 24px 70px rgba(0,0,0,.26)}.panel h2{margin:0 0 6px;font-size:clamp(1.7rem,6vw,2.35rem);letter-spacing:-.045em}.panel p{margin:0;color:var(--fg2)}.actions{display:grid;gap:12px;margin-top:26px}.btn{min-height:62px;border:1px solid var(--line2);border-radius:16px;background:rgba(10,10,11,.72);color:var(--fg);display:flex;align-items:center;justify-content:center;gap:12px;font-weight:850;font-size:1.06rem}.btn:hover{border-color:rgba(142,198,255,.54);background:rgba(142,198,255,.07)}.btn.primary{background:#fff;color:#060606;border-color:#fff}.btn.secondary{color:var(--fg2)}.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}.small{margin-top:18px;text-align:center;color:var(--fg2)}.small a{color:var(--acc)}.foot{position:relative;z-index:1;border-top:1px solid var(--line);padding:22px 0 42px;color:var(--fg3);font-size:.72rem;letter-spacing:.12em}@media(max-width:560px){.brand{font-size:1.55rem}.mark{width:52px;height:52px}.split{grid-template-columns:1fr}.panel{border-radius:20px}.hero{padding-top:42px}h1{font-size:clamp(3rem,15vw,4rem)}}
-</style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>เข้าสู่ระบบ | LSUPERAGENT</title>
+  <meta name="description" content="เข้าสู่ LSUPERAGENT ด้วยบัญชี Google หรือ GitHub"/>
+  <style>
+    :root { --bg:#000; --panel:#0b0b0b; --line:#292929; --text:#fff; --muted:#a9a9a9; --accent:#0fa3d9; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; padding:24px; background:radial-gradient(circle at 50% -10%,#082331 0,transparent 34%),var(--bg); color:var(--text); font-family:Inter,"Noto Sans Thai",system-ui,sans-serif; }
+    main { width:min(100%,460px); }
+    .brand { display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:34px; font-weight:800; letter-spacing:-.03em; font-size:1.05rem; }
+    .mark { display:grid; place-items:center; width:34px; height:34px; border-radius:9px; background:var(--accent); color:#00111a; font-size:.78rem; }
+    .card { border:1px solid var(--line); border-radius:20px; background:rgba(11,11,11,.92); padding:clamp(26px,7vw,38px); box-shadow:0 24px 70px rgba(0,0,0,.45); }
+    h1 { margin:0; text-align:center; font-size:clamp(1.75rem,7vw,2.2rem); letter-spacing:-.045em; }
+    p { margin:12px 0 0; color:var(--muted); text-align:center; line-height:1.65; }
+    .actions { display:grid; gap:12px; margin-top:30px; }
+    .provider { min-height:56px; display:flex; align-items:center; justify-content:center; gap:12px; border:1px solid #3a3a3a; border-radius:12px; background:#151515; color:#fff; text-decoration:none; font-weight:700; transition:border-color .16s,background .16s; }
+    .provider:hover,.provider:focus-visible { border-color:var(--accent); background:#1a1a1a; outline:none; }
+    .provider[aria-busy="true"] { opacity:.7; pointer-events:none; }
+    .icon { width:21px; height:21px; display:grid; place-items:center; font-weight:900; }
+    .github { font-size:22px; line-height:1; }
+    .notice { min-height:22px; margin-top:18px; color:#ffb4b4; font-size:.86rem; text-align:center; }
+    .terms { margin-top:25px; font-size:.78rem; color:#777; }
+  </style>
 </head>
-<body data-ls-login-auth="v2">
-<div class="bp" aria-hidden="true"></div><div class="orb" aria-hidden="true"></div>
-<header class="hdr"><div class="wrap hdrin"><a class="brand" href="index.html"><div class="mark">LS</div><div>lsuperagen<span>.docs</span></div></a><nav class="nav" aria-label="เมนูหลัก"><a href="index.html">Home</a><a href="chat.html">Chat</a><a href="tools.html">Tools</a><a class="cur" href="login.html">Login</a><a href="signup.html">Register</a></nav><a class="menu" href="index.html" aria-label="เมนู"><span></span></a></div></header>
-<main>
-<section class="hero"><div class="wrap"><div class="ey">THE DEVELOPER'S AI WORKSPACE</div><h1 class="thai">เข้าสู่ระบบ</h1><p class="lede thai">เลือกวิธีเข้าใช้งานแบบง่าย ๆ ไม่มีสถานะหลังบ้าน ไม่มี diagnostics และไม่มีข้อมูลเจ้าของระบบบนหน้าสาธารณะ</p></div></section>
-<section class="wrap shell" aria-label="Public login"><div class="panel"><h2 class="thai">เลือกทางเข้า</h2><p class="thai">ใช้บัญชีที่สะดวก หรือเข้าแบบ Guest เพื่อทดลองแชทก่อน</p><div class="actions"><div class="split"><a class="btn" href="/auth/google" data-firebase-provider="google"><b>G</b><span>Google</span></a><a class="btn" href="/auth/github" data-firebase-provider="github"><b>●</b><span>GitHub</span></a></div><a class="btn primary thai" href="chat.html">เข้าแบบ Guest เพื่อทดลองแชท</a><a class="btn secondary thai" href="signup.html">ลงทะเบียนแพลตฟอร์ม</a></div><div class="small thai"><a href="index.html">กลับหน้าแรก</a></div></div></section>
-</main>
-<footer class="foot"><div class="wrap">LSUPERAGEN.DOCS · PUBLIC LOGIN</div></footer>
-<script type="module" src="/firebase-auth.js"></script>
+<body data-ls-login-auth="v3">
+  <main>
+    <div class="brand" aria-label="LSUPERAGENT"><span class="mark">LS</span><span>LSUPERAGENT</span></div>
+    <section class="card" aria-labelledby="login-title">
+      <h1 id="login-title">เข้าสู่ AI Workspace</h1>
+      <p>เลือกบัญชีที่ต้องการใช้เพื่อเริ่มสนทนา เขียนโค้ด ค้นคว้า และสร้างภาพ</p>
+      <div class="actions">
+        <a class="provider" href="/auth/google" data-firebase-provider="google"><span class="icon" aria-hidden="true">G</span><span>Continue with Google</span></a>
+        <a class="provider" href="/auth/github" data-firebase-provider="github"><span class="icon github" aria-hidden="true">●</span><span>Continue with GitHub</span></a>
+      </div>
+      <div class="notice" id="auth-notice" role="status"></div>
+      <p class="terms">การเข้าสู่ระบบหมายถึงคุณยอมรับการใช้งานอย่างรับผิดชอบ</p>
+    </section>
+  </main>
+  <script>
+    const error = new URLSearchParams(location.search).get('auth_error');
+    if (error) document.getElementById('auth-notice').textContent = 'ไม่สามารถเข้าสู่ระบบได้ กรุณาลองอีกครั้ง';
+  </script>
+  <script type="module" src="/firebase-auth.js"></script>
 </body>
 </html>

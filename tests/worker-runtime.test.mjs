@@ -12,10 +12,23 @@ async function withFetchStub(stub, fn) {
   try { return await fn(); } finally { globalThis.fetch = original; }
 }
 
-function request(path, body) {
+const SESSION_SECRET = 'test-session-secret';
+
+function b64url(value) {
+  return btoa(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+async function sessionCookie() {
+  const body = b64url(JSON.stringify({ typ: 'auth_session', iat: 1, exp: Math.floor(Date.now() / 1000) + 3600, provider: 'google', id: 'test-user', email: 'test@example.com', name: 'Test user' }));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(SESSION_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const signature = b64url(String.fromCharCode(...new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(body)))));
+  return `lsuperagen_trial_session=${encodeURIComponent(`${body}.${signature}`)}`;
+}
+
+async function request(path, body) {
   return new Request(`https://agents-sdk.space${path}`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.10' },
+    headers: { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.10', cookie: await sessionCookie() },
     body: JSON.stringify(body)
   });
 }
@@ -28,7 +41,7 @@ test('chat route sends a real Responses request and exposes only user-safe resul
     assert.equal(payload.tools, undefined);
     return jsonResponse({ id: 'resp_test', output_text: 'สวัสดี', usage: { total_tokens: 2 } });
   }, async () => {
-    const response = await worker.fetch(request('/api/chat', { message: 'hello', mode: 'chat' }), { OPENAI_API_KEY: 'test-key' });
+    const response = await worker.fetch(await request('/api/chat', { message: 'hello', mode: 'chat' }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
     assert.equal(response.status, 200);
     const body = await response.json();
     assert.equal(body.ok, true);
@@ -52,7 +65,7 @@ test('research forces web_search and returns normalized sources', async () => {
       ]
     });
   }, async () => {
-    const response = await worker.fetch(request('/api/chat', { message: 'ค้นคว้าเรื่องนี้', mode: 'research', tool: 'research' }), { OPENAI_API_KEY: 'test-key' });
+    const response = await worker.fetch(await request('/api/chat', { message: 'ค้นคว้าเรื่องนี้', mode: 'research', tool: 'research' }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
     assert.equal(response.status, 200);
     const body = await response.json();
     assert.deepEqual(body.sources, [
@@ -69,7 +82,7 @@ test('read URL uses the same forced web_search contract', async () => {
     assert.match(payload.instructions, /exact URL supplied/i);
     return jsonResponse({ output_text: 'อ่านหน้าแล้ว', output: [] });
   }, async () => {
-    const response = await worker.fetch(request('/api/chat', { message: 'อ่าน https://example.com', mode: 'url', tool: 'url' }), { OPENAI_API_KEY: 'test-key' });
+    const response = await worker.fetch(await request('/api/chat', { message: 'อ่าน https://example.com', mode: 'url', tool: 'url' }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
     assert.equal(response.status, 200);
     assert.equal((await response.json()).message, 'อ่านหน้าแล้ว');
   });
@@ -90,7 +103,7 @@ test('image route uses current GPT Image models and falls back after model_not_f
     assert.equal(payload.model, 'gpt-image-1.5');
     return jsonResponse({ data: [{ b64_json: encoded, revised_prompt: 'revised' }] });
   }, async () => {
-    const response = await worker.fetch(request('/api/image', { prompt: 'วาดแมวดำ' }), { OPENAI_API_KEY: 'test-key' });
+    const response = await worker.fetch(await request('/api/image', { prompt: 'วาดแมวดำ' }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
     assert.equal(response.status, 200);
     const body = await response.json();
     assert.equal(body.image.mime_type, 'image/png');
@@ -103,13 +116,27 @@ test('image route uses current GPT Image models and falls back after model_not_f
 test('large code input accepts substantially more than the old 4k limit', async () => {
   await withFetchStub(async () => jsonResponse({ output_text: 'ok' }), async () => {
     const message = 'x'.repeat(30001);
-    const response = await worker.fetch(request('/api/chat', { message, mode: 'code', tool: 'code' }), { OPENAI_API_KEY: 'test-key' });
+    const response = await worker.fetch(await request('/api/chat', { message, mode: 'code', tool: 'code' }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
     assert.equal(response.status, 200);
   });
 });
 
-test('root opens the main workspace immediately', async () => {
+test('root opens the login entry when no session exists', async () => {
   const response = await worker.fetch(new Request('https://agents-sdk.space/'), {});
   assert.equal(response.status, 302);
-  assert.equal(new URL(response.headers.get('location'), 'https://agents-sdk.space').pathname, '/chat');
+  assert.equal(new URL(response.headers.get('location'), 'https://agents-sdk.space').pathname, '/login');
+});
+
+test('workspace requires a valid user session', async () => {
+  const response = await worker.fetch(new Request('https://agents-sdk.space/chat'), {});
+  assert.equal(response.status, 302);
+  const location = new URL(response.headers.get('location'), 'https://agents-sdk.space');
+  assert.equal(location.pathname, '/login');
+  assert.equal(location.searchParams.get('return_to'), '/chat');
+});
+
+test('AI APIs reject requests without a signed user session', async () => {
+  const response = await worker.fetch(new Request('https://agents-sdk.space/api/chat', { method: 'POST' }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
+  assert.equal(response.status, 401);
+  assert.equal((await response.json()).error, 'authentication_required');
 });

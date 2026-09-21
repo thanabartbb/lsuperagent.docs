@@ -10,8 +10,8 @@ import {
 const RETURN_TO_KEY = 'lsuperagen.firebase.return_to';
 
 function safeReturnTo(value) {
-  if (!value || typeof value !== 'string') return '/chat?auth=firebase';
-  if (!value.startsWith('/') || value.startsWith('//') || /[\r\n]/.test(value)) return '/chat?auth=firebase';
+  if (!value || typeof value !== 'string') return '/chat';
+  if (!value.startsWith('/') || value.startsWith('//') || /[\r\n]/.test(value)) return '/chat';
   return value.slice(0, 180);
 }
 
@@ -50,7 +50,7 @@ function providerFor(name) {
 
 function authErrorUrl(error) {
   const code = String(error?.code || error?.message || 'unknown').replace(/^auth\//, '').slice(0, 100);
-  return `/login.html?auth_error=${encodeURIComponent(`firebase_${code}`)}`;
+  return `/login?auth_error=${encodeURIComponent(`firebase_${code}`)}`;
 }
 
 async function main() {

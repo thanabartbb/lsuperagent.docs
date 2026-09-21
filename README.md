@@ -2,10 +2,10 @@
 
 AI Framework: **LSUPERAGENT public AI workspace**
 
-Last updated: **2026-09-21T14:15:54+07:00 Asia/Bangkok**
-Last update task: **Make Google/GitHub sign-in the required public entry to the AI Workspace.**
+Last updated: **2026-09-22T02:33:54+07:00 Asia/Bangkok**
+Last update task: **Lock the reference-matched login and account-first authentication surface.**
 
-This repository powers the public LSUPERAGENT AI Workspace. Users sign in with Google or GitHub before they can use chat, code, research, URL reading, or image generation.
+This repository powers the public LSUPERAGENT AI Workspace. Users authenticate before they can use chat, code, research, URL reading, or image generation. The current login surface supports Firebase email/password when configured, Google OAuth, and GitHub OAuth. The visible Gmail option routes through Google OAuth; it is not a separate auth provider.
 
 ## AI Framework Contract
 
@@ -22,17 +22,17 @@ Agents working in this repository must treat this stack as pinned unless the own
 | Worker entry | `src/firebase-worker.js` → `src/index.js` |
 | Frontend surface | Static HTML/CSS/JS files |
 | Primary runtime endpoint | `POST /api/chat` |
-| Auth surfaces | Google OAuth, GitHub OAuth, signed user session, Owner Google Dev Gate |
+| Auth surfaces | Firebase email/password when configured, Google OAuth, GitHub OAuth, signed user session, Owner Google Dev Gate |
 | Owner workspace | `/dev` |
 | Control-plane reference | `/dev/control-plane/` |
 | Route decision | `/control` redirects to `/dev` |
 | Database/storage | No D1/R2/KV unless owner approves a data model |
-| Design base | Dark technical, near-black, graphite, petroleum/oxidized accent system |
+| Design base | Pure black, white, `#0FA3D9` blue accent; reference-matched dark cinematic login |
 | Deployment rule | Do not claim live/deployed without verifiable evidence |
 
 ### 2. Feature Goal
 
-Build a public AI Workspace so signed-in Google or GitHub users can safely use real AI capabilities without an anonymous access path.
+Build a public AI Workspace so authenticated users can safely use real AI capabilities without an anonymous access path, with `/login` as the public entry surface.
 
 ### 3. Data Contract
 
@@ -67,7 +67,9 @@ And no unrelated framework is introduced without owner approval
 And no page claims "coming soon" as a substitute for a real state
 And no page claims live production behavior unless verified
 And anonymous users are redirected from the workspace to `/login`
-And only Google and GitHub are offered on the public login surface
+And the public login offers email/password when configured plus Google and GitHub account authentication
+And the visible Gmail option remains an alias to Google OAuth rather than a separate provider claim
+And no guest authentication bypass exists
 And /control remains aligned with the route policy
 And /dev remains owner workspace
 And /dev/control-plane/ remains docs/reference unless explicitly changed
@@ -78,7 +80,7 @@ And /dev/control-plane/ remains docs/reference unless explicitly changed
 Agents must not do the following:
 
 - Do not push unrelated templates into `main`.
-- Do not add Firebase, Supabase, Vercel, Railway, D1, R2, KV, or any new platform binding unless the current task explicitly asks for it.
+- Do not migrate auth to a different platform or add Supabase/Vercel/Railway/D1/R2/KV/new platform bindings unless the current task explicitly asks for it.
 - Do not overwrite `index.html` with generic landing-page templates.
 - Do not change `/control` away from `/dev` unless the owner explicitly changes route policy.
 - Do not expose secrets or ask the owner to paste secrets into chat.

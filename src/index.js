@@ -25,11 +25,13 @@ const ALIASES = {
 };
 
 const TOOL_LABELS = {
-  writer: 'AI Writer',
-  image: 'Image Generator',
-  research: 'Deep Research',
-  code: 'Code Assistant'
+  writer: 'Write',
+  research: 'Research',
+  url: 'Read URL',
+  code: 'Code'
 };
+
+const PUBLIC_PRODUCT_V2 = true;
 
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -399,22 +401,20 @@ function inferTool(body, request) {
 
 function toolInstructions(tool, mode) {
   const base = [
-    'Act as a flexible reasoning and generation engine for this request, not a fixed persona.',
-    'This endpoint belongs to lsuperagen.docs public beta. Do not present it as official OpenAI support.',
+    'Act as a practical AI work assistant for the user request.',
     'Answer in the same language as the user unless they ask otherwise.',
-    'Be concise, practical, and direct.',
-    'Do not claim access to private systems, repositories, dashboards, files, billing, or accounts unless the user provides that content in the prompt.',
-    'Do not reveal, request, or guess secrets/API keys.',
-    'If information is missing, say exactly what is missing.',
-    'Current mode: ' + (mode || 'fast') + '.'
+    'Be accurate, useful, and direct.',
+    'Do not invent sources, private-system access, files, or account data.',
+    'Do not reveal, request, or guess secrets or API keys.',
+    'Current mode: ' + (mode || 'chat') + '.'
   ];
   const byTool = {
-    writer: 'Tool context: AI Writer. Draft, rewrite, structure, or improve content. Preserve user-supplied names, claims, numbers, and constraints.',
-    image: 'Tool context: Image Generator. Use a 3-layer prompt workflow: Intent Scan, Creative Expansion, Final Prompt. Include Negative Prompt and Render Settings when useful. Do not claim to generate an image from this endpoint.',
-    research: 'Tool context: Deep Research. Provide an evidence-first plan or synthesis. If live web evidence is required but unavailable in the prompt, say so.',
-    code: 'Tool context: Code Assistant. Help with implementation, debugging, code review, and architecture. Prefer minimal safe changes.'
+    writer: 'Tool context: Write. Draft, rewrite, structure, or improve content while preserving user-supplied facts and constraints.',
+    research: 'Tool context: Research. Use web search for current evidence. Synthesize findings and ground factual claims in the returned sources. Never invent citations.',
+    url: 'Tool context: Read URL. Use web search to open or inspect the exact URL supplied by the user first. Answer from that page when accessible, cite it, and state clearly if the page cannot be read.',
+    code: 'Tool context: Code. Handle substantial implementation, debugging, refactoring, review, and edits. Preserve working code unless the requested change requires otherwise.'
   };
-  return base.concat(byTool[tool] || 'Tool context: general public chat.').join('\n');
+  return base.concat(byTool[tool] || 'Tool context: Chat. Help with the request directly.').join('\n');
 }
 
 function extractOutputText(data) {
@@ -452,15 +452,62 @@ function rateLimitHeaders(result) {
 }
 
 async function createOpenAIResponse(env, model, message, tool, mode, requestId) {
+  const usesWeb = tool === 'research' || tool === 'url';
+  const payload = {
+    model,
+    input: message,
+    instructions: toolInstructions(tool, mode),
+    max_output_tokens: tool === 'code' ? 8000 : usesWeb ? 5000 : 4000,
+    store: false,
+    metadata: { app: 'lsuperagen.docs', surface: 'public-workspace', tool: tool || 'chat', mode }
+  };
+  if (usesWeb) {
+    payload.tools = [{ type: 'web_search' }];
+    payload.tool_choice = 'required';
+    payload.include = ['web_search_call.action.sources'];
+  }
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: { authorization: 'Bearer ' + env.OPENAI_API_KEY, 'content-type': 'application/json', 'x-client-request-id': requestId },
-    body: JSON.stringify({ model, input: message, instructions: toolInstructions(tool, mode), max_output_tokens: 900, store: false, metadata: { app: 'lsuperagen.docs', route: '/api/chat', tool: tool || 'general', mode } })
+    body: JSON.stringify(payload)
   });
   const raw = await response.text();
   let data = {};
-  try { data = raw ? JSON.parse(raw) : {}; } catch (_) { data = { raw: raw.slice(0, 500) }; }
+  try { data = raw ? JSON.parse(raw) : {}; } catch (_) { data = {}; }
   return { response, data };
+}
+
+function extractSources(data) {
+  const collected = [];
+  const add = (source) => {
+    if (!source || typeof source.url !== 'string' || !source.url.startsWith('http')) return;
+    collected.push({ title: typeof source.title === 'string' && source.title.trim() ? source.title.trim() : source.url, url: source.url });
+  };
+  for (const item of data.output || []) {
+    if (item && item.type === 'web_search_call' && item.action && Array.isArray(item.action.sources)) {
+      for (const source of item.action.sources) add(source);
+    }
+    for (const content of item && Array.isArray(item.content) ? item.content : []) {
+      for (const annotation of content && Array.isArray(content.annotations) ? content.annotations : []) {
+        if (annotation && annotation.type === 'url_citation') add({ title: annotation.title, url: annotation.url });
+      }
+    }
+  }
+  const seen = new Set();
+  return collected.filter((source) => {
+    if (seen.has(source.url)) return false;
+    seen.add(source.url);
+    return true;
+  }).slice(0, 20);
+}
+
+function extractGeneratedImage(data) {
+  for (const item of data.output || []) {
+    if (item && item.type === 'image_generation_call' && typeof item.result === 'string' && item.result) {
+      return { data_base64: item.result, revised_prompt: typeof item.revised_prompt === 'string' ? item.revised_prompt : null };
+    }
+  }
+  return null;
 }
 
 function isModelAccessError(data) {
@@ -469,55 +516,87 @@ function isModelAccessError(data) {
 }
 
 async function handleChat(request, env) {
-  if (request.method !== 'POST') return json({ ok: false, status: 'method_not_allowed', message: 'Use POST /api/chat.' }, 405, { allow: 'POST, OPTIONS' });
+  if (request.method !== 'POST') return json({ ok: false, status: 'method_not_allowed', message: 'ส่งคำขอด้วย POST เท่านั้น' }, 405, { allow: 'POST, OPTIONS' });
   let body = {};
   try { body = await request.json(); } catch (_) { body = {}; }
   const message = typeof body.message === 'string' ? body.message.trim() : '';
-  const mode = typeof body.mode === 'string' && body.mode.trim() ? body.mode.trim().slice(0, 32) : 'fast';
+  const mode = typeof body.mode === 'string' && body.mode.trim() ? body.mode.trim().slice(0, 32) : 'chat';
   const tool = inferTool(body, request);
-  const requestedProvider = typeof body.provider === 'string' && body.provider.trim() ? body.provider.trim().toLowerCase() : 'openai';
-  const provider = 'openai';
-  const hasKey = Boolean(env.OPENAI_API_KEY);
-  const runtimeHeader = hasKey ? 'openai-runtime-v1-rate-limit-v1' : 'not-wired';
-  const readiness = { frontend: true, api_route: true, tools_router: true, provider_router: true, secret_detected: hasKey, model_output: hasKey, rate_limit: true };
-  if (requestedProvider !== 'openai') return json({ ok: false, status: 'provider_not_live', message: 'Only OpenAI is live on /api/chat. Other providers must not be routed to OpenAI output.', requested_provider: requestedProvider, provider, readiness: { ...readiness, model_output: false } }, 409, { 'x-lsuperagen-runtime': 'provider-truth-guard-v1' });
-  if (!message) return json({ ok: false, status: 'validation_error', message: 'message is required.', tool: tool === 'invalid' ? null : tool, provider, readiness }, 400, { 'x-lsuperagen-runtime': runtimeHeader });
-  if (message.length > 4000) return json({ ok: false, status: 'validation_error', message: 'message is too long. Max 4000 characters.', tool: tool === 'invalid' ? null : tool, provider, readiness }, 413, { 'x-lsuperagen-runtime': runtimeHeader });
-  if (tool === 'invalid') return json({ ok: false, status: 'validation_error', message: 'tool must be writer, image, research, code, or null.', provider, readiness }, 400, { 'x-lsuperagen-runtime': runtimeHeader });
+  if (!message) return json({ ok: false, status: 'validation_error', message: 'กรุณาใส่ข้อความก่อนส่ง' }, 400);
+  if (message.length > 120000) return json({ ok: false, status: 'validation_error', message: 'ข้อความยาวเกินขีดจำกัด 120,000 ตัวอักษร กรุณาแบ่งเป็นส่วนย่อย' }, 413);
+  if (tool === 'invalid') return json({ ok: false, status: 'validation_error', message: 'โหมดที่ส่งมาไม่ถูกต้อง' }, 400);
   const rate = checkRateLimit(request, tool);
-  const baseHeaders = { 'x-lsuperagen-runtime': runtimeHeader, ...rateLimitHeaders(rate) };
-  if (rate.limited) return json({ ok: false, status: 'rate_limited', message: 'Rate limit reached. Public Chat V1 allows 10 requests per 10 minutes per IP/tool. Please wait before sending another message.', tool, provider, limit: { requests: rate.limit, window_seconds: RATE_LIMIT_WINDOW_MS / 1000, retry_after_seconds: rate.retryAfter, reset_at: new Date(rate.resetAt).toISOString() }, readiness }, 429, baseHeaders);
-  if (!hasKey) return json({ ok: false, status: 'runtime_not_wired', message: 'Runtime not wired. No fake AI response generated. Set OPENAI_API_KEY as a Cloudflare Secret before public model output.', requested: { mode, provider: body.provider || 'OpenAI route', tool, has_message: true }, readiness: { ...readiness, model_output: false } }, 503, baseHeaders);
+  const baseHeaders = rateLimitHeaders(rate);
+  if (rate.limited) return json({ ok: false, status: 'rate_limited', message: 'ส่งคำขอถี่เกินไป กรุณารอสักครู่แล้วลองอีกครั้ง' }, 429, baseHeaders);
+  if (!env.OPENAI_API_KEY) return json({ ok: false, status: 'service_unavailable', message: 'บริการ AI ยังไม่พร้อมใช้งานในขณะนี้' }, 503, baseHeaders);
+
   const requestId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
-  const candidates = modelCandidates(env);
-  const attempted = [];
-  let lastError = null;
+  const webMode = tool === 'research' || tool === 'url';
+  const candidates = webMode
+    ? Array.from(new Set(['gpt-6-astra', 'gpt-4.1', typeof env.OPENAI_MODEL === 'string' ? env.OPENAI_MODEL.trim() : ''].filter(Boolean)))
+    : modelCandidates(env);
+  let lastStatus = 502;
   for (const model of candidates) {
-    attempted.push(model);
     let providerResponse, data;
-    try { ({ response: providerResponse, data } = await createOpenAIResponse(env, model, message, tool, mode, requestId)); } catch (error) { return json({ ok: false, status: 'provider_network_error', message: 'OpenAI provider request failed before a response was received.', tool, provider, request_id: requestId, error: error && error.message ? error.message : 'network_error' }, 502, { ...baseHeaders, 'x-lsuperagen-request-id': requestId }); }
+    try {
+      ({ response: providerResponse, data } = await createOpenAIResponse(env, model, message, tool, mode, requestId));
+    } catch (_) {
+      return json({ ok: false, status: 'service_error', message: 'เชื่อมต่อบริการ AI ไม่สำเร็จ กรุณาลองใหม่' }, 502, baseHeaders);
+    }
     if (providerResponse.ok) {
       const output = extractOutputText(data);
-      return json({ ok: true, status: 'completed', tool, provider, model, message: output, output, usage: data.usage || null, response_id: data.id || null, request_id: requestId, attempted_models: attempted, rate_limit: { limit: rate.limit, remaining: rate.remaining, reset_at: new Date(rate.resetAt).toISOString() } }, 200, { ...baseHeaders, 'x-lsuperagen-request-id': requestId });
+      if (!output) return json({ ok: false, status: 'empty_result', message: 'บริการ AI ไม่ได้ส่งข้อความกลับมา กรุณาลองใหม่' }, 502, baseHeaders);
+      return json({ ok: true, status: 'completed', message: output, output, sources: extractSources(data) }, 200, baseHeaders);
     }
-    const providerMessage = data && data.error && data.error.message ? data.error.message : 'OpenAI provider returned an error.';
-    lastError = { message: providerMessage, model, provider_status: providerResponse.status };
-    if (!isModelAccessError(data)) return json({ ok: false, status: 'provider_error', message: providerMessage, tool, provider, model, request_id: requestId, provider_status: providerResponse.status, attempted_models: attempted, rate_limit: { limit: rate.limit, remaining: rate.remaining, reset_at: new Date(rate.resetAt).toISOString() } }, providerResponse.status >= 400 && providerResponse.status < 500 ? 502 : 503, { ...baseHeaders, 'x-lsuperagen-request-id': requestId });
+    lastStatus = providerResponse.status;
+    if (!isModelAccessError(data)) break;
   }
-  return json({ ok: false, status: 'model_not_available', message: 'OPENAI_API_KEY is valid, but every attempted model was rejected for this project. Tried: ' + attempted.join(', ') + '. Set OPENAI_MODEL to an exact model enabled in this OpenAI project.', tool, provider, request_id: requestId, attempted_models: attempted, configured_model: typeof env.OPENAI_MODEL === 'string' ? env.OPENAI_MODEL.trim() || null : null, last_error: lastError, rate_limit: { limit: rate.limit, remaining: rate.remaining, reset_at: new Date(rate.resetAt).toISOString() } }, 502, { ...baseHeaders, 'x-lsuperagen-request-id': requestId });
+  return json({ ok: false, status: 'service_error', message: lastStatus === 429 ? 'บริการ AI ถูกใช้งานหนาแน่น กรุณาลองใหม่อีกครั้ง' : 'บริการ AI ไม่สามารถทำคำขอนี้ได้ในขณะนี้' }, lastStatus === 429 ? 429 : 502, baseHeaders);
+}
+
+async function handleImage(request, env) {
+  if (request.method !== 'POST') return json({ ok: false, status: 'method_not_allowed', message: 'ส่งคำขอด้วย POST เท่านั้น' }, 405, { allow: 'POST, OPTIONS' });
+  let body = {};
+  try { body = await request.json(); } catch (_) { body = {}; }
+  const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
+  if (!prompt) return json({ ok: false, status: 'validation_error', message: 'กรุณาอธิบายภาพที่ต้องการสร้าง' }, 400);
+  if (prompt.length > 12000) return json({ ok: false, status: 'validation_error', message: 'คำอธิบายภาพยาวเกินขีดจำกัด 12,000 ตัวอักษร' }, 413);
+  const rate = checkRateLimit(request, 'image');
+  const baseHeaders = rateLimitHeaders(rate);
+  if (rate.limited) return json({ ok: false, status: 'rate_limited', message: 'ส่งคำขอถี่เกินไป กรุณารอสักครู่แล้วลองอีกครั้ง' }, 429, baseHeaders);
+  if (!env.OPENAI_API_KEY) return json({ ok: false, status: 'service_unavailable', message: 'บริการสร้างภาพยังไม่พร้อมใช้งานในขณะนี้' }, 503, baseHeaders);
+  const requestId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+  const response = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: { authorization: 'Bearer ' + env.OPENAI_API_KEY, 'content-type': 'application/json', 'x-client-request-id': requestId },
+    body: JSON.stringify({
+      model: 'gpt-6-astra',
+      input: prompt,
+      tools: [{ type: 'image_generation', model: 'gpt-image-2.5-flare', action: 'generate' }],
+      tool_choice: { type: 'image_generation' },
+      store: false,
+      metadata: { app: 'lsuperagen.docs', surface: 'public-workspace', tool: 'image' }
+    })
+  }).catch(() => null);
+  if (!response) return json({ ok: false, status: 'service_error', message: 'เชื่อมต่อบริการสร้างภาพไม่สำเร็จ กรุณาลองใหม่' }, 502, baseHeaders);
+  const raw = await response.text();
+  let data = {};
+  try { data = raw ? JSON.parse(raw) : {}; } catch (_) { data = {}; }
+  if (!response.ok) return json({ ok: false, status: 'service_error', message: response.status === 429 ? 'บริการสร้างภาพถูกใช้งานหนาแน่น กรุณาลองใหม่อีกครั้ง' : 'ไม่สามารถสร้างภาพจากคำขอนี้ได้ กรุณาลองปรับคำอธิบาย' }, response.status === 429 ? 429 : 502, baseHeaders);
+  const image = extractGeneratedImage(data);
+  if (!image) return json({ ok: false, status: 'empty_result', message: 'บริการสร้างภาพไม่ได้ส่งไฟล์ภาพกลับมา กรุณาลองใหม่' }, 502, baseHeaders);
+  return json({ ok: true, status: 'completed', image: { mime_type: 'image/png', data_base64: image.data_base64, filename: 'lsuperagen-image.png', revised_prompt: image.revised_prompt } }, 200, baseHeaders);
 }
 
 function plannedEndpoint(pathname) {
   const planned = {
-    '/api/image': { status: 'planned', method: 'POST', message: 'Image API is planned but not implemented. Current Image Generator is a prompt/spec compiler only.' },
-    '/api/image/status': { status: 'planned', method: 'GET', message: 'Image API provider is not wired yet. No image secret is exposed here.' },
-    '/admin/auth/github': { status: 'retired', method: 'GET', message: 'Use /dev. Owner workspace is protected by Google Owner Dev Gate V1.' },
-    '/admin/github/status': { status: 'retired', method: 'GET', message: 'Use /dev. Owner workspace is protected by Google Owner Dev Gate V1.' },
-    '/admin/github/files': { status: 'retired', method: 'GET', message: 'Use /dev. Owner workspace is protected by Google Owner Dev Gate V1.' },
-    '/admin/github/commit': { status: 'retired', method: 'POST', message: 'Use /dev. Owner workspace is protected by Google Owner Dev Gate V1.' },
-    '/admin/handoff/claude': { status: 'planned', method: 'POST', message: 'Claude handoff admin endpoint is planned. Current handoff should live under /dev.' }
+    '/admin/auth/github': { status: 'retired', method: 'GET', message: 'Use /dev.' },
+    '/admin/github/status': { status: 'retired', method: 'GET', message: 'Use /dev.' },
+    '/admin/github/files': { status: 'retired', method: 'GET', message: 'Use /dev.' },
+    '/admin/github/commit': { status: 'retired', method: 'POST', message: 'Use /dev.' },
+    '/admin/handoff/claude': { status: 'planned', method: 'POST', message: 'Use /dev.' }
   }[pathname];
-  return planned ? json({ ok: false, endpoint: pathname, ...planned, secret_values: false }, pathname.startsWith('/api/image/status') ? 200 : 501, { 'x-lsuperagen-runtime': 'planned-endpoint-v1' }) : null;
+  return planned ? json({ ok: false, endpoint: pathname, ...planned, secret_values: false }, 501) : null;
 }
 
 function injectHead(html, content) {
@@ -530,27 +609,14 @@ function injectBody(html, content) {
 
 function publicMobileLinks(page) {
   const items = [
-    ['/', 'Home', 'index.html'],
-    ['/chat', 'Chat', 'chat.html'],
-    ['/login', 'Login', 'login.html'],
-    ['/tools', 'Tools', 'tools.html'],
-    ['/examples', 'Examples', 'examples.html'],
-    ['/getting-started', 'Docs', 'getting-started.html'],
-    ['/api', 'API', 'api.html'],
-    ['/guides', 'Guides', 'guides.html'],
-    ['/changelog', 'Changelog', 'changelog.html']
+    ['/chat', 'Workspace', 'chat.html'],
+    ['/tools', 'Tools', 'tools.html']
   ];
   return items.map(([href, label, file]) => `<a href="${href}" ${page === file ? 'aria-current="page"' : ''}>${label}<span>→</span></a>`).join('');
 }
 
 function enhancePublicHtml(html, pathname) {
-  if (html.includes('data-ls-mobile-menu-fix="v1"')) return html;
-  const page = currentPage(pathname);
-  const style = `<style data-ls-mobile-menu-fix="v1">
-html,body{max-width:100%;overflow-x:hidden!important}.code,pre,code{max-width:100%}pre{white-space:pre-wrap!important;overflow-wrap:anywhere!important;word-break:break-word}.code{overflow-x:auto!important}main,section,.wrap,.content{max-width:100%}img,svg{max-width:100%;height:auto}.ls-mobile-menu{display:none}.ls-mobile-note{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.68rem;letter-spacing:.12em;color:#7c828c;border-left:2px solid #63b3ff;padding-left:10px;margin-top:4px}.ls-mobile-panel{box-sizing:border-box}.ls-mobile-links a span{color:#7c828c}@media(max-width:899px){.primary-nav,.pnav,.nav,.menu-btn,.mbtn,button[aria-label*="menu"],button[aria-label*="เมนู"]{display:none!important}.site-header,.hdr{position:sticky!important;top:0!important;z-index:500!important}.ls-mobile-menu{display:block;position:fixed;z-index:9999;top:20px;right:28px;color:#f5f7f9;font-family:Inter,"Noto Sans Thai",system-ui,sans-serif}.ls-mobile-menu>summary{list-style:none;width:52px;height:52px;border-radius:14px;border:1px solid #26292f;background:rgba(10,10,11,.96);display:grid;place-items:center;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,.34)}.ls-mobile-menu>summary::-webkit-details-marker{display:none}.ls-mobile-menu[open]::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,.58);backdrop-filter:blur(5px);z-index:-1}.ls-mobile-panel{position:fixed;top:84px;right:16px;left:16px;max-height:calc(100vh - 110px);overflow:auto;border:1px solid #26292f;border-radius:18px;background:linear-gradient(180deg,rgba(18,19,22,.99),rgba(6,6,6,.99));box-shadow:0 22px 70px rgba(0,0,0,.58);padding:14px;display:grid;gap:12px}.ls-mobile-title{font-weight:900;letter-spacing:-.02em}.ls-mobile-sub{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.68rem;color:#7c828c;letter-spacing:.16em}.ls-mobile-links{display:grid;gap:8px}.ls-mobile-links a{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid #1c1e22;border-radius:13px;padding:13px 14px;background:#0a0a0b;color:#a2a7b0;text-decoration:none;font-weight:750}.ls-mobile-links a[aria-current="page"],.ls-mobile-links a:hover{border-color:#63b3ff;background:rgba(99,179,255,.07);color:#f5f7f9}.page-hero{padding-top:40px!important}.page-hero h1{font-size:clamp(2.45rem,13vw,4rem)!important;line-height:1.02!important;overflow-wrap:anywhere}.page-hero p,.lede{overflow-wrap:anywhere}.docs,.content{display:block!important;padding-inline:0!important}.content{min-width:0!important}.content h2{font-size:clamp(1.45rem,8vw,2.1rem)!important}.content p,.content li{overflow-wrap:anywhere}.footer,.site-footer,footer{max-width:100%;overflow:hidden}}
-</style>`;
-  const menu = `<details class="ls-mobile-menu" data-ls-mobile-menu-fix="v1"><summary aria-label="เปิดเมนู"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="ls-mobile-panel" role="navigation" aria-label="Mobile menu"><div><div class="ls-mobile-title">lsuperagen.docs</div><div class="ls-mobile-sub">PUBLIC NAV · MOBILE FIX V1</div></div><nav class="ls-mobile-links">${publicMobileLinks(page)}</nav><div class="ls-mobile-note">Private /dev ไม่อยู่ใน public menu</div></div></details>`;
-  return injectBody(injectHead(html, style), menu);
+  return html;
 }
 
 function isDevOnlyPath(pathname) {
@@ -576,6 +642,9 @@ export default {
     const url = new URL(request.url);
     const pathname = url.pathname.replace(/\/+$/, '') || '/';
 
+    if (pathname === '/' || pathname === '/home' || pathname === '/index.html') return redirectTo('/chat', 302);
+    const legacyPublic = new Set(['/examples','/examples.html','/getting-started','/getting-started.html','/api','/api.html','/guides','/guides.html','/changelog','/changelog.html','/workspace','/workspace.html','/provider-connect','/provider-connect.html','/secret-handoff','/secret-handoff.html','/endpoints','/endpoints.html','/system-registry','/system-registry.html']);
+    if (legacyPublic.has(pathname)) return redirectTo('/chat', 302);
     if (pathname === '/admin' || pathname === '/admin.html') return redirectTo('/dev', 302, { 'x-lsuperagen-admin-gate': 'redirect-to-dev-v1' });
     if (ALIASES[pathname]) return redirectTo(new URL(ALIASES[pathname], url).toString(), 301);
 
@@ -589,8 +658,9 @@ export default {
     if (pathname === '/auth/github/callback') return handleAuthCallback('github', request, env);
     if (pathname === '/auth/google/callback') return handleAuthCallback('google', request, env);
 
-    if (request.method === 'OPTIONS' && pathname === '/api/chat') return new Response(null, { status: 204, headers: { 'access-control-allow-origin': url.origin, 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type' } });
+    if (request.method === 'OPTIONS' && (pathname === '/api/chat' || pathname === '/api/image')) return new Response(null, { status: 204, headers: { 'access-control-allow-origin': url.origin, 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type' } });
     if (pathname === '/api/chat') return handleChat(request, env);
+    if (pathname === '/api/image') return handleImage(request, env);
 
     const planned = plannedEndpoint(pathname);
     if (planned) return planned;

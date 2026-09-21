@@ -27,7 +27,21 @@ jobs:
         run: |
           node --check firebase-auth.js
           node --check src/firebase-worker.js
+          node --check scripts/live-smoke.mjs
       - name: Tests
         run: node --test tests/*.test.mjs
       - name: Diff hygiene
         run: git diff --check
+
+  live-smoke:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[delivery-smoke]')
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Wait for production and exercise public user flows
+        run: node scripts/live-smoke.mjs

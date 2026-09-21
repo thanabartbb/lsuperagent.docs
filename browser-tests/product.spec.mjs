@@ -41,13 +41,11 @@ async function sendTextFlow(page, mode, prompt, timeout = 120000) {
 
 test.describe.configure({ mode: 'serial', timeout: 360000 });
 
-test('desktop public workspace completes all required user flows', async ({ page, request }) => {
-  const root = await request.get(`${origin}/`, { maxRedirects: 0 });
-  expect(root.status()).toBe(302);
-  expect(root.headers().location).toBe('/chat');
-
+test('desktop public workspace completes all required user flows', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto(`${origin}/chat`, { waitUntil: 'domcontentloaded' });
+  const root = await page.goto(`${origin}/`, { waitUntil: 'domcontentloaded' });
+  expect(root?.status()).toBe(200);
+  expect(new URL(page.url()).pathname).toBe('/chat');
   await expect(page.getByRole('heading', { name: 'สร้างงานด้วย AI' })).toBeVisible({ timeout: 15000 });
   await assertNoHorizontalOverflow(page);
 

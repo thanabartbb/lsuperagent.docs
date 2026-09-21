@@ -1,0 +1,101 @@
+name: Image Model Fallback Hotfix
+
+on:
+  push:
+    paths:
+      - '.github/workflows/image-model-fallback-hotfix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: RED — require current GPT Image model and model-not-found fallback
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          runtime_path = Path('tests/worker-runtime.test.mjs')
+          runtime = runtime_path.read_text()
+          replacement = r'''test('image route uses current GPT Image models and falls back after model_not_found', async () => {
+            const encoded = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB';
+            let calls = 0;
+            await withFetchStub(async (url, init) => {
+              assert.equal(String(url), 'https://api.openai.com/v1/images/generations');
+              const payload = JSON.parse(init.body);
+              calls += 1;
+              if (calls === 1) {
+                assert.equal(payload.model, 'gpt-image-2');
+                assert.equal(payload.prompt, 'วาดแมวดำ');
+                return jsonResponse({ error: { code: 'model_not_found', type: 'invalid_request_error' } }, 403);
+              }
+              assert.equal(payload.model, 'gpt-image-1.5');
+              return jsonResponse({ data: [{ b64_json: encoded, revised_prompt: 'revised' }] });
+            }, async () => {
+              const response = await worker.fetch(request('/api/image', { prompt: 'วาดแมวดำ' }), { OPENAI_API_KEY: 'test-key' });
+              assert.equal(response.status, 200);
+              const body = await response.json();
+              assert.equal(body.image.mime_type, 'image/png');
+              assert.equal(body.image.data_base64, encoded);
+              assert.match(body.image.filename, /\.png$/);
+              assert.equal(calls, 2);
+            });
+          });
+
+          test('large code input'''
+          updated, count = re.subn(r"test\('image route calls the Images API[\s\S]*?\n\}\);\n\ntest\('large code input", replacement, runtime, count=1)
+          if count != 1:
+              raise SystemExit(f'expected one image runtime test, replaced {count}')
+          runtime_path.write_text(updated)
+
+          public_path = Path('tests/public-product.test.mjs')
+          public = public_path.read_text()
+          public = public.replace("assert.match(source, /gpt-image-2\\.5-flare/);", "assert.match(source, /gpt-image-2/);")
+          public_path.write_text(public)
+          PY
+          set +e
+          node --test tests/worker-runtime.test.mjs
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            echo 'Expected RED failure before implementation, but test passed.'
+            exit 1
+          fi
+          echo 'RED confirmed: current implementation does not satisfy the current-model fallback contract.'
+      - name: GREEN — use documented GPT Image IDs and retry model_not_found
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('src/index.js')
+          source = path.read_text()
+          old_models = "const models = ['gpt-image-2.5-flare', 'gpt-image-2'];"
+          new_models = "const models = ['gpt-image-2', 'gpt-image-1.5', 'gpt-image-1', 'gpt-image-1-mini'];"
+          if old_models not in source:
+              raise SystemExit('expected image model list not found')
+          source = source.replace(old_models, new_models, 1)
+          old_break = "if (response.status === 401 || response.status === 403 || response.status === 429) break;"
+          new_break = "const providerCode = data && data.error && data.error.code ? String(data.error.code) : '';\n    const providerMessage = data && data.error && data.error.message ? String(data.error.message) : '';\n    const modelUnavailable = /model_not_found|invalid model|model .* not found|does not have access/i.test(providerCode + ' ' + providerMessage);\n    if (response.status === 401 || response.status === 429 || (response.status >= 400 && response.status < 500 && !modelUnavailable)) break;"
+          if old_break not in source:
+              raise SystemExit('expected image break condition not found')
+          source = source.replace(old_break, new_break, 1)
+          path.write_text(source)
+          PY
+      - name: Verify GREEN
+        run: |
+          node --check src/index.js
+          node --test tests/*.test.mjs
+      - name: Commit verified fallback and remove one-shot workflow
+        run: |
+          git config user.name 'THNB SMK'
+          git config user.email '326990420+thanabartbb@users.noreply.github.com'
+          git add src/index.js tests/public-product.test.mjs tests/worker-runtime.test.mjs
+          git rm .github/workflows/image-model-fallback-hotfix.yml
+          git commit -m 'fix: use current GPT Image model fallback'
+          git push

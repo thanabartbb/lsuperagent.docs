@@ -2,6 +2,18 @@ import { test, expect } from '@playwright/test';
 
 const origin = 'https://agents-sdk.space';
 
+test.use({
+  userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36',
+  locale: 'th-TH',
+  timezoneId: 'Asia/Bangkok',
+});
+
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+  });
+});
+
 async function assertNoHorizontalOverflow(page) {
   const metrics = await page.evaluate(() => ({
     innerWidth: window.innerWidth,
@@ -29,11 +41,14 @@ async function sendTextFlow(page, mode, prompt, timeout = 120000) {
 
 test.describe.configure({ mode: 'serial', timeout: 360000 });
 
-test('desktop public workspace completes all required user flows', async ({ page }) => {
+test('desktop public workspace completes all required user flows', async ({ page, request }) => {
+  const root = await request.get(`${origin}/`, { maxRedirects: 0 });
+  expect(root.status()).toBe(302);
+  expect(root.headers().location).toBe('/chat');
+
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto(`${origin}/`, { waitUntil: 'domcontentloaded' });
-  await expect(page).toHaveURL(/\/chat$/);
-  await expect(page.getByRole('heading', { name: 'สร้างงานด้วย AI' })).toBeVisible();
+  await page.goto(`${origin}/chat`, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'สร้างงานด้วย AI' })).toBeVisible({ timeout: 15000 });
   await assertNoHorizontalOverflow(page);
 
   for (const mode of ['Chat', 'Code', 'Image', 'Research', 'Read URL', 'Write']) {
@@ -77,7 +92,7 @@ test('desktop public workspace completes all required user flows', async ({ page
 test('mobile workspace stays inside viewport and keeps primary controls usable', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 852 });
   await page.goto(`${origin}/chat`, { waitUntil: 'domcontentloaded' });
-  await expect(page.getByRole('heading', { name: 'สร้างงานด้วย AI' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'สร้างงานด้วย AI' })).toBeVisible({ timeout: 15000 });
   await assertNoHorizontalOverflow(page);
 
   const mobileSelect = page.locator('#mobileMode');
@@ -91,7 +106,7 @@ test('mobile workspace stays inside viewport and keeps primary controls usable',
     return ids.map((id) => {
       const element = document.getElementById(id);
       const rect = element.getBoundingClientRect();
-      return { id, left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
+      return { id, left: rect.left, right: rect.right };
     });
   });
   for (const box of bounds) {

@@ -2,8 +2,8 @@
 
 AI Framework: **LSUPERAGENT Public Workspace Operating Instructions**
 
-Last updated: **2026-09-21T14:15:54+07:00 Asia/Bangkok**
-Last update task: **Require Google or GitHub sign-in before public AI Workspace access.**
+Last updated: **2026-09-22T02:33:54+07:00 Asia/Bangkok**
+Last update task: **Lock the reference-matched public login with email/password plus Google/GitHub account entry.**
 
 This file is the first file every AI agent must read before modifying this repository. It defines the repo memory boundary, write protocol, data contract discipline, and negative constraints.
 
@@ -40,14 +40,14 @@ forbidden_without_approval:
   - D1
   - R2
   - KV
-  - new Firebase auth bridge
+  - new auth platform migration
   - new Supabase auth bridge
   - new Vercel migration
   - new Railway migration
   - unrelated markdown template overwrite
 ```
 
-Public route policy: `/` opens `/login` without a valid signed session; `/chat`, `/tools`, `/api/chat`, and `/api/image` require that session. The login page may offer only Google OAuth and GitHub OAuth—no guest path or duplicate registration path.
+Public route policy: `/` opens `/login` without a valid signed session; `/chat`, `/tools`, `/api/chat`, and `/api/image` require that session. The locked public login surface supports the existing Firebase email/password flow when configured, Google OAuth, and GitHub OAuth. The visible `Gmail` button is an alias of the Google OAuth route, not a separate identity provider. No guest path is allowed. The login may link to `/signup`, but registration must create/authenticate an account and must never bypass the signed-session gate.
 
 ## Feature Goal Template
 
@@ -119,7 +119,8 @@ Keep these near the end of prompts because agents may over-weight recent instruc
 negative_constraints:
   - Do not commit secrets, tokens, OAuth client secrets, signed URLs, or private credentials.
   - Do not create D1/R2/KV resources unless the owner explicitly asks in the active task.
-  - Do not create or migrate to Firebase/Supabase/Vercel/Railway unless explicitly requested in the active task.
+  - Do not migrate authentication to a different platform unless explicitly requested in the active task.
+  - Do not create or migrate to Supabase/Vercel/Railway unless explicitly requested in the active task.
   - Do not overwrite index.html with unrelated landing page templates.
   - Do not change /control away from /dev without explicit route-policy approval.
   - Do not mark docs-only references as live runtime.
@@ -159,8 +160,8 @@ repo_contract_loop:
   target_files:
     - README.md
     - AGENTS.md
-  last_run_at: 2026-09-21T14:15:54+07:00
-  last_run_task: Require Google or GitHub sign-in before public AI Workspace access
+  last_run_at: 2026-09-22T02:33:54+07:00
+  last_run_task: Lock reference-matched login and account-first authentication surface
   required_action: write_real_timestamp_and_task_summary
 
 prompt_stack_loop:
@@ -171,7 +172,7 @@ prompt_stack_loop:
     - Data Contract Template
     - Acceptance Criteria Template
     - Negative Constraints
-  last_run_at: 2026-09-21T14:15:54+07:00
-  last_run_task: Replace the public-entry contract with account-first access
+  last_run_at: 2026-09-22T02:33:54+07:00
+  last_run_task: Align public-entry contract with email/password plus Google/GitHub authentication
   required_action: keep_contract_current_and_write_actual_update
 ```

@@ -1,4 +1,4 @@
-const origin = 'https://agents-sdk.space';
+const origin = 'https://lsuperagent-docs.thanabartb.workers.dev';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function log(flow, status, detail = '') {

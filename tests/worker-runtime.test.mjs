@@ -104,5 +104,5 @@ test('large code input accepts substantially more than the old 4k limit', async 
 test('root opens the main workspace immediately', async () => {
   const response = await worker.fetch(new Request('https://agents-sdk.space/'), {});
   assert.equal(response.status, 302);
-  assert.equal(new URL(response.headers.get('location')).pathname, '/chat');
+  assert.equal(new URL(response.headers.get('location'), 'https://agents-sdk.space').pathname, '/chat');
 });

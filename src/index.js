@@ -572,7 +572,7 @@ async function handleImage(request, env) {
     body: JSON.stringify({
       model: 'gpt-6-astra',
       input: prompt,
-      tools: [{ type: 'image_generation', model: 'gpt-image-2.5-flare', action: 'generate' }],
+      tools: [{ type: 'image_generation' }],
       tool_choice: { type: 'image_generation' },
       store: false,
       metadata: { app: 'lsuperagen.docs', surface: 'public-workspace', tool: 'image' }

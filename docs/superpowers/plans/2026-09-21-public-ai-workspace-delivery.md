@@ -115,3 +115,5 @@
 - [ ] Verify Cloudflare target URL serves the new root/workspace on mobile and desktop.
 - [ ] Exercise real text, code, research, URL and image flows UI→Worker→OpenAI→user. If tooling cannot issue a live POST, finish all source/runtime deployment verification then request exactly one manual user action as the final blocker.
 - [ ] Grade every required flow PASS/FAIL/BLOCKED using the Audit Contract evidence table.
+
+Runtime verification retry 2026-09-21: production root now resolves to `/chat`; live provider smoke is re-running against the deployed workspace after the Firebase wrapper merge.

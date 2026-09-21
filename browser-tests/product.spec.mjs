@@ -20,29 +20,37 @@ async function assertNoHorizontalOverflow(page) {
   expect(metrics.bodyColor).toBe('rgb(255, 255, 255)');
 }
 
+async function assertLockedLogin(page) {
+  await expect(page.getByRole('heading', { name: 'เริ่มต้นใช้งาน' })).toBeVisible();
+  await expect(page.getByText('YOUR AI WORKSPACE')).toBeVisible();
+  await expect(page.locator('input[name="email"]')).toHaveAttribute('placeholder', 'อีเมล');
+  await expect(page.locator('input[name="password"]')).toHaveAttribute('placeholder', 'รหัสผ่าน');
+  await expect(page.getByRole('link', { name: 'Google' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'GitHub' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Gmail' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /สมัครใช้งาน/ })).toBeVisible();
+  const visibleText = await page.locator('body').innerText();
+  for (const forbidden of ['Guest', 'ทดลองแชท', 'Development Console']) expect(visibleText).not.toContain(forbidden);
+}
+
 test.describe.configure({ mode: 'serial', timeout: 60000 });
 
-test('public root opens the Google and GitHub login entry', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
+test('public root opens the locked login entry', async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 852 });
   const response = await page.goto(`${publicOrigin}/`, { waitUntil: 'domcontentloaded' });
   expect(response?.status()).toBe(200);
   expect(new URL(page.url()).pathname).toBe('/login');
-  await expect(page.getByRole('heading', { name: 'เข้าสู่ AI Workspace' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Continue with Google' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Continue with GitHub' })).toBeVisible();
-  const visibleText = await page.locator('body').innerText();
-  for (const forbidden of ['Guest', 'ทดลองแชท', 'ลงทะเบียนแพลตฟอร์ม', 'Development Console']) expect(visibleText).not.toContain(forbidden);
+  await assertLockedLogin(page);
   await assertNoHorizontalOverflow(page);
 });
 
-test('workspace redirects anonymous visitors back to login and remains mobile-safe', async ({ page }) => {
+test('workspace redirects anonymous visitors back to the locked login and remains mobile-safe', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 852 });
   const response = await page.goto(`${publicOrigin}/chat`, { waitUntil: 'domcontentloaded' });
   expect(response?.status()).toBe(200);
   const location = new URL(page.url());
   expect(location.pathname).toBe('/login');
   expect(location.searchParams.get('return_to')).toBe('/chat');
-  await expect(page.getByRole('link', { name: 'Continue with Google' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Continue with GitHub' })).toBeVisible();
+  await assertLockedLogin(page);
   await assertNoHorizontalOverflow(page);
 });

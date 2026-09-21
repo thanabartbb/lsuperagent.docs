@@ -74,6 +74,12 @@ test('login is the sole public entry and contains only Google and GitHub identit
   assert.equal(/Guest|ทดลองแชท|ลงทะเบียนแพลตฟอร์ม/i.test(login), false, 'login must not offer an unauthenticated bypass or duplicate registration flow');
 });
 
+test('static root fallback also points to the login entry', async () => {
+  const index = await read('index.html');
+  assert.match(index, /url=\/login/);
+  assert.doesNotMatch(index, /url=\/chat/);
+});
+
 test('injected public navigation does not expose docs or developer surfaces', async () => {
   const source = await read('src/index.js');
   const start = source.indexOf('function publicMobileLinks');

@@ -2,25 +2,38 @@
 <html lang="th">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>ลงทะเบียนแพลตฟอร์ม — lsuperagen.docs</title>
-<meta name="description" content="ลงทะเบียนแพลตฟอร์ม lsuperagen.docs"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#000000"/>
+<title>สมัครใช้งาน — lsuperagen.docs</title>
+<meta name="description" content="สมัครบัญชี lsuperagen.docs ด้วย Google หรือ GitHub"/>
 <style>
-:root{--bg:#060606;--panel:#0d0e10;--panel2:#121316;--line:#1c1e22;--line2:#26292f;--line3:#33373f;--fg:#f5f7f9;--fg2:#a2a7b0;--fg3:#7c828c;--acc:#8ec6ff;--gut:clamp(22px,5vw,46px);--sans:"Inter","Noto Sans Thai",system-ui,sans-serif}*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.6;overflow-x:hidden}a{color:inherit;text-decoration:none}.thai,:lang(th){font-family:"Noto Sans Thai","Inter",system-ui,sans-serif}.bp{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(140,150,165,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(140,150,165,.07) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse 90% 62% at 50% 0,#000 30%,transparent 100%)}.orb{position:fixed;top:-260px;right:-180px;width:620px;height:620px;border-radius:50%;background:radial-gradient(circle,rgba(99,179,255,.14),rgba(99,179,255,0) 62%);pointer-events:none}.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding-inline:var(--gut)}.hdr{position:sticky;top:0;z-index:10;border-bottom:1px solid var(--line);background:rgba(6,6,6,.86);backdrop-filter:blur(16px)}.hdrin{height:72px;display:flex;align-items:center;gap:14px}.brand{display:flex;align-items:center;gap:12px;font-size:1.18rem;font-weight:900;letter-spacing:-.04em}.brand span{color:var(--fg3);font-weight:750}.mark{width:46px;height:46px;border:1px solid var(--line3);border-radius:15px;background:linear-gradient(180deg,#121316,#0a0a0b);display:grid;place-items:center;font-weight:900}.nav{margin-left:auto;display:none;gap:6px}.nav a{padding:8px 12px;border-radius:10px;color:var(--fg2);font-size:.92rem}.nav a:hover,.nav a.cur{background:var(--panel2);color:var(--fg)}@media(min-width:860px){.nav{display:flex}}
-.hero{padding:clamp(44px,8vw,92px) 0 16px}.ey{font-size:.75rem;letter-spacing:.28em;color:var(--fg3);text-transform:uppercase}.ey b{color:var(--acc)}h1{margin:14px 0 0;font-size:clamp(2.55rem,11vw,5.1rem);line-height:.98;letter-spacing:-.06em}.lede{margin:16px 0 0;max-width:660px;color:var(--fg2);font-size:clamp(1rem,3.4vw,1.22rem)}.shell{padding:18px 0 80px;max-width:680px}.panel{border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(18,19,22,.74),rgba(7,7,8,.92));padding:clamp(20px,4vw,30px);box-shadow:0 24px 70px rgba(0,0,0,.26)}.panel h2{margin:0 0 6px;font-size:clamp(1.7rem,6vw,2.35rem);letter-spacing:-.045em}.panel p{margin:0;color:var(--fg2)}.actions{display:grid;gap:12px;margin-top:26px}.btn{min-height:62px;border:1px solid var(--line2);border-radius:16px;background:rgba(10,10,11,.72);color:var(--fg);display:flex;align-items:center;justify-content:center;gap:12px;font-weight:850;font-size:1.06rem}.btn:hover{border-color:rgba(142,198,255,.54);background:rgba(142,198,255,.07)}.btn.primary{background:#fff;color:#060606;border-color:#fff}.btn.secondary{color:var(--fg2)}.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}.small{margin-top:18px;text-align:center;color:var(--fg2)}.small a{color:var(--acc)}.foot{position:relative;z-index:1;border-top:1px solid var(--line);padding:22px 0 42px;color:var(--fg3);font-size:.72rem;letter-spacing:.12em}@media(max-width:560px){.brand{font-size:1.55rem}.mark{width:52px;height:52px}.split{grid-template-columns:1fr}.panel{border-radius:20px}.hero{padding-top:42px}h1{font-size:clamp(3rem,15vw,4rem)}}
+:root{color-scheme:dark;--bg:#000000;--line:#2a3745;--text:#FFFFFF;--muted:#9aa3ad;--accent:#0FA3D9;--sans:Inter,"Noto Sans Thai",system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;min-height:100svh;background:var(--bg);color:var(--text);font-family:var(--sans);display:grid;place-items:center;padding:24px}
+a{color:inherit;text-decoration:none}
+.card{width:min(100%,520px);border:1px solid var(--line);border-radius:24px;padding:clamp(24px,5vw,36px);background:linear-gradient(180deg,#0a0a0b,#000)}
+.brand{text-align:center;font-weight:850;font-size:1.1rem;letter-spacing:-.03em}
+.brand span{color:var(--muted);font-weight:600}
+h1{margin:28px 0 0;text-align:center;font-size:clamp(1.8rem,6vw,2.4rem);letter-spacing:-.04em}
+.lede{margin:12px 0 0;text-align:center;color:var(--muted);line-height:1.55}
+.actions{display:grid;gap:12px;margin-top:28px}
+.btn{min-height:58px;border:1px solid var(--line);border-radius:16px;display:flex;align-items:center;justify-content:center;gap:12px;font-weight:800;background:#08090b}
+.btn:hover{border-color:rgba(15,163,217,.55);background:rgba(15,163,217,.06)}
+.btn.primary{background:var(--accent);color:#001219;border-color:transparent}
+.foot{margin-top:24px;text-align:center;color:var(--muted);font-size:.92rem}
+.foot a{color:var(--accent);font-weight:750}
 </style>
 </head>
-<body data-ls-platform-register="v1">
-<div class="bp" aria-hidden="true"></div><div class="orb" aria-hidden="true"></div>
-<header class="hdr"><div class="wrap hdrin"><a class="brand" href="index.html"><div class="mark">LS</div><div>lsuperagen<span>.docs</span></div></a><nav class="nav" aria-label="เมนูหลัก"><a href="index.html">Home</a><a href="chat.html">Chat</a><a href="tools.html">Tools</a><a href="login.html">Login</a><a class="cur" href="signup.html">Register</a></nav></div></header>
-<main>
-<section class="hero"><div class="wrap"><div class="ey">PLATFORM REGISTER</div><h1 class="thai">ลงทะเบียนแพลตฟอร์ม</h1><p class="lede thai">เลือกวิธีสมัครแบบง่าย ๆ เพื่อเข้าใช้งานพื้นที่ทดลองของ lsuperagen.docs</p></div></section>
-<section class="wrap shell" aria-label="Platform register"><div class="panel"><h2 class="thai">เลือกทางสมัคร</h2><p class="thai">เริ่มด้วยบัญชีที่สะดวก หรือทดลองใช้งานแบบ Guest ก่อน</p><div class="actions"><div class="split"><a class="btn" href="/auth/google" data-firebase-provider="google"><b>G</b><span>สมัครด้วย Google</span></a><a class="btn" href="/auth/github" data-firebase-provider="github"><b>●</b><span>สมัครด้วย GitHub</span></a></div><a class="btn primary thai" href="chat.html">เข้าแบบ Guest เพื่อทดลองแชท</a><a class="btn secondary thai" href="login.html">มีบัญชีแล้ว เข้าสู่ระบบ</a></div><div class="small thai"><a href="index.html">กลับหน้าแรก</a></div></div></section>
+<body data-ls-platform-register="v2-unified-shell">
+<main class="card" aria-labelledby="signup-title">
+<p class="brand">lsuperagen<span>.docs</span></p>
+<h1 id="signup-title" lang="th">สมัครใช้งาน</h1>
+<p class="lede" lang="th">สร้างบัญชีด้วย Google หรือ GitHub แล้วเข้า AI Workspace ได้ทันที</p>
+<div class="actions" aria-label="ทางสมัคร">
+<a class="btn" href="/auth/google" data-firebase-provider="google">สมัครด้วย Google</a>
+<a class="btn" href="/auth/github" data-firebase-provider="github">สมัครด้วย GitHub</a>
+</div>
+<p class="foot" lang="th">มีบัญชีแล้ว? <a href="/login">เข้าสู่ระบบ</a></p>
 </main>
-<footer class="foot"><div class="wrap">LSUPERAGEN.DOCS · PLATFORM REGISTER</div></footer>
 <script type="module" src="/firebase-auth.js"></script>
 </body>
 </html>

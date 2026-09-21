@@ -94,6 +94,24 @@ test('injected public navigation does not expose docs or developer surfaces', as
   }
 });
 
+test('authenticated product shell exposes chat, tools, and logout navigation', async () => {
+  for (const file of ['chat.html', 'tools.html']) {
+    const html = await read(file);
+    assert.match(html, /href=["']\/chat/i);
+    assert.match(html, /href=["']\/tools/i);
+    assert.match(html, /href=["']\/auth\/logout/i);
+    assert.match(html, /app-shell\.js/i);
+    assert.match(html, /data-shell-page=/);
+  }
+});
+
+test('signup does not offer guest workspace bypass', async () => {
+  const html = visibleHtml(await read('signup.html'));
+  assert.equal(/Guest|ทดลองแชท/i.test(html), false);
+  assert.match(html, /\/auth\/google/i);
+  assert.match(html, /\/login/i);
+});
+
 test('tools surface contains only usable end-user product capabilities', async () => {
   const html = visibleHtml(await read('tools.html'));
   for (const term of ['PLANNED', 'BLOCKED', 'Admin', 'Endpoints', 'Secret Handoff', 'SDK Plug Tools', 'Development Console']) {

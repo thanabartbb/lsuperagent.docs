@@ -65,13 +65,16 @@ test('large code input is no longer constrained to the audited 4000 character ce
   assert.ok(Number(match[1]) >= 30000, `message limit is still too small: ${match[1]}`);
 });
 
-test('login is the sole public entry and contains only Google and GitHub identity options', async () => {
+test('login is the sole public entry and has account auth without guest bypass', async () => {
   const source = await read('src/index.js');
   assert.match(source, /pathname\s*===\s*['"]\/['"][\s\S]{0,360}\/login/);
   const login = visibleHtml(await read('login.html'));
-  assert.match(login, /Continue with Google/);
-  assert.match(login, /Continue with GitHub/);
-  assert.equal(/Guest|ทดลองแชท|ลงทะเบียนแพลตฟอร์ม/i.test(login), false, 'login must not offer an unauthenticated bypass or duplicate registration flow');
+  assert.match(login, />Google</);
+  assert.match(login, />GitHub</);
+  assert.match(login, />Gmail</);
+  assert.match(login, /name="email"/i);
+  assert.match(login, /name="password"/i);
+  assert.equal(/Guest|ทดลองแชท/i.test(login), false, 'login must not offer an unauthenticated bypass');
 });
 
 test('static root fallback also points to the login entry', async () => {

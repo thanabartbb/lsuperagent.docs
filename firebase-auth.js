@@ -4,6 +4,8 @@ import {
   getRedirectResult,
   GithubAuthProvider,
   GoogleAuthProvider,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
   signInWithRedirect,
 } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
 
@@ -53,9 +55,47 @@ function authErrorUrl(error) {
   return `/login?auth_error=${encodeURIComponent(`firebase_${code}`)}`;
 }
 
+function authMessage(error) {
+  const code = String(error?.code || error?.message || '').replace(/^auth\//, '');
+  if (/invalid-credential|wrong-password|user-not-found/i.test(code)) return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+  if (/invalid-email/i.test(code)) return 'รูปแบบอีเมลไม่ถูกต้อง';
+  if (/too-many-requests/i.test(code)) return 'มีการลองเข้าสู่ระบบหลายครั้ง กรุณารอสักครู่แล้วลองใหม่';
+  if (/operation-not-allowed/i.test(code)) return 'ระบบอีเมลและรหัสผ่านยังไม่ได้เปิดใช้งาน';
+  return 'ไม่สามารถเข้าสู่ระบบได้ กรุณาลองอีกครั้ง';
+}
+
+function setNotice(message, state = 'error') {
+  const notice = document.getElementById('auth-notice');
+  if (!notice) return;
+  notice.textContent = message || '';
+  if (message) notice.dataset.state = state;
+  else delete notice.dataset.state;
+}
+
+function setBusy(element, busy) {
+  if (!element) return;
+  if (busy) element.setAttribute('aria-busy', 'true');
+  else element.removeAttribute('aria-busy');
+}
+
+function attachUnavailableEmailFallback(form, resetButton) {
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    setNotice('ระบบอีเมลยังไม่พร้อมใช้งาน กรุณาใช้ Google หรือ GitHub');
+  });
+  resetButton?.addEventListener('click', () => {
+    setNotice('ระบบรีเซ็ตรหัสผ่านยังไม่พร้อมใช้งาน');
+  });
+}
+
 async function main() {
+  const form = document.querySelector('[data-email-login]');
+  const resetButton = document.querySelector('[data-password-reset]');
   const config = await fetchFirebaseConfig();
-  if (!config) return;
+  if (!config) {
+    attachUnavailableEmailFallback(form, resetButton);
+    return;
+  }
 
   const app = initializeApp(config);
   const auth = getAuth(app);
@@ -70,20 +110,66 @@ async function main() {
   }
 
   const queryReturnTo = safeReturnTo(new URLSearchParams(window.location.search).get('return_to'));
+
   for (const link of document.querySelectorAll('[data-firebase-provider]')) {
     link.addEventListener('click', async (event) => {
       const providerName = link.getAttribute('data-firebase-provider');
       if (!providerName) return;
       event.preventDefault();
       sessionStorage.setItem(RETURN_TO_KEY, queryReturnTo);
-      link.setAttribute('aria-busy', 'true');
+      setBusy(link, true);
       try {
         await signInWithRedirect(auth, providerFor(providerName));
       } catch (error) {
+        setBusy(link, false);
         window.location.assign(authErrorUrl(error));
       }
     });
   }
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submit = form.querySelector('button[type="submit"]');
+    const email = String(new FormData(form).get('email') || '').trim();
+    const password = String(new FormData(form).get('password') || '');
+
+    if (!email || !password) {
+      setNotice('กรอกอีเมลและรหัสผ่านให้ครบ');
+      return;
+    }
+
+    setNotice('');
+    setBusy(submit, true);
+    try {
+      const credential = await signInWithEmailAndPassword(auth, email, password);
+      await exchangeSession(credential.user);
+      window.location.replace(queryReturnTo);
+    } catch (error) {
+      setNotice(authMessage(error));
+    } finally {
+      setBusy(submit, false);
+    }
+  });
+
+  resetButton?.addEventListener('click', async () => {
+    const emailInput = form?.querySelector('input[name="email"]');
+    const email = String(emailInput?.value || '').trim();
+    if (!email) {
+      setNotice('กรอกอีเมลก่อนขอรีเซ็ตรหัสผ่าน');
+      emailInput?.focus();
+      return;
+    }
+
+    setBusy(resetButton, true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setNotice('ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลแล้ว', 'success');
+    } catch (error) {
+      setNotice(authMessage(error));
+    } finally {
+      setBusy(resetButton, false);
+    }
+  });
 }
 
 main().catch((error) => {

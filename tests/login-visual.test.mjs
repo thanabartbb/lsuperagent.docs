@@ -28,8 +28,6 @@ test('login matches the locked lsuperagen.docs mobile-first spec', async () => {
     'เริ่มต้นใช้งาน',
     'เพื่อพัฒนาทักษะเขียนโค้ด สร้างภาพ และอื่นๆ',
     'ด้วย lsuperagent.docs',
-    'อีเมล',
-    'รหัสผ่าน',
     'ลืมรหัสผ่าน?',
     'เข้าสู่ระบบ',
     'หรือ',
@@ -42,9 +40,8 @@ test('login matches the locked lsuperagen.docs mobile-first spec', async () => {
     assert.equal(text.includes(copy), true, `missing locked login copy: ${copy}`);
   }
 
-  assert.match(html, /name=["']email["']/i);
-  assert.match(html, /name=["']password["']/i);
-  assert.match(html, /type=["']password["']/i);
+  assert.match(html, /name=["']email["'][^>]*placeholder=["']อีเมล["']/i);
+  assert.match(html, /name=["']password["'][^>]*type=["']password["'][^>]*placeholder=["']รหัสผ่าน["']/i);
   assert.match(html, /href=["']\/auth\/google/i);
   assert.match(html, /href=["']\/auth\/github/i);
   assert.match(html, /href=["']\/signup(?:\.html)?["']/i);

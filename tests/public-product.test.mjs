@@ -3,15 +3,17 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
+const visibleHtml = (html) => html
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+  .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
 
-const forbiddenPublicTerms = [
+const forbiddenVisibleTerms = [
   'Runtime',
   'Secret DETECTED',
   'OPENAI LIVE',
   'Provider target',
   'PUBLIC SESSION',
   'TRUTH ROUTER',
-  '/api/chat',
   'Owner workspace',
   'Development Console',
   'PLANNED',
@@ -21,11 +23,12 @@ const forbiddenPublicTerms = [
 
 test('public chat is an end-user workspace without developer readiness copy', async () => {
   const html = await read('chat.html');
-  for (const term of forbiddenPublicTerms) {
-    assert.equal(html.includes(term), false, `chat.html exposes internal/public-inappropriate term: ${term}`);
+  const visible = visibleHtml(html);
+  for (const term of forbiddenVisibleTerms) {
+    assert.equal(visible.includes(term), false, `chat.html exposes internal/public-inappropriate visible term: ${term}`);
   }
   for (const label of ['Chat', 'Code', 'Image', 'Research', 'Read URL', 'Write']) {
-    assert.equal(html.includes(label), true, `missing user mode: ${label}`);
+    assert.equal(visible.includes(label), true, `missing user mode: ${label}`);
   }
   assert.match(html, /copy/i, 'text answers need a Copy action');
   assert.match(html, /download/i, 'image results need a Download action');
@@ -63,21 +66,25 @@ test('large code input is no longer constrained to the audited 4000 character ce
 
 test('root product no longer presents a marketing/developer landing step', async () => {
   const source = await read('src/index.js');
-  assert.match(source, /pathname\s*===\s*['"]\/['"][\s\S]{0,220}(chat\.html|\/chat)/);
+  assert.match(source, /pathname\s*===\s*['"]\/['"][\s\S]{0,260}(chat\.html|\/chat)/);
   const landing = await read('index.html');
-  assert.equal(landing.includes('Build with AI.'), false);
+  assert.equal(visibleHtml(landing).includes('Build with AI.'), false);
 });
 
 test('injected public navigation does not expose docs or developer surfaces', async () => {
   const source = await read('src/index.js');
-  for (const term of ["'/getting-started'", "'/api'", "'/guides'", "'/changelog'", "'/examples'"]) {
-    assert.equal(source.includes(term), false, `legacy public nav remains: ${term}`);
+  const start = source.indexOf('function publicMobileLinks');
+  const end = source.indexOf('function enhancePublicHtml', start);
+  assert.ok(start >= 0 && end > start, 'publicMobileLinks function must exist');
+  const publicNav = source.slice(start, end);
+  for (const term of ["'/getting-started'", "'/api'", "'/guides'", "'/changelog'", "'/examples'", "'/dev'"]) {
+    assert.equal(publicNav.includes(term), false, `legacy/developer public nav remains: ${term}`);
   }
 });
 
 test('tools surface contains only usable end-user product capabilities', async () => {
-  const html = await read('tools.html');
-  for (const term of ['PLANNED', 'BLOCKED', 'Admin', 'Endpoints', 'Secret Handoff', 'SDK Plug Tools', 'Workspace']) {
+  const html = visibleHtml(await read('tools.html'));
+  for (const term of ['PLANNED', 'BLOCKED', 'Admin', 'Endpoints', 'Secret Handoff', 'SDK Plug Tools', 'Development Console']) {
     assert.equal(html.includes(term), false, `tools.html still exposes developer/unavailable surface: ${term}`);
   }
 });

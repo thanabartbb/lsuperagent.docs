@@ -153,8 +153,16 @@
   </main>
 
   <script>
+    const params = new URLSearchParams(location.search);
+    const returnTo = params.get('return_to');
+    if (returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//')) {
+      const suffix = '?return_to=' + encodeURIComponent(returnTo);
+      document.querySelectorAll('a[href="/auth/google"], a[href="/auth/github"]').forEach((link) => {
+        link.href = link.getAttribute('href') + suffix;
+      });
+    }
     const notice = document.getElementById('auth-notice');
-    const error = new URLSearchParams(location.search).get('auth_error');
+    const error = params.get('auth_error');
     if (error) notice.textContent = 'ไม่สามารถเข้าสู่ระบบได้ กรุณาลองอีกครั้ง';
     const password = document.querySelector('input[name="password"]');
     document.querySelector('[data-password-toggle]')?.addEventListener('click', () => {

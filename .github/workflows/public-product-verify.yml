@@ -9,17 +9,23 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Migration script syntax
+        run: node --check scripts/apply-public-product.mjs
+      - name: Generate audited public product patch
+        run: node scripts/apply-public-product.mjs
       - name: Worker syntax
         run: node --check src/index.js
       - name: Browser script syntax
@@ -28,3 +34,17 @@ jobs:
           node --check src/firebase-worker.js
       - name: Tests
         run: node --test tests/*.test.mjs
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit generated product files
+        if: github.event_name == 'push'
+        run: |
+          if git diff --quiet -- src/index.js index.html app.css chat.html tools.html; then
+            echo "No generated product changes to commit"
+            exit 0
+          fi
+          git config user.name "lsuperagent-audit-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/index.js index.html app.css chat.html tools.html
+          git commit -m "feat: ship audited public AI workspace"
+          git push origin HEAD:audit/public-ai-workspace

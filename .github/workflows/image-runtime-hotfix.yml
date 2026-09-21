@@ -1,0 +1,42 @@
+name: Image Runtime Hotfix
+
+on:
+  push:
+    paths:
+      - '.github/workflows/image-runtime-hotfix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Replace explicit image model with provider-selected supported model
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('src/index.js')
+          text = path.read_text()
+          old = "tools: [{ type: 'image_generation', model: 'gpt-image-2.5-flare', action: 'generate' }],"
+          new = "tools: [{ type: 'image_generation' }],"
+          if old not in text:
+              raise SystemExit('expected image tool configuration not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+      - name: Verify before commit
+        run: |
+          node --check src/index.js
+          node --test tests/*.test.mjs
+      - name: Commit verified hotfix and remove one-shot workflow
+        run: |
+          git config user.name 'THNB SMK'
+          git config user.email '326990420+thanabartbb@users.noreply.github.com'
+          git add src/index.js
+          git rm .github/workflows/image-runtime-hotfix.yml
+          git commit -m 'fix: use supported image generation tool defaults'
+          git push

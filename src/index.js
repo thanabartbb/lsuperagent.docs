@@ -582,7 +582,7 @@ async function handleImage(request, env) {
   const raw = await response.text();
   let data = {};
   try { data = raw ? JSON.parse(raw) : {}; } catch (_) { data = {}; }
-  if (!response.ok) return json({ ok: false, status: 'service_error', message: response.status === 429 ? 'บริการสร้างภาพถูกใช้งานหนาแน่น กรุณาลองใหม่อีกครั้ง' : 'ไม่สามารถสร้างภาพจากคำขอนี้ได้ กรุณาลองปรับคำอธิบาย' }, response.status === 429 ? 429 : 502, baseHeaders);
+  if (!response.ok) return json({ ok: false, status: 'service_error', message: response.status === 429 ? 'บริการสร้างภาพถูกใช้งานหนาแน่น กรุณาลองใหม่อีกครั้ง' : 'ไม่สามารถสร้างภาพจากคำขอนี้ได้ กรุณาลองปรับคำอธิบาย', error_code: data && data.error && data.error.code ? String(data.error.code).slice(0, 80) : null, error_type: data && data.error && data.error.type ? String(data.error.type).slice(0, 80) : null, provider_status: response.status }, response.status === 429 ? 429 : 502, baseHeaders);
   const image = extractGeneratedImage(data);
   if (!image) return json({ ok: false, status: 'empty_result', message: 'บริการสร้างภาพไม่ได้ส่งไฟล์ภาพกลับมา กรุณาลองใหม่' }, 502, baseHeaders);
   return json({ ok: true, status: 'completed', image: { mime_type: 'image/png', data_base64: image.data_base64, filename: 'lsuperagen-image.png', revised_prompt: image.revised_prompt } }, 200, baseHeaders);

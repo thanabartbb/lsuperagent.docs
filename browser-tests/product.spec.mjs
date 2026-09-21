@@ -30,7 +30,16 @@ async function sendTextFlow(page, mode, prompt, timeout = 120000) {
   if (mode !== 'Chat') await page.getByRole('button', { name: mode, exact: true }).click();
   const before = await page.locator('.message.assistant').count();
   await page.getByLabel('ข้อความถึง AI').fill(prompt);
+  const responsePromise = page.waitForResponse(
+    (response) => response.url().endsWith('/api/chat') && response.request().method() === 'POST',
+    { timeout },
+  );
   await page.getByRole('button', { name: 'ส่ง', exact: true }).click();
+  const apiResponse = await responsePromise;
+  const api = await apiResponse.json().catch(() => ({}));
+  const sourceCount = Array.isArray(api.sources) ? api.sources.length : 0;
+  const errorMessage = api.ok === true ? '' : String(api.message || '').slice(0, 180);
+  console.log(`FLOW ${mode}: HTTP ${apiResponse.status()} ok=${api.ok === true} status=${api.status || 'unknown'} sources=${sourceCount}${errorMessage ? ` error=${errorMessage}` : ''}`);
   await expect(page.locator('.message.assistant')).toHaveCount(before + 1, { timeout });
   const last = page.locator('.message.assistant').last();
   await expect(last).toBeVisible();

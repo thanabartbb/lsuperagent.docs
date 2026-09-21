@@ -129,6 +129,8 @@ negative_constraints:
 
 ## GitHub Write Protocol
 
+Standing owner authorization (effective 2026-09-21): ChatGPT may create validated, fast-forward commits to `main` automatically for changes the owner explicitly requests in the active chat. No separate per-commit confirmation is required. This authorization applies only to `thanabartbb/lsuperagent.docs`. Force-pushes, branch or data deletion, permission changes, and secret changes still require explicit action-specific approval.
+
 Before writing:
 
 1. Read the latest `README.md`.
@@ -155,8 +157,8 @@ repo_contract_loop:
   target_files:
     - README.md
     - AGENTS.md
-  last_run_at: 2026-09-19T16:07:00+07:00
-  last_run_task: Initial contract creation
+  last_run_at: 2026-09-21T07:18:51+07:00
+  last_run_task: Record standing owner authorization for validated automatic commits
   required_action: write_real_timestamp_and_task_summary
 
 prompt_stack_loop:

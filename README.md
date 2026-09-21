@@ -85,7 +85,7 @@ Agents must not do the following:
 
 ## ChatGPT + GitHub Safety Lock
 
-The GitHub connector should remain in **Always ask** mode unless the owner intentionally changes it. Any future automation that writes to this repo must treat GitHub writes as privileged actions and must verify the latest repo state before writing.
+Standing owner authorization is active as of **2026-09-21**. ChatGPT may automatically create validated, fast-forward commits to `main` for changes the owner explicitly requests in the active chat, without asking for separate per-commit confirmation. The authorization is limited to `thanabartbb/lsuperagent.docs`. Every write must still verify the latest repository state and pass relevant checks. Force-pushes, deletion, permission changes, and secret changes require explicit action-specific approval.
 
 ## Update Loop Contract
 

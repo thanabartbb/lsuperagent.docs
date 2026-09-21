@@ -30,7 +30,7 @@ async function post(path, body, timeout = 90000) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const classification = [data.error_code, data.error_type, data.provider_status].filter((value) => value !== null && value !== undefined && value !== '').join('/');
+    const classification = [data.error_code, data.error_type, data.error_param, data.provider_status].filter((value) => value !== null && value !== undefined && value !== '').join('/');
     throw new Error(`${path} HTTP ${response.status}: ${data.status || 'error'} ${data.message || ''}${classification ? ` [${classification}]` : ''}`.trim());
   }
   return data;

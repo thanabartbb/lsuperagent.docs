@@ -127,6 +127,18 @@ test('root opens the login entry when no session exists', async () => {
   assert.equal(new URL(response.headers.get('location'), 'https://agents-sdk.space').pathname, '/login');
 });
 
+test('login keeps the clean /login path for Cloudflare HTML handling', async () => {
+  let requestedPath = '';
+  const response = await worker.fetch(new Request('https://agents-sdk.space/login'), {
+    ASSETS: { fetch: async (request) => {
+      requestedPath = new URL(request.url).pathname;
+      return new Response('<!doctype html><title>Login</title>', { headers: { 'content-type': 'text/html' } });
+    } },
+  });
+  assert.equal(response.status, 200);
+  assert.equal(requestedPath, '/login');
+});
+
 test('workspace requires a valid user session', async () => {
   const response = await worker.fetch(new Request('https://agents-sdk.space/chat'), {});
   assert.equal(response.status, 302);

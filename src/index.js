@@ -641,11 +641,6 @@ function isDevOnlyPath(pathname) {
 }
 
 async function fetchAsset(request, env, pathname) {
-  if (pathname === '/login') {
-    const assetUrl = new URL(request.url);
-    assetUrl.pathname = '/login.html';
-    return env.ASSETS.fetch(new Request(assetUrl.toString(), request));
-  }
   if (pathname === '/dev' || pathname === '/dev.html') {
     const assetUrl = new URL(request.url);
     assetUrl.pathname = '/dev.html';

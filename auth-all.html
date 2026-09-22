@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>lsuperagen.docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#050608;
+  --panel:#0d0f13;
+  --panel-border:#1c1f26;
+  --field:#101319;
+  --field-border:#242832;
+  --field-focus:#2e3a50;
+  --text:#f2f4f7;
+  --text-dim:#9aa1ad;
+  --text-faint:#5c6270;
+  --accent-a:#3fc7ff;
+  --accent-b:#2f6bff;
+  --danger:#ff4f4f;
+  --success:#22c55e;
+  --radius:14px;
+  --r-field:9px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans Thai','Inter',system-ui,sans-serif;}
+body{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100%;
+  padding:24px 20px;
+  padding-top:calc(24px + env(safe-area-inset-top,0px));
+  padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));
+  position:relative;overflow-x:hidden;
+}
+body::before,body::after{
+  content:"";position:fixed;width:46vmax;height:46vmax;border-radius:50%;
+  pointer-events:none;z-index:0;opacity:.5;
+}
+body::before{top:-26vmax;left:-26vmax;background:radial-gradient(circle at 60% 60%,#1c6fb0 0%,#0a2a44 45%,transparent 70%);}
+body::after{bottom:-26vmax;right:-26vmax;background:radial-gradient(circle at 40% 40%,#1c6fb0 0%,#0a2a44 45%,transparent 70%);}
+
+/* ─── VIEWS ─── */
+.view{display:none;position:relative;z-index:1;width:100%;max-width:304px;flex-direction:column;align-items:center;text-align:center;}
+.view.active{display:flex;}
+
+/* ─── HEADER ─── */
+.logo-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:18px;}
+.logo{width:40px;height:40px;}
+.brand{font-family:'Inter',sans-serif;font-weight:800;font-size:18px;letter-spacing:-.02em;}
+.brand .a{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.tagline{font-size:8.5px;letter-spacing:.18em;color:var(--text-faint);font-family:'Inter',sans-serif;font-weight:600;}
+
+/* ─── HEADING ─── */
+.view-title{font-size:20px;font-weight:700;line-height:1.25;margin-bottom:5px;}
+.view-sub{font-size:12px;line-height:1.6;color:var(--text-dim);margin-bottom:18px;}
+.view-sub .a{color:#5cc9ff;}
+
+/* ─── CARD ─── */
+.card{width:100%;background:var(--panel);border:1px solid var(--panel-border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:9px;}
+
+/* ─── FIELD ─── */
+.field-wrap{display:flex;flex-direction:column;gap:4px;text-align:left;}
+.field-label{font-size:10.5px;color:var(--text-dim);padding-left:2px;}
+.field{
+  display:flex;align-items:center;
+  background:var(--field);border:1px solid var(--field-border);
+  border-radius:var(--r-field);padding:0 10px;height:38px;
+  transition:border-color .15s;
+}
+.field:focus-within{border-color:var(--field-focus);}
+.field svg.icon{width:13px;height:13px;flex:none;color:var(--text-faint);}
+.field input{
+  flex:1;border:0;outline:0;background:transparent;
+  color:var(--text);font-size:12.5px;font-family:inherit;
+  padding:0 0 0 8px;min-width:0;
+}
+.field input::placeholder{color:var(--text-faint);}
+.eye{flex:none;background:none;border:0;padding:2px;cursor:pointer;color:var(--text-faint);display:flex;}
+.eye svg{width:13px;height:13px;}
+
+/* strength bar */
+.strength-bar{display:flex;gap:3px;margin-top:2px;}
+.strength-bar span{flex:1;height:2px;border-radius:2px;background:var(--field-border);transition:background .25s;}
+.strength-bar span.weak{background:#ff4f4f;}
+.strength-bar span.ok{background:#f59e0b;}
+.strength-bar span.good{background:#22c55e;}
+.strength-hint{font-size:10px;color:var(--text-faint);text-align:left;margin-top:1px;}
+
+/* ─── FORGOT LINK ─── */
+.row-forgot{text-align:right;margin-top:-2px;}
+.row-forgot button{font-size:10.5px;color:#4bc0ff;background:none;border:0;cursor:pointer;font-family:inherit;}
+
+/* ─── BUTTONS ─── */
+.btn-primary{
+  height:38px;border:0;border-radius:var(--r-field);
+  background:linear-gradient(90deg,var(--accent-a),var(--accent-b));
+  color:#04101c;font-weight:700;font-size:12.5px;font-family:'Noto Sans Thai',sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  cursor:pointer;margin-top:2px;transition:opacity .15s;width:100%;
+}
+.btn-primary:hover{opacity:.9;}
+.btn-primary svg{width:12px;height:12px;}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;}
+
+.btn-ghost{
+  height:36px;border:1px solid var(--field-border);border-radius:var(--r-field);
+  background:transparent;color:var(--text-dim);font-size:12px;font-family:inherit;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  cursor:pointer;width:100%;transition:border-color .15s;
+}
+.btn-ghost:hover{border-color:var(--field-focus);}
+.btn-ghost svg{width:13px;height:13px;}
+
+/* ─── DIVIDER ─── */
+.divider{display:flex;align-items:center;gap:10px;margin:12px 0;width:100%;}
+.divider .line{flex:1;height:1px;background:var(--panel-border);}
+.divider span{font-size:10px;color:var(--text-faint);}
+
+/* ─── SOCIAL ─── */
+.socials{display:flex;gap:6px;width:100%;}
+.btn-social{
+  flex:1;height:35px;border-radius:var(--r-field);border:1px solid var(--field-border);
+  background:var(--field);color:var(--text);font-size:10px;font-family:'Inter',sans-serif;
+  font-weight:500;display:flex;align-items:center;justify-content:center;gap:4px;
+  cursor:pointer;padding:0 4px;transition:border-color .15s;
+}
+.btn-social:hover{border-color:var(--field-focus);}
+.btn-social svg{width:12px;height:12px;flex:none;}
+
+/* ─── FOOTER LINK ─── */
+.foot{margin-top:16px;font-size:11.5px;color:var(--text-dim);}
+.foot button{color:#4bc0ff;background:none;border:0;cursor:pointer;font-weight:600;font-size:11.5px;font-family:inherit;}
+
+/* ─── BACK BUTTON ─── */
+.back{
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;color:var(--text-faint);background:none;border:0;
+  cursor:pointer;font-family:inherit;margin-bottom:14px;align-self:flex-start;
+  transition:color .15s;
+}
+.back:hover{color:var(--text-dim);}
+.back svg{width:13px;height:13px;}
+
+/* ─── OTP BOX ─── */
+.otp-wrap{display:flex;gap:6px;justify-content:center;}
+.otp-wrap input{
+  width:38px;height:44px;text-align:center;font-size:18px;font-weight:700;
+  background:var(--field);border:1px solid var(--field-border);border-radius:8px;
+  color:var(--text);outline:0;font-family:'Inter',sans-serif;
+  transition:border-color .15s;
+}
+.otp-wrap input:focus{border-color:var(--field-focus);}
+
+/* ─── SUCCESS STATE ─── */
+.success-icon{
+  width:48px;height:48px;border-radius:50%;
+  background:linear-gradient(135deg,#0c2c1a,#0d3020);
+  border:1px solid #1a4a2e;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 12px;
+}
+.success-icon svg{width:22px;height:22px;color:#22c55e;}
+
+/* ─── ALERT ─── */
+.alert{
+  font-size:11px;padding:8px 10px;border-radius:8px;text-align:left;
+  display:none;
+}
+.alert.err{background:#1a0a0a;border:1px solid #3d1010;color:#f87171;}
+.alert.ok{background:#0a1a0e;border:1px solid #14532d;color:#86efac;}
+.alert.show{display:block;}
+
+/* checkbox */
+.check-row{display:flex;align-items:flex-start;gap:8px;text-align:left;}
+.check-row input[type=checkbox]{margin-top:2px;accent-color:var(--accent-a);}
+.check-row label{font-size:10.5px;color:var(--text-dim);line-height:1.5;}
+.check-row label button{color:#4bc0ff;background:none;border:0;cursor:pointer;font-size:10.5px;font-family:inherit;}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════
+     VIEW 1 : LOGIN
+════════════════════════════ -->
+<div class="view active" id="v-login">
+  <div class="logo-wrap">
+    <svg class="logo" viewBox="0 0 64 64" fill="none">
+      <defs><linearGradient id="lg1" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#eaf6ff"/><stop offset=".5" stop-color="#3fc7ff"/><stop offset="1" stop-color="#2f6bff"/></linearGradient></defs>
+      <path d="M10 10H22V44H40V54H10V10Z" fill="url(#lg1)"/>
+      <path d="M34 54V44C34 32 44 32 44 22C44 15 38 10 30 10H42C50 10 56 16 56 24C56 34 44 34 44 44V54H34Z" fill="url(#lg1)"/>
+    </svg>
+    <p class="brand">lsuperagen<span class="a">.docs</span></p>
+    <p class="tagline">YOUR AI WORKSPACE</p>
+  </div>
+
+  <h1 class="view-title">เริ่มต้นใช้งาน</h1>
+  <p class="view-sub">เพื่อพัฒนาทักษะเขียนโค้ด สร้างภาพ และอื่นๆ<br>ด้วย <span class="a">lsuperagent.docs</span></p>
+
+  <div class="card">
+    <div id="login-alert" class="alert err"></div>
+
+    <div class="field-wrap">
+      <span class="field-label">อีเมล</span>
+      <label class="field">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email">
+      </label>
+    </div>
+
+    <div class="field-wrap">
+      <span class="field-label">รหัสผ่าน</span>
+      <label class="field">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 118 0v3"/></svg>
+        <input type="password" id="login-pw" placeholder="รหัสผ่าน" autocomplete="current-password">
+        <button class="eye" type="button" onclick="togglePw('login-pw',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </label>
+    </div>
+
+    <div class="row-forgot">
+      <button onclick="goTo('v-forgot')">ลืมรหัสผ่าน?</button>
+    </div>
+
+    <button class="btn-primary" onclick="doLogin()">
+      เข้าสู่ระบบ
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+
+  <div class="divider"><span class="line"></span><span>หรือ</span><span class="line"></span></div>
+
+  <div class="socials">
+    <button class="btn-social">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.2 2.7-2.5 3.6v3h4C22.3 19 23.5 15.9 23.5 12.3z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-4-3c-1.1.7-2.5 1.2-3.9 1.2-3 0-5.5-2-6.4-4.7h-4.1v3C3.5 21.3 7.4 24 12 24z"/><path fill="#FBBC05" d="M5.6 14.6c-.2-.7-.4-1.4-.4-2.1s.1-1.5.4-2.1v-3h-4.1C.5 8.9 0 10.4 0 12s.5 3.1 1.5 4.6l4.1-3z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.3.6 4.5 1.7l3.4-3.4C17.9 1.2 15.2 0 12 0 7.4 0 3.5 2.7 1.5 6.4l4.1 3c.9-2.7 3.4-4.6 6.4-4.6z"/></svg>
+      Google
+    </button>
+    <button class="btn-social">
+      <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 .3a12 12 0 00-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1.1-.8.1-.7.1-.7 1.2.1 1.9 1.3 1.9 1.3 1.1 1.9 2.9 1.3 3.6 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.4-1.4-5.4-6a4.7 4.7 0 011.2-3.2 4.4 4.4 0 01.1-3.2s1-.3 3.3 1.2a11 11 0 016 0c2.3-1.5 3.3-1.2 3.3-1.2a4.4 4.4 0 01.1 3.2 4.7 4.7 0 011.2 3.2c0 4.6-2.8 5.7-5.4 6 .4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0012 .3z"/></svg>
+      GitHub
+    </button>
+    <button class="btn-social">
+      <svg viewBox="0 0 24 24"><path fill="#EA4335" d="M4.5 4h15c.9 0 1.6.5 2 1.2L12 12 2.5 5.2C2.9 4.5 3.6 4 4.5 4z"/><path fill="#EA4335" d="M2 6.5l9.4 6.9a1 1 0 001.2 0L22 6.5V18a2 2 0 01-2 2H4a2 2 0 01-2-2V6.5z" opacity=".6"/></svg>
+      Gmail
+    </button>
+  </div>
+
+  <p class="foot">ยังไม่มีบัญชีใช่ไหม? <button onclick="goTo('v-register')">สมัครใช้งาน →</button></p>
+</div>
+
+
+<!-- ════════════════════════════
+     VIEW 2 : FORGOT PASSWORD
+════════════════════════════ -->
+<div class="view" id="v-forgot">
+  <div class="logo-wrap">
+    <svg class="logo" viewBox="0 0 64 64" fill="none">
+      <defs><linearGradient id="lg2" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#eaf6ff"/><stop offset=".5" stop-color="#3fc7ff"/><stop offset="1" stop-color="#2f6bff"/></linearGradient></defs>
+      <path d="M10 10H22V44H40V54H10V10Z" fill="url(#lg2)"/>
+      <path d="M34 54V44C34 32 44 32 44 22C44 15 38 10 30 10H42C50 10 56 16 56 24C56 34 44 34 44 44V54H34Z" fill="url(#lg2)"/>
+    </svg>
+    <p class="brand">lsuperagen<span class="a">.docs</span></p>
+  </div>
+
+  <!-- step 1: enter email -->
+  <div id="forgot-s1" style="width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;">
+    <button class="back" onclick="goTo('v-login')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      กลับ
+    </button>
+    <h1 class="view-title">รีเซ็ตรหัสผ่าน</h1>
+    <p class="view-sub">กรอกอีเมลที่ใช้สมัคร เราจะส่งรหัส OTP ไปให้</p>
+    <div class="card">
+      <div id="forgot-alert" class="alert err"></div>
+      <div class="field-wrap">
+        <span class="field-label">อีเมล</span>
+        <label class="field">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          <input type="email" id="forgot-email" placeholder="you@example.com" autocomplete="email">
+        </label>
+      </div>
+      <button class="btn-primary" onclick="doSendOtp()">
+        ส่งรหัส OTP
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+    <p class="foot">จำรหัสผ่านได้แล้ว? <button onclick="goTo('v-login')">เข้าสู่ระบบ →</button></p>
+  </div>
+
+  <!-- step 2: enter OTP -->
+  <div id="forgot-s2" style="width:100%;display:none;flex-direction:column;align-items:center;text-align:center;">
+    <button class="back" onclick="showForgotStep(1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      กลับ
+    </button>
+    <h1 class="view-title">ใส่รหัส OTP</h1>
+    <p class="view-sub" id="otp-hint">ส่งรหัส 6 หลักไปที่<br><span class="a" id="otp-email-display"></span></p>
+    <div class="card" style="gap:14px;">
+      <div id="otp-alert" class="alert err"></div>
+      <div class="otp-wrap">
+        <input type="text" maxlength="1" class="otp-digit" inputmode="numeric" pattern="[0-9]">
+        <input type="text" maxlength="1" class="otp-digit" inputmode="numeric" pattern="[0-9]">
+        <input type="text" maxlength="1" class="otp-digit" inputmode="numeric" pattern="[0-9]">
+        <input type="text" maxlength="1" class="otp-digit" inputmode="numeric" pattern="[0-9]">
+        <input type="text" maxlength="1" class="otp-digit" inputmode="numeric" pattern="[0-9]">
+        <input type="text" maxlength="1" class="otp-digit" inputmode="numeric" pattern="[0-9]">
+      </div>
+      <button class="btn-primary" onclick="doVerifyOtp()">
+        ยืนยัน OTP
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+      <button class="btn-ghost" onclick="doSendOtp(true)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.5 15a9 9 0 11-2.8-9.4L23 10"/></svg>
+        ส่ง OTP ใหม่
+      </button>
+    </div>
+  </div>
+
+  <!-- step 3: new password -->
+  <div id="forgot-s3" style="width:100%;display:none;flex-direction:column;align-items:center;text-align:center;">
+    <h1 class="view-title">ตั้งรหัสผ่านใหม่</h1>
+    <p class="view-sub">รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร</p>
+    <div class="card">
+      <div id="newpw-alert" class="alert err"></div>
+      <div class="field-wrap">
+        <span class="field-label">รหัสผ่านใหม่</span>
+        <label class="field">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 118 0v3"/></svg>
+          <input type="password" id="new-pw" placeholder="อย่างน้อย 8 ตัวอักษร" oninput="checkStrength(this.value)">
+          <button class="eye" type="button" onclick="togglePw('new-pw',this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </label>
+        <div class="strength-bar">
+          <span id="sb1"></span><span id="sb2"></span><span id="sb3"></span><span id="sb4"></span>
+        </div>
+        <p class="strength-hint" id="strength-hint"></p>
+      </div>
+      <div class="field-wrap">
+        <span class="field-label">ยืนยันรหัสผ่าน</span>
+        <label class="field">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 118 0v3"/></svg>
+          <input type="password" id="confirm-pw" placeholder="ยืนยันรหัสผ่าน">
+          <button class="eye" type="button" onclick="togglePw('confirm-pw',this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </label>
+      </div>
+      <button class="btn-primary" onclick="doResetPw()">
+        บันทึกรหัสผ่าน
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- step 4: success -->
+  <div id="forgot-s4" style="width:100%;display:none;flex-direction:column;align-items:center;text-align:center;">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+    </div>
+    <h1 class="view-title">รีเซ็ตสำเร็จ!</h1>
+    <p class="view-sub">ตั้งรหัสผ่านใหม่เรียบร้อย<br>สามารถเข้าสู่ระบบได้เลย</p>
+    <button class="btn-primary" style="max-width:200px;" onclick="goTo('v-login')">
+      เข้าสู่ระบบ
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════
+     VIEW 3 : CREATE ACCOUNT
+════════════════════════════ -->
+<div class="view" id="v-register">
+  <!-- step 1: fill form -->
+  <div id="reg-s1" style="width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;">
+    <div class="logo-wrap">
+      <svg class="logo" viewBox="0 0 64 64" fill="none">
+        <defs><linearGradient id="lg3" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#eaf6ff"/><stop offset=".5" stop-color="#3fc7ff"/><stop offset="1" stop-color="#2f6bff"/></linearGradient></defs>
+        <path d="M10 10H22V44H40V54H10V10Z" fill="url(#lg3)"/>
+        <path d="M34 54V44C34 32 44 32 44 22C44 15 38 10 30 10H42C50 10 56 16 56 24C56 34 44 34 44 44V54H34Z" fill="url(#lg3)"/>
+      </svg>
+      <p class="brand">lsuperagen<span class="a">.docs</span></p>
+    </div>
+    <button class="back" onclick="goTo('v-login')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      กลับ
+    </button>
+    <h1 class="view-title">สมัครใช้งาน</h1>
+    <p class="view-sub">สร้างบัญชีใหม่เพื่อเริ่มใช้<br><span class="a">lsuperagent.docs</span></p>
+
+    <div class="card">
+      <div id="reg-alert" class="alert err"></div>
+
+      <div class="field-wrap">
+        <span class="field-label">ชื่อที่แสดง</span>
+        <label class="field">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <input type="text" id="reg-name" placeholder="ชื่อของคุณ" autocomplete="name">
+        </label>
+      </div>
+
+      <div class="field-wrap">
+        <span class="field-label">อีเมล</span>
+        <label class="field">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email">
+        </label>
+      </div>
+
+      <div class="field-wrap">
+        <span class="field-label">รหัสผ่าน</span>
+        <label class="field">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 118 0v3"/></svg>
+          <input type="password" id="reg-pw" placeholder="อย่างน้อย 8 ตัวอักษร" oninput="checkStrength(this.value)" autocomplete="new-password">
+          <button class="eye" type="button" onclick="togglePw('reg-pw',this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </label>
+        <div class="strength-bar">
+          <span id="sb1r"></span><span id="sb2r"></span><span id="sb3r"></span><span id="sb4r"></span>
+        </div>
+        <p class="strength-hint" id="strength-hint-r"></p>
+      </div>
+
+      <div class="field-wrap">
+        <span class="field-label">ยืนยันรหัสผ่าน</span>
+        <label class="field">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 118 0v3"/></svg>
+          <input type="password" id="reg-confirm" placeholder="ยืนยันรหัสผ่าน" autocomplete="new-password">
+          <button class="eye" type="button" onclick="togglePw('reg-confirm',this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </label>
+      </div>
+
+      <div class="check-row">
+        <input type="checkbox" id="reg-terms">
+        <label for="reg-terms">ฉันยอมรับ <button onclick="alert('Terms of Service')">ข้อกำหนดการใช้งาน</button> และ <button onclick="alert('Privacy Policy')">นโยบายความเป็นส่วนตัว</button></label>
+      </div>
+
+      <button class="btn-primary" onclick="doRegister()">
+        สร้างบัญชี
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+
+    <div class="divider"><span class="line"></span><span>หรือสมัครด้วย</span><span class="line"></span></div>
+
+    <div class="socials">
+      <button class="btn-social">
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.2 2.7-2.5 3.6v3h4C22.3 19 23.5 15.9 23.5 12.3z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-4-3c-1.1.7-2.5 1.2-3.9 1.2-3 0-5.5-2-6.4-4.7h-4.1v3C3.5 21.3 7.4 24 12 24z"/><path fill="#FBBC05" d="M5.6 14.6c-.2-.7-.4-1.4-.4-2.1s.1-1.5.4-2.1v-3h-4.1C.5 8.9 0 10.4 0 12s.5 3.1 1.5 4.6l4.1-3z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.3.6 4.5 1.7l3.4-3.4C17.9 1.2 15.2 0 12 0 7.4 0 3.5 2.7 1.5 6.4l4.1 3c.9-2.7 3.4-4.6 6.4-4.6z"/></svg>
+        Google
+      </button>
+      <button class="btn-social">
+        <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 .3a12 12 0 00-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.8-1.4-1.8-1.4-1.1-.8.1-.7.1-.7 1.2.1 1.9 1.3 1.9 1.3 1.1 1.9 2.9 1.3 3.6 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.4-1.4-5.4-6a4.7 4.7 0 011.2-3.2 4.4 4.4 0 01.1-3.2s1-.3 3.3 1.2a11 11 0 016 0c2.3-1.5 3.3-1.2 3.3-1.2a4.4 4.4 0 01.1 3.2 4.7 4.7 0 011.2 3.2c0 4.6-2.8 5.7-5.4 6 .4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0012 .3z"/></svg>
+        GitHub
+      </button>
+      <button class="btn-social">
+        <svg viewBox="0 0 24 24"><path fill="#EA4335" d="M4.5 4h15c.9 0 1.6.5 2 1.2L12 12 2.5 5.2C2.9 4.5 3.6 4 4.5 4z"/><path fill="#EA4335" d="M2 6.5l9.4 6.9a1 1 0 001.2 0L22 6.5V18a2 2 0 01-2 2H4a2 2 0 01-2-2V6.5z" opacity=".6"/></svg>
+        Gmail
+      </button>
+    </div>
+
+    <p class="foot">มีบัญชีอยู่แล้ว? <button onclick="goTo('v-login')">เข้าสู่ระบบ →</button></p>
+  </div>
+
+  <!-- step 2: verify email OTP -->
+  <div id="reg-s2" style="width:100%;display:none;flex-direction:column;align-items:center;text-align:center;">
+    <div class="logo-wrap">
+      <svg class="logo" viewBox="0 0 64 64" fill="none">
+        <defs><linearGradient id="lg4" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#eaf6ff"/><stop offset=".5" stop-color="#3fc7ff"/><stop offset="1" stop-color="#2f6bff"/></linearGradient></defs>
+        <path d="M10 10H22V44H40V54H10V10Z" fill="url(#lg4)"/>
+        <path d="M34 54V44C34 32 44 32 44 22C44 15 38 10 30 10H42C50 10 56 16 56 24C56 34 44 34 44 44V54H34Z" fill="url(#lg4)"/>
+      </svg>
+    </div>
+    <button class="back" onclick="showRegStep(1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      กลับ
+    </button>
+    <h1 class="view-title">ยืนยันอีเมล</h1>
+    <p class="view-sub">ส่งรหัส 6 หลักไปที่<br><span class="a" id="reg-email-display"></span></p>
+    <div class="card" style="gap:14px;">
+      <div id="reg-otp-alert" class="alert err"></div>
+      <div class="otp-wrap">
+        <input type="text" maxlength="1" class="otp-digit-reg" inputmode="numeric" pattern="[0-9]">
+        <input type="text" maxlength="1" class="otp-digit-reg" inputmode="numeric" pattern="[0-9]">
+        <input type="text" maxlength="1" class="otp-digit-reg" inputmode="numeric" pattern="[0-9]">
+        <input type="text" maxlength="1" class="otp-digit-reg" inputmode="numeric" pattern="[0-9]">
+        <input type="text" maxlength="1" class="otp-digit-reg" inputmode="numeric" pattern="[0-9]">
+        <input type="text" maxlength="1" class="otp-digit-reg" inputmode="numeric" pattern="[0-9]">
+      </div>
+      <button class="btn-primary" onclick="doVerifyRegOtp()">
+        ยืนยัน
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+      <button class="btn-ghost" onclick="doRegister(true)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.5 15a9 9 0 11-2.8-9.4L23 10"/></svg>
+        ส่ง OTP ใหม่
+      </button>
+    </div>
+  </div>
+
+  <!-- step 3: success -->
+  <div id="reg-s3" style="width:100%;display:none;flex-direction:column;align-items:center;text-align:center;">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+    </div>
+    <h1 class="view-title">ยินดีต้อนรับ! 🎉</h1>
+    <p class="view-sub">สร้างบัญชีสำเร็จ<br>พร้อมใช้งาน <span class="a">lsuperagent.docs</span> แล้ว</p>
+    <button class="btn-primary" style="max-width:200px;" onclick="goTo('v-login')">
+      เข้าสู่ระบบ
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+</div>
+
+
+<script>
+// ─── VIEW SWITCHER ───────────────────────────────────
+function goTo(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ─── TOGGLE PASSWORD ─────────────────────────────────
+function togglePw(id,btn){
+  const i=document.getElementById(id);
+  i.type=i.type==='password'?'text':'password';
+}
+
+// ─── SHOW ALERT ──────────────────────────────────────
+function showAlert(id,msg,type='err'){
+  const el=document.getElementById(id);
+  el.textContent=msg;
+  el.className='alert '+type+' show';
+}
+function hideAlert(id){
+  const el=document.getElementById(id);
+  el.className='alert';
+}
+
+// ─── PASSWORD STRENGTH ───────────────────────────────
+function checkStrength(v){
+  const isReg=document.getElementById('reg-pw')&&document.getElementById('reg-pw').value===v;
+  const pfx=isReg?'r':'';
+  const bars=[document.getElementById('sb1'+pfx),document.getElementById('sb2'+pfx),document.getElementById('sb3'+pfx),document.getElementById('sb4'+pfx)];
+  const hint=document.getElementById('strength-hint'+(pfx?'-'+pfx:''));
+  if(!bars[0])return;
+  bars.forEach(b=>{if(b)b.className='';});
+  if(!v){if(hint)hint.textContent='';return;}
+  let score=0;
+  if(v.length>=8)score++;
+  if(/[A-Z]/.test(v))score++;
+  if(/[0-9]/.test(v))score++;
+  if(/[^A-Za-z0-9]/.test(v))score++;
+  const cls=score<=1?'weak':score<=2?'ok':'good';
+  const labels=['','อ่อนมาก','พอใช้','แข็งแกร่ง','แข็งแกร่งมาก'];
+  for(let i=0;i<score;i++){if(bars[i])bars[i].className=cls;}
+  if(hint)hint.textContent=labels[score]||'';
+}
+
+// ─── OTP INPUT BEHAVIOUR ─────────────────────────────
+function initOtp(sel){
+  const digits=[...document.querySelectorAll(sel)];
+  digits.forEach((inp,i)=>{
+    inp.addEventListener('input',()=>{
+      inp.value=inp.value.replace(/\D/g,'');
+      if(inp.value&&i<digits.length-1)digits[i+1].focus();
+    });
+    inp.addEventListener('keydown',e=>{
+      if(e.key==='Backspace'&&!inp.value&&i>0)digits[i-1].focus();
+    });
+    inp.addEventListener('paste',e=>{
+      e.preventDefault();
+      const d=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6).split('');
+      digits.forEach((b,j)=>{b.value=d[j]||'';});
+      const last=d.length-1;
+      if(digits[last])digits[last].focus();
+    });
+  });
+}
+initOtp('.otp-digit');
+initOtp('.otp-digit-reg');
+
+// ─── LOGIN ────────────────────────────────────────────
+function doLogin(){
+  hideAlert('login-alert');
+  const email=document.getElementById('login-email').value.trim();
+  const pw=document.getElementById('login-pw').value;
+  if(!email){showAlert('login-alert','กรุณากรอกอีเมล');return;}
+  if(!pw){showAlert('login-alert','กรุณากรอกรหัสผ่าน');return;}
+  // → ส่งไป API จริงตรงนี้
+  showAlert('login-alert','ฟังก์ชันนี้ต้องเชื่อม API ของ Cloudflare Worker ก่อนครับ 👋','ok');
+}
+
+// ─── FORGOT : SEND OTP ───────────────────────────────
+function doSendOtp(resend=false){
+  hideAlert('forgot-alert');
+  const email=document.getElementById('forgot-email').value.trim();
+  if(!email&&!resend){showAlert('forgot-alert','กรุณากรอกอีเมล');return;}
+  document.getElementById('otp-email-display').textContent=email||document.getElementById('otp-email-display').textContent;
+  showForgotStep(2);
+  document.querySelectorAll('.otp-digit').forEach(i=>i.value='');
+  document.querySelectorAll('.otp-digit')[0].focus();
+}
+
+// ─── FORGOT : VERIFY OTP ─────────────────────────────
+function doVerifyOtp(){
+  hideAlert('otp-alert');
+  const code=[...document.querySelectorAll('.otp-digit')].map(i=>i.value).join('');
+  if(code.length<6){showAlert('otp-alert','กรอก OTP ให้ครบ 6 หลัก');return;}
+  // → ส่งไป API จริงตรงนี้
+  showForgotStep(3);
+}
+
+// ─── FORGOT : RESET PW ───────────────────────────────
+function doResetPw(){
+  hideAlert('newpw-alert');
+  const pw=document.getElementById('new-pw').value;
+  const cpw=document.getElementById('confirm-pw').value;
+  if(pw.length<8){showAlert('newpw-alert','รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร');return;}
+  if(pw!==cpw){showAlert('newpw-alert','รหัสผ่านไม่ตรงกัน');return;}
+  // → ส่งไป API จริงตรงนี้
+  showForgotStep(4);
+}
+
+function showForgotStep(n){
+  ['forgot-s1','forgot-s2','forgot-s3','forgot-s4'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.style.display=i===n-1?'flex':'none';
+  });
+}
+
+// ─── REGISTER ────────────────────────────────────────
+function doRegister(resend=false){
+  hideAlert('reg-alert');
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const pw=document.getElementById('reg-pw').value;
+  const cpw=document.getElementById('reg-confirm').value;
+  const terms=document.getElementById('reg-terms').checked;
+  if(!resend){
+    if(!name){showAlert('reg-alert','กรุณากรอกชื่อที่แสดง');return;}
+    if(!email){showAlert('reg-alert','กรุณากรอกอีเมล');return;}
+    if(pw.length<8){showAlert('reg-alert','รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร');return;}
+    if(pw!==cpw){showAlert('reg-alert','รหัสผ่านไม่ตรงกัน');return;}
+    if(!terms){showAlert('reg-alert','กรุณายอมรับข้อกำหนดการใช้งาน');return;}
+  }
+  document.getElementById('reg-email-display').textContent=email||document.getElementById('reg-email-display').textContent;
+  showRegStep(2);
+  document.querySelectorAll('.otp-digit-reg').forEach(i=>i.value='');
+  document.querySelectorAll('.otp-digit-reg')[0].focus();
+}
+
+function doVerifyRegOtp(){
+  hideAlert('reg-otp-alert');
+  const code=[...document.querySelectorAll('.otp-digit-reg')].map(i=>i.value).join('');
+  if(code.length<6){showAlert('reg-otp-alert','กรอก OTP ให้ครบ 6 หลัก');return;}
+  // → ส่งไป API จริงตรงนี้
+  showRegStep(3);
+}
+
+function showRegStep(n){
+  ['reg-s1','reg-s2','reg-s3'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.style.display=i===n-1?'flex':'none';
+  });
+}
+</script>
+</body>
+</html>

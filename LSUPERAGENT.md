@@ -2,20 +2,21 @@
 
 > Universal router for `lsuperagen.docs` / `agents-sdk.space`.
 > Use this file in Claude, ChatGPT, Codex, or any AI coding session.
-> Do not rely on stale memory. Do not assume Supabase/Auth/Gateway are active.
+> Do not rely on stale memory. This file describes what the code does now.
 
 ---
 
 ## 0. Read Order
 
 ```txt
-1. LSUPERAGENT.md        ← current source-of-truth router
-2. CLAUDE.md             ← Claude-specific pointer only
-3. src/index.js          ← Cloudflare Worker runtime + HTML injection
-4. chat.html             ← Public Chat UI
-5. tools.html            ← Public tools catalog
-6. workspace.html        ← gates / protocol reference
-7. wrangler.toml         ← Cloudflare Worker config
+1. LSUPERAGENT.md          ← current source-of-truth router
+2. CLAUDE.md               ← Claude-specific pointer only
+3. wrangler.toml           ← Cloudflare Worker config (entry = src/firebase-worker.js)
+4. src/firebase-worker.js  ← Worker entry: Firebase auth bridge, then delegates
+5. src/firebase-core.mjs   ← Firebase config, ID-token verification, email auth helpers
+6. src/index.js            ← main runtime: routing, sessions, OpenAI chat/image, HTML injection
+7. login.html / signup.html / firebase-auth.js  ← auth UI
+8. chat.html / tools.html  ← AI Workspace UI (login required)
 ```
 
 If another file conflicts with this router, stop and ask the owner before changing architecture.
@@ -29,99 +30,119 @@ Project:        lsuperagen.docs / AGENTS-SDK.SPACE
 Owner label:    THNB SMK / Bank
 Repo:           thanabartbb/lsuperagent.docs
 Public domain:  https://agents-sdk.space
-Runtime:        Cloudflare Workers Static Assets + src/index.js
-Version:        V11 · Public Beta
-Status:         public docs/site live; chat UI live; OpenAI Runtime V1 wired in code
+Worker name:    lsuperagent-docs
+Runtime:        Cloudflare Workers Static Assets (run_worker_first) + src/firebase-worker.js
+Status:         login-gated AI Workspace live; Firebase + Google OAuth auth; OpenAI chat/image
 ```
-
-This is a public docs + launch + control surface being evolved into a public AI chat product.
 
 ---
 
 ## 2. Active Architecture — CURRENT ONLY
 
 ```txt
-Public visitor
+Visitor
   ↓
 https://agents-sdk.space
   ↓
-Cloudflare Worker: src/index.js
-  ├─ serves static HTML via env.ASSETS.fetch(request)
-  ├─ injects safe UI enhancements
-  ├─ routes Tools cards into /chat?tool=...
-  └─ handles /api/chat as OpenAI Runtime V1 when OPENAI_API_KEY exists
+Cloudflare Worker "lsuperagent-docs"
+  ↓
+src/firebase-worker.js
+  ├─ /api/firebase/config                 public Firebase web config (503 if not configured)
+  ├─ /api/firebase/status                 which Firebase pieces are configured (booleans only)
+  ├─ /api/auth/firebase/session   POST    Firebase ID token → signed session cookie
+  ├─ /api/auth/platform/login     POST    email + password via Firebase Identity Toolkit
+  ├─ /api/auth/platform/register  POST    email sign-up via Firebase Identity Toolkit
+  ├─ /api/auth/platform/password-reset POST
+  ├─ /api/auth/firebase/logout    POST    clears session cookie
+  └─ everything else → src/index.js
+        ├─ /  /home                       → /chat if signed in, else /login
+        ├─ legacy docs pages              → /chat or /login (examples, guides, api, workspace, ...)
+        ├─ /auth/google(/callback)        direct Google OAuth (GOOGLE_CLIENT_ID/SECRET)
+        ├─ /auth/github(/callback)        direct GitHub OAuth
+        ├─ /auth/logout, /api/auth/status, /api/auth/session
+        ├─ /chat, /tools                  login required → /login?return_to=...
+        ├─ /api/chat   POST               login required → OpenAI Responses API
+        ├─ /api/image  POST               login required → OpenAI Images API
+        ├─ /dev, /dev-code-drop           owner-only (OWNER_GOOGLE_EMAIL / OWNER_GOOGLE_SUB)
+        ├─ /admin                         → /dev
+        └─ static assets via env.ASSETS + safe HTML enhancements
 ```
 
-### Current runtime path
+### Session model
+
+All sign-in paths end in the same HMAC-signed cookie `lsuperagen_trial_session`,
+signed with `AUTH_SESSION_SECRET`:
 
 ```txt
-Browser
-  ↓
-/chat or /chat?tool=writer|image|research|code
-  ↓
-POST /api/chat
-  ↓
-Cloudflare Worker src/index.js
-  ↓
-OpenAI Responses API via server-side Cloudflare Secret: OPENAI_API_KEY
+login.html  → /auth/google        (direct Google OAuth, current public login button)
+signup.html → firebase-auth.js    (Firebase client SDK) → /api/auth/firebase/session
+email form  → /api/auth/platform/login | register (server-side Firebase Identity Toolkit)
 ```
 
-If `OPENAI_API_KEY` is missing, `/api/chat` must return `runtime_not_wired`.
+### AI runtime path
 
-No fake AI response is allowed.
+```txt
+/chat (signed in)
+  ↓
+POST /api/chat          rate limit: 10 requests / 10 min (in-memory, per isolate)
+  ↓
+OpenAI Responses API    model: OPENAI_MODEL first, then built-in fallback list
+                        research/url tools use a web-capable model list
+
+POST /api/image → OpenAI Images API (gpt-image-* fallback list)
+```
+
+If `OPENAI_API_KEY` is missing, `/api/chat` and `/api/image` return
+`503 { ok: false, status: "service_unavailable" }`. No fake AI response is allowed.
 
 ---
 
-## 3. Explicitly Not Active
+## 3. Cloudflare Configuration (names only — never commit values)
+
+```txt
+Firebase (public web config, plain vars):
+  FIREBASE_API_KEY, FIREBASE_AUTH_DOMAIN, FIREBASE_PROJECT_ID, FIREBASE_APP_ID   (required)
+  FIREBASE_STORAGE_BUCKET, FIREBASE_MESSAGING_SENDER_ID, FIREBASE_MEASUREMENT_ID (optional)
+
+Secrets:
+  AUTH_SESSION_SECRET      session cookie signing (required for any login)
+  OPENAI_API_KEY           chat + image
+  GOOGLE_CLIENT_SECRET     direct Google OAuth
+  GITHUB_CLIENT_SECRET     direct GitHub OAuth
+
+Other vars:
+  GOOGLE_CLIENT_ID, GITHUB_CLIENT_ID
+  OPENAI_MODEL             preferred chat model
+  OWNER_GOOGLE_EMAIL, OWNER_GOOGLE_SUB, ADMIN_ALLOWED_LOGINS   owner/dev gate
+  PUBLIC_SITE_URL
+```
+
+See `FIREBASE_SETUP.md` for Firebase console → Cloudflare variable steps.
+
+---
+
+## 4. Explicitly Not Active
 
 ```txt
 Supabase
-Firebase Auth
 Trusted Gateway
 Anthropic/Claude provider as first runtime provider
 Gemini provider
 DeepSeek provider
 Zapier MCP runtime integration
-R2 / D1 / KV persistence
+R2 / D1 / KV persistence (no server-side user DB; sessions are cookies only)
+Firestore / Firebase Admin SDK
 ```
 
 Rules:
 
 ```txt
 Do not wire Supabase.
-Do not wire Firebase.
-Do not add Auth.
 Do not require Trusted Gateway.
 Do not use Claude/Anthropic as first provider.
-Do not create D1/KV/R2 unless explicitly approved.
+Do not create D1/KV/R2 or Firestore unless explicitly approved.
+Firebase is used for authentication only — do not expand its scope without approval.
 Do not rotate, print, commit, or expose secrets.
-```
-
-These may be future modules only after explicit approval.
-
----
-
-## 4. Completed State
-
-```txt
-✓ Static site publicly available
-✓ Cloudflare Worker serves static assets
-✓ /admin exists as owner control surface
-✓ /chat exists as Public Chat V1 UI
-✓ Tools Router V1 exists
-✓ Mobile Public Polish V3 exists
-✓ OPENAI_API_KEY Cloudflare Secret has been set by owner
-✓ /api/chat OpenAI Runtime V1 code is wired in src/index.js
-```
-
-Tools Router V1:
-
-```txt
-AI Writer        → /chat?tool=writer
-Image Generator  → /chat?tool=image
-Deep Research    → /chat?tool=research
-Code Assistant   → /chat?tool=code
-Coming Soon      → show clear Coming Soon status
 ```
 
 ---
@@ -129,76 +150,51 @@ Coming Soon      → show clear Coming Soon status
 ## 5. File Map
 
 ```txt
-index.html             homepage / launch hero
-chat.html              Public Chat V1 UI
-tools.html             public tools catalog
-examples.html          SDK Plug Tools catalog
-workspace.html         protocol / release gates / workspace reference
-getting-started.html   docs entry
-guides.html            guides page
-api.html               API docs page
-changelog.html         release notes
-admin.html             owner control request surface
-src/index.js           Cloudflare Worker runtime + OpenAI Runtime V1
-wrangler.toml          Cloudflare Worker config
-_redirects             clean route aliases
-_headers               static response headers
-CLAUDE.md              Claude-specific pointer
-LSUPERAGENT.md         canonical reusable router
+wrangler.toml            Worker config; main = src/firebase-worker.js
+src/firebase-worker.js   Worker entry: Firebase/platform-email routes, delegates to index.js
+src/firebase-core.mjs    Firebase env config, JWKS ID-token verification, Identity Toolkit calls
+src/index.js             routing, OAuth, sessions, rate limit, OpenAI chat/image, HTML injection
+index.html               homepage (Worker redirects / to /chat or /login)
+login.html               public login (Google)
+signup.html              sign-up (Firebase client SDK)
+firebase-auth.js         Firebase client SDK glue
+auth-all.html            all-in-one auth surface
+chat.html                AI Workspace chat UI (login required)
+tools.html               tools catalog (login required)
+dev.html / dev-code-drop.html   owner-only dev surfaces
+admin.html               legacy, redirected to /dev
+tests/*.test.mjs         node --test suite
+scripts/live-smoke.mjs   live smoke check against the deployed site
+_redirects, _headers     static aliases / headers
+CLAUDE.md                Claude-specific pointer
+LSUPERAGENT.md           canonical reusable router
 ```
 
 ---
 
-## 6. Active Work Unit
-
-Current priority:
+## 6. Verification
 
 ```txt
-PUBLIC CHAT RUNTIME V1 VERIFICATION
+Local:  node --test tests/*.test.mjs
+Live:   node scripts/live-smoke.mjs
 ```
 
-Verification checklist:
+Live checklist:
 
 ```txt
-1. GET / works
-2. GET /tools works
-3. GET /chat works
-4. POST /api/chat without secret returns safe runtime_not_wired
-5. POST /api/chat with Cloudflare Secret returns real OpenAI model output
-6. No secret appears in repo, logs, screenshots, or UI
+1. GET /            → 302 to /login (signed out) or /chat (signed in)
+2. GET /login       → 200
+3. GET /chat        → 302 to /login when signed out
+4. GET /api/firebase/status → configured: true, secret_values_exposed: false
+5. POST /api/chat signed out → 401 authentication_required
+6. POST /api/chat signed in  → real model output, ok: true
+7. No secret appears in repo, logs, screenshots, or UI
 ```
 
-Runtime JSON success shape:
+Chat success shape:
 
 ```json
-{
-  "ok": true,
-  "status": "completed",
-  "tool": "writer",
-  "provider": "openai",
-  "model": "gpt-5-mini",
-  "message": "...",
-  "output": "...",
-  "usage": null
-}
-```
-
-Safe error shape when secret is absent:
-
-```json
-{
-  "ok": false,
-  "status": "runtime_not_wired",
-  "message": "Runtime not wired. No fake AI response generated.",
-  "readiness": {
-    "frontend": true,
-    "api_route": true,
-    "tools_router": true,
-    "provider_router": true,
-    "secret_detected": false,
-    "model_output": false
-  }
-}
+{ "ok": true, "status": "completed", "message": "...", "output": "...", "sources": [] }
 ```
 
 ---
@@ -231,16 +227,14 @@ No fake AI response.
 No fake metrics.
 No fake customer logos.
 No fake testimonials.
-No API key in HTML.
-No API key in client-side JS.
-No API key in GitHub.
-No API key in screenshots or logs.
-No direct browser-to-provider calls.
+No API key or secret in HTML, client-side JS, GitHub, screenshots, or logs.
+Firebase web config is public by design; AUTH_SESSION_SECRET and provider keys are not.
+No direct browser-to-provider AI calls.
 No broad rewrite without approval.
 One work unit at a time.
 ```
 
-Provider calls must be server-side inside Cloudflare Worker only.
+Provider calls must be server-side inside the Cloudflare Worker only.
 
 ---
 
@@ -250,14 +244,12 @@ Provider calls must be server-side inside Cloudflare Worker only.
 R1  Static site loads                         DONE
 R2  Chat UI exists                            DONE
 R3  Tools Router V1                           DONE
-R4  /api/chat validation                      DONE IN CODE
+R4  /api/chat validation                      DONE
 R5  OpenAI provider with Cloudflare Secret    DONE IN CODE / VERIFY LIVE
-R6  Runtime verification                      CURRENT
-R7  Rate limit / abuse guard                  FUTURE
-R8  Auth / memory / persistence               FUTURE, not current
+R6  Auth: Google OAuth + Firebase             DONE IN CODE / VERIFY LIVE
+R7  Rate limit / abuse guard                  PARTIAL (in-memory per isolate)
+R8  Memory / persistence                      FUTURE, not current
 ```
-
-Do not mark Public Chat Runtime V1 fully complete until live POST verification succeeds.
 
 ---
 
@@ -268,9 +260,9 @@ Do not mark Public Chat Runtime V1 fully complete until live POST verification s
 2. Summarize current architecture before editing.
 3. State exactly one work unit.
 4. Make the smallest possible code change.
-5. Do not introduce Supabase/Auth/Gateway unless owner explicitly approves.
+5. Do not introduce Supabase/Gateway/persistence unless owner explicitly approves.
 6. Do not change visual identity.
-7. Run or request verification.
+7. Run node --test tests/*.test.mjs and request live verification.
 8. Report files changed, commands run, and evidence.
 ```
 
@@ -279,8 +271,9 @@ Do not mark Public Chat Runtime V1 fully complete until live POST verification s
 ## 11. Last Updated
 
 ```txt
-2026-09-17
-Router mode: Cloudflare + OpenAI-first
-Runtime status: OpenAI Runtime V1 wired in code; live verification pending
+2026-09-24
+Router mode: Cloudflare + Firebase auth + OpenAI-first
+Entry: src/firebase-worker.js → src/index.js
+Auth status: active (Google OAuth + Firebase); /chat, /tools, /api/chat, /api/image require login
 Supabase status: not active / future only
 ```

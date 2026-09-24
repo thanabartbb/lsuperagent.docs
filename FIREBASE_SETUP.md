@@ -11,6 +11,9 @@ Public endpoints:
 - `GET /api/firebase/status` — reports configuration readiness without returning secret values.
 - `GET /api/firebase/config` — returns the Firebase Web configuration only when all required public values exist.
 - `POST /api/auth/firebase/session` — verifies a Firebase ID token against Google's signing keys and converts it into the existing `lsuperagen_trial_session` cookie.
+- `POST /api/auth/platform/login` — email/password login on the web form (Identity Toolkit → session cookie). Does not redirect to Google.
+- `POST /api/auth/platform/register` — creates an email/password account and signs the user in.
+- `POST /api/auth/platform/password-reset` — sends Firebase password reset email.
 - `POST /api/auth/firebase/logout` — clears the compatible app session cookie.
 
 ## Required Cloudflare variables
@@ -34,7 +37,7 @@ The existing `AUTH_SESSION_SECRET` is also required for Firebase sessions to bec
 
 1. Create or select the Firebase project that should own this app.
 2. Register a Web app and copy the Web configuration values into the Cloudflare environment variables above.
-3. In Authentication > Sign-in method, enable Google and GitHub.
+3. In Authentication > Sign-in method, enable **Email/Password**, **Google**, and **GitHub**.
 4. Add `agents-sdk.space` to Authentication > Settings > Authorized domains.
 5. For GitHub, configure the OAuth client ID/secret in Firebase and use the Firebase-provided callback handler URL shown in the provider setup.
 

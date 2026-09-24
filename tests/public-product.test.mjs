@@ -110,6 +110,8 @@ test('signup does not offer guest workspace bypass', async () => {
   assert.equal(/Guest|ทดลองแชท/i.test(html), false);
   assert.match(html, /\/auth\/google/i);
   assert.match(html, /\/login/i);
+  assert.match(html, /name=["']email["']/i);
+  assert.match(html, /data-email-register/);
 });
 
 test('tools surface contains only usable end-user product capabilities', async () => {

@@ -7,10 +7,10 @@
 
 ```txt
 1. LSUPERAGENT.md   ← canonical current router
-2. src/index.js     ← Cloudflare Worker runtime
-3. chat.html        ← Public Chat UI
-4. tools.html       ← Tools Router surface
-5. workspace.html   ← gates / protocol reference
+2. wrangler.toml          ← entry = src/firebase-worker.js
+3. src/firebase-worker.js ← Firebase auth bridge, delegates to index.js
+4. src/index.js           ← main Worker runtime
+5. chat.html              ← AI Workspace chat UI (login required)
 ```
 
 ## Current correction

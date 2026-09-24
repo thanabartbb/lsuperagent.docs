@@ -451,11 +451,11 @@ function rateLimitHeaders(result) {
   return { 'x-lsuperagen-rate-limit': String(result.limit), 'x-lsuperagen-rate-remaining': String(result.remaining), 'x-lsuperagen-rate-reset': new Date(result.resetAt).toISOString(), ...(result.limited ? { 'retry-after': String(result.retryAfter) } : {}) };
 }
 
-async function createOpenAIResponse(env, model, message, tool, mode, requestId) {
+async function createOpenAIResponse(env, model, input, tool, mode, requestId) {
   const usesWeb = tool === 'research' || tool === 'url';
   const payload = {
     model,
-    input: message,
+    input,
     instructions: toolInstructions(tool, mode),
     max_output_tokens: tool === 'code' ? 8000 : usesWeb ? 5000 : 4000,
     store: false,
@@ -519,7 +519,16 @@ async function handleChat(request, env) {
   if (request.method !== 'POST') return json({ ok: false, status: 'method_not_allowed', message: 'ส่งคำขอด้วย POST เท่านั้น' }, 405, { allow: 'POST, OPTIONS' });
   let body = {};
   try { body = await request.json(); } catch (_) { body = {}; }
-  const message = typeof body.message === 'string' ? body.message.trim() : '';
+  const history = body.messages;
+  if (history !== undefined && (
+    !Array.isArray(history) || history.length < 1 || history.length > 20 ||
+    history.some((turn, index) => !turn || turn.role !== (index % 2 ? 'assistant' : 'user') ||
+      typeof turn.content !== 'string' || !turn.content.trim() || turn.content.length > 12000) ||
+    history[history.length - 1].role !== 'user' ||
+    history.reduce((sum, turn) => sum + turn.content.length, 0) > 120000
+  )) return json({ ok: false, status: 'validation_error', message: 'ประวัติแชทไม่ถูกต้องหรือยาวเกินกำหนด' }, 400);
+  const message = history ? history[history.length - 1].content.trim() : typeof body.message === 'string' ? body.message.trim() : '';
+  const input = history ? history.map(({ role, content }) => ({ role, content: content.trim() })) : message;
   const mode = typeof body.mode === 'string' && body.mode.trim() ? body.mode.trim().slice(0, 32) : 'chat';
   const tool = inferTool(body, request);
   if (!message) return json({ ok: false, status: 'validation_error', message: 'กรุณาใส่ข้อความก่อนส่ง' }, 400);
@@ -539,7 +548,7 @@ async function handleChat(request, env) {
   for (const model of candidates) {
     let providerResponse, data;
     try {
-      ({ response: providerResponse, data } = await createOpenAIResponse(env, model, message, tool, mode, requestId));
+      ({ response: providerResponse, data } = await createOpenAIResponse(env, model, input, tool, mode, requestId));
     } catch (_) {
       return json({ ok: false, status: 'service_error', message: 'เชื่อมต่อบริการ AI ไม่สำเร็จ กรุณาลองใหม่' }, 502, baseHeaders);
     }

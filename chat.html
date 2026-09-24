@@ -1,22 +1,201 @@
-<!doctype html>
-<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>lsuperagen.docs — AI Workspace</title><meta name="description" content="พื้นที่ AI สำหรับแชท เขียนโค้ด สร้างภาพ ค้นคว้า อ่านเว็บ และเขียนคอนเทนต์"><link rel="stylesheet" href="/app.css"></head>
-<body class="chat-page" data-ls-mobile-menu-fix="v1" data-shell-page="chat"><header class="product-header" data-app-shell><div class="container header-inner"><a class="brand" href="/chat"><span class="brand-mark">LS</span><span class="brand-copy">lsuperagen<span>.docs</span></span></a><nav class="shell-nav" aria-label="เมนูหลัก"><a class="shell-nav-link" href="/chat" data-shell-nav="chat">Chat</a><a class="shell-nav-link" href="/tools" data-shell-nav="tools">Tools</a><a class="shell-nav-link shell-nav-owner" href="/dev" data-shell-nav="dev" hidden>Owner</a></nav><div class="shell-end"><button type="button" class="shell-menu-btn" aria-expanded="false" aria-controls="shell-mobile-panel" aria-label="เปิดเมนู"><span aria-hidden="true">☰</span></button><div class="shell-profile" data-shell-profile aria-live="polite"><span class="shell-profile-name">…</span></div><a class="shell-logout" href="/auth/logout">Logout</a></div></div><div class="shell-mobile-panel" id="shell-mobile-panel" hidden></div></header>
-<main class="workspace"><aside class="mode-panel" aria-label="โหมดทำงาน"><p class="mode-title">Choose a mode</p><div class="mode-list" id="modes"><button class="mode-button on" data-mode="chat">Chat</button><button class="mode-button" data-mode="code">Code</button><button class="mode-button" data-mode="image">Image</button><button class="mode-button" data-mode="research">Research</button><button class="mode-button" data-mode="url">Read URL</button><button class="mode-button" data-mode="write">Write</button></div><p class="mode-help" id="modeHelp">ถาม พัฒนาไอเดีย หรือแก้ปัญหาได้จากพื้นที่เดียว</p></aside>
-<section class="chat-main" aria-label="AI workspace"><div class="workspace-top"><div><div class="workspace-title">AI Workspace</div><div class="workspace-mode" id="modeLabel">Chat</div></div><select class="mobile-modes" id="mobileMode" aria-label="เลือกโหมด"><option value="chat">Chat</option><option value="code">Code</option><option value="image">Image</option><option value="research">Research</option><option value="url">Read URL</option><option value="write">Write</option></select></div>
-<div class="chat-log" id="log" aria-live="polite"><div class="empty" id="empty"><div class="empty-mark">LS</div><h1>สร้างงานด้วย AI</h1><p>เลือกโหมดแล้วพิมพ์สิ่งที่ต้องการ ระบบจะแสดงคำตอบ แหล่งอ้างอิง หรือไฟล์ภาพในพื้นที่เดียว</p></div></div>
-<div class="composer-shell"><div class="status-line" id="status" role="status" aria-live="polite"></div><form class="composer" id="form"><textarea id="prompt" aria-label="ข้อความถึง AI" placeholder="พิมพ์สิ่งที่ต้องการ…" required></textarea><input id="file" type="file" accept=".txt,.md,.js,.mjs,.cjs,.ts,.tsx,.jsx,.json,.html,.css,.py,.go,.rs,.java,.kt,.swift,.php,.rb,.cpp,.c,.h,.hpp,.sql,.yaml,.yml" hidden><div class="composer-bar"><button class="file-button" id="attach" type="button">ไฟล์ข้อความ</button><button class="clear-button" id="clear" type="button">ล้าง</button><button class="send-button" id="send" type="submit">ส่ง</button></div></form></div></section></main>
-<script>
-(function(){
-const modes={chat:{label:'Chat',tool:null,help:'ถาม พัฒนาไอเดีย หรือแก้ปัญหาได้จากพื้นที่เดียว',placeholder:'พิมพ์สิ่งที่ต้องการ…'},code:{label:'Code',tool:'code',help:'เขียน ตรวจ แก้ และรีแฟกเตอร์โค้ดขนาดใหญ่',placeholder:'วางโค้ดหรือบอกสิ่งที่ต้องการแก้…'},image:{label:'Image',tool:'image',help:'อธิบายภาพที่ต้องการ แล้วรับไฟล์ภาพกลับมา',placeholder:'อธิบายภาพที่ต้องการสร้าง…'},research:{label:'Research',tool:'research',help:'ค้นคว้าจากเว็บและดูแหล่งอ้างอิงที่ใช้',placeholder:'หัวข้อที่ต้องการค้นคว้า…'},url:{label:'Read URL',tool:'url',help:'ส่ง URL แล้วถามสิ่งที่ต้องการรู้จากหน้านั้น',placeholder:'วาง URL พร้อมคำถาม…'},write:{label:'Write',tool:'writer',help:'ร่าง เขียนใหม่ หรือปรับคอนเทนต์',placeholder:'บอกประเภทคอนเทนต์และสิ่งที่ต้องการ…'}};
-let mode='chat',controller=null;const log=document.getElementById('log'),form=document.getElementById('form'),prompt=document.getElementById('prompt'),send=document.getElementById('send'),status=document.getElementById('status'),mobileMode=document.getElementById('mobileMode');
-function clearEmpty(){const e=document.getElementById('empty');if(e)e.remove()}
-function setStatus(text){status.textContent=text||''}
-function addMessage(role,text,sources){clearEmpty();const article=document.createElement('article');article.className='message '+(role==='คุณ'?'user':'assistant');const label=document.createElement('div');label.className='message-role';label.textContent=role;const body=document.createElement('div');body.className='message-body';body.textContent=text;article.append(label,body);if(role!=='คุณ'){const actions=document.createElement('div');actions.className='message-actions';const copy=document.createElement('button');copy.type='button';copy.className='action-button';copy.textContent='Copy';copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(text);copy.textContent='Copied';setTimeout(()=>copy.textContent='Copy',1200)}catch(_){setStatus('คัดลอกไม่สำเร็จ กรุณาเลือกข้อความแล้วคัดลอกเอง')}});actions.append(copy);article.append(actions)}if(Array.isArray(sources)&&sources.length){const box=document.createElement('div');box.className='sources';sources.forEach((source,index)=>{if(!source||!source.url)return;const a=document.createElement('a');a.className='source-link';a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent=(index+1)+'. '+(source.title||source.url);box.append(a)});article.append(box)}log.append(article);log.scrollTop=log.scrollHeight}
-function addImage(image){clearEmpty();const article=document.createElement('article');article.className='message assistant';const label=document.createElement('div');label.className='message-role';label.textContent='AI';const img=document.createElement('img');img.className='image-result';img.alt='ภาพที่สร้างโดย AI';img.src='data:'+(image.mime_type||'image/png')+';base64,'+image.data_base64;const actions=document.createElement('div');actions.className='message-actions';const link=document.createElement('a');link.className='action-button';link.textContent='Download';link.download=image.filename||'lsuperagen-image.png';link.href=img.src;actions.append(link);article.append(label,img,actions);log.append(article);log.scrollTop=log.scrollHeight}
-function selectMode(value){mode=modes[value]?value:'chat';document.querySelectorAll('.mode-button').forEach(b=>b.classList.toggle('on',b.dataset.mode===mode));mobileMode.value=mode;document.getElementById('modeLabel').textContent=modes[mode].label;document.getElementById('modeHelp').textContent=modes[mode].help;prompt.placeholder=modes[mode].placeholder;prompt.focus()}
-document.getElementById('modes').addEventListener('click',e=>{const b=e.target.closest('.mode-button');if(b)selectMode(b.dataset.mode)});mobileMode.addEventListener('change',()=>selectMode(mobileMode.value));document.getElementById('clear').addEventListener('click',()=>{log.innerHTML='<div class="empty" id="empty"><div class="empty-mark">LS</div><h1>สร้างงานด้วย AI</h1><p>เลือกโหมดแล้วพิมพ์สิ่งที่ต้องการ ระบบจะแสดงคำตอบ แหล่งอ้างอิง หรือไฟล์ภาพในพื้นที่เดียว</p></div>';setStatus('')});
-document.getElementById('attach').addEventListener('click',()=>document.getElementById('file').click());document.getElementById('file').addEventListener('change',async function(){const f=this.files&&this.files[0];if(!f)return;if(f.size>350000){setStatus('ไฟล์ใหญ่เกินไป กรุณาใช้ไฟล์ข้อความไม่เกิน 350 KB');this.value='';return}try{const text=await f.text();prompt.value=(prompt.value?prompt.value+'\n\n':'')+'ไฟล์ '+f.name+':\n'+text;setStatus('เพิ่มไฟล์ '+f.name+' แล้ว')}catch(_){setStatus('อ่านไฟล์นี้ไม่สำเร็จ')}this.value='' });
-form.addEventListener('submit',async e=>{e.preventDefault();const text=prompt.value.trim();if(!text)return;addMessage('คุณ',text);prompt.value='';send.disabled=true;setStatus(mode==='image'?'กำลังสร้างภาพ…':mode==='research'||mode==='url'?'กำลังค้นคว้า…':'กำลังประมวลผล…');controller=new AbortController();try{if(mode==='image'){const response=await fetch('/api/image',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({prompt:text}),signal:controller.signal});const data=await response.json().catch(()=>({}));if(!response.ok||!data.image)throw new Error(data.message||'สร้างภาพไม่สำเร็จ');addImage(data.image)}else{const response=await fetch('/api/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({message:text,mode:mode,tool:modes[mode].tool}),signal:controller.signal});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.message||'ส่งคำขอไม่สำเร็จ');addMessage('AI',data.message||data.output||'',data.sources||[])}setStatus('เสร็จแล้ว')}catch(err){if(err.name!=='AbortError'){addMessage('AI','ขออภัย '+err.message);setStatus('เกิดข้อผิดพลาด กรุณาลองใหม่')}}finally{send.disabled=false;controller=null}});
-const q=new URLSearchParams(location.search).get('mode')||new URLSearchParams(location.search).get('tool');const aliases={writer:'write'};selectMode(aliases[q]||q||'chat');
-})();
-</script><script src="/app-shell.js" defer></script></body></html>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <title>LSUPERAGENT · Chat</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    [hidden] { display: none !important; }
+
+    :root {
+      --bg: #000000;
+      --surface: #0a0a0a;
+      --line: #1f1f1f;
+      --border: #2a2a2a;
+      --text: #ffffff;
+      --muted: #8e8e93;
+      --radius: 12px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
+      padding: 24px 16px 16px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* Top bar (same as the home page) */
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .brand svg { width: 28px; height: 28px; }
+    .nav { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .nav a, .nav button {
+      padding: 6px 10px;
+      border-radius: 8px;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      background: none;
+      border: 0;
+      cursor: pointer;
+    }
+    .nav a:hover, .nav button:hover { color: var(--text); }
+    .who { color: var(--muted); font-size: 13px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Model bar */
+    .bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .bar select {
+      height: 38px;
+      padding: 0 12px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font: inherit;
+      font-size: 14px;
+      max-width: 100%;
+    }
+    .bar .quota { color: var(--muted); font-size: 13px; margin-left: auto; }
+    .btn-ghost {
+      height: 38px;
+      padding: 0 14px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-ghost:hover { border-color: #3a3a3a; }
+
+    /* Chat */
+    .chat {
+      flex: 1;
+      min-height: 280px;
+      overflow-y: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+      background: var(--surface);
+    }
+    .empty { color: var(--muted); text-align: center; padding: 48px 12px; font-size: 14px; line-height: 1.6; }
+    .bubble {
+      max-width: 88%;
+      padding: 10px 14px;
+      border-radius: 14px;
+      margin-bottom: 10px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .bubble.u { margin-left: auto; background: #1c1c1e; }
+    .bubble.a { border: 1px solid var(--border); }
+    .bubble.e { border: 1px solid #3a3a3a; color: var(--muted); }
+    .bubble .meta { display: block; margin-top: 6px; font-size: 11px; color: #636366; }
+    .bubble .btn-ghost { margin-top: 10px; }
+    .thinking::after { content: ""; animation: dots 1.2s infinite; }
+    @keyframes dots { 0% { content: ""; } 33% { content: "."; } 66% { content: ".."; } 100% { content: "..."; } }
+
+    /* Composer */
+    .composer { display: flex; gap: 8px; margin-top: 12px; align-items: flex-end; }
+    .composer textarea {
+      flex: 1;
+      min-height: 48px;
+      max-height: 180px;
+      resize: none;
+      padding: 13px 14px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font: inherit;
+      font-size: 15px;
+      outline: none;
+    }
+    .composer textarea:focus { border-color: #4a4a4a; }
+    .send {
+      height: 48px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: var(--radius);
+      background: #f5f5f5;
+      color: #0a0a0a;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .send:disabled { opacity: 0.5; cursor: not-allowed; }
+    .hint { margin-top: 8px; font-size: 12px; color: #636366; line-height: 1.5; }
+    .hint a { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/">
+      <svg viewBox="30 20 144 160" aria-hidden="true"><path fill="#FFFFFF" fill-rule="evenodd" d="M104,30 L162,66 L163,133 L103,169 L103,139 L131,120 L103,101 Z M97,30 L41,66 L41,93 L94,63 Z M88,76 L41,102 L41,133 L94,168 L94,138 L63,119 L67,111 L93,96 L93,79 Z M126,72 L144,84 L143,108 L124,92 Z"/></svg>
+      Playground
+    </a>
+    <nav class="nav" aria-label="Sections">
+      
+      <span class="who" id="who"></span>
+      <button type="button" id="signout">Sign out</button>
+    </nav>
+  </header>
+
+  <div class="bar">
+    <select id="provider" aria-label="Model" disabled><option>กำลังโหลดโมเดล…</option></select>
+    <span class="quota" id="quota"></span>
+    <button type="button" class="btn-ghost" id="clear">New chat</button>
+  </div>
+
+  <div class="chat" id="chat" aria-live="polite">
+    <div class="empty" id="empty">ลองถามอะไรก็ได้เกี่ยวกับ AI SDK<br>เช่น "generateText ต่างจาก streamText ยังไง"</div>
+  </div>
+
+  <form class="composer" id="composer">
+    <textarea id="input" rows="1" maxlength="4000" placeholder="พิมพ์ข้อความ…" disabled></textarea>
+    <button type="submit" class="send" id="send" disabled>ส่ง</button>
+  </form>
+  <p class="hint">ประวัติแชทอยู่ในหน้านี้เท่านั้น ปิดหน้าแล้วหาย · อย่าใส่รหัสผ่านหรือ API key</p>
+
+  <script src="/assets/chat.js"></script>
+</body>
+</html>

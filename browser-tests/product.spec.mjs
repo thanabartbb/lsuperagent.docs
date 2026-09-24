@@ -21,16 +21,10 @@ async function assertNoHorizontalOverflow(page) {
 }
 
 async function assertLockedLogin(page) {
-  await expect(page.getByRole('heading', { name: 'เริ่มต้นใช้งาน' })).toBeVisible();
-  await expect(page.getByText('YOUR AI WORKSPACE')).toBeVisible();
-  await expect(page.locator('input[name="email"]')).toHaveAttribute('placeholder', 'อีเมล');
-  await expect(page.locator('input[name="password"]')).toHaveAttribute('placeholder', 'รหัสผ่าน');
-  await expect(page.getByRole('link', { name: 'Google' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'GitHub' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Gmail' })).toBeVisible();
-  await expect(page.getByRole('link', { name: /สมัครใช้งาน/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'LSUPERAGENT SDK' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'เข้าสู่ระบบด้วย Google' })).toHaveAttribute('href', '/auth/google?return_to=/chat');
   const visibleText = await page.locator('body').innerText();
-  for (const forbidden of ['Guest', 'ทดลองแชท', 'Development Console']) expect(visibleText).not.toContain(forbidden);
+  for (const forbidden of ['Guest', 'ทดลองแชท', 'Development Console', 'Continue with GitHub', 'Continue with Email']) expect(visibleText).not.toContain(forbidden);
 }
 
 test.describe.configure({ mode: 'serial', timeout: 60000 });

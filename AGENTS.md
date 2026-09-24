@@ -2,8 +2,8 @@
 
 AI Framework: **LSUPERAGENT Public Workspace Operating Instructions**
 
-Last updated: **2026-09-22T02:33:54+07:00 Asia/Bangkok**
-Last update task: **Lock the reference-matched public login with email/password plus Google/GitHub account entry.**
+Last updated: **2026-09-25T02:11:38+07:00 Asia/Bangkok**
+Last update task: **Integrate the supplied BASE-CLAUDE login/chat views with the existing Google OAuth session.**
 
 This file is the first file every AI agent must read before modifying this repository. It defines the repo memory boundary, write protocol, data contract discipline, and negative constraints.
 
@@ -47,7 +47,7 @@ forbidden_without_approval:
   - unrelated markdown template overwrite
 ```
 
-Public route policy: `/` opens `/login` without a valid signed session; `/chat`, `/tools`, `/api/chat`, and `/api/image` require that session. The locked public login surface supports the existing Firebase email/password flow when configured, Google OAuth, and GitHub OAuth. The visible `Gmail` button is an alias of the Google OAuth route, not a separate identity provider. No guest path is allowed. The login may link to `/signup`, but registration must create/authenticate an account and must never bypass the signed-session gate.
+Public route policy: `/` opens `/login` without a valid signed session; `/chat`, `/tools`, `/api/chat`, and `/api/image` require that session. The public login UI now presents Google OAuth through `/auth/google`; the existing OAuth callback and signed session stay in place. `chat.html` uses `/api/auth/session` and `/api/chat`. The package's D1/KV account and quota runtime is not installed in this Worker. Other pre-existing auth endpoints remain for compatibility but are not shown on the public login. No guest path is allowed.
 
 ## Feature Goal Template
 

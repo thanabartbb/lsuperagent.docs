@@ -51,6 +51,27 @@ test('chat route sends a real Responses request and exposes only user-safe resul
   });
 });
 
+test('chat page can pass prior turns to the model through the signed session', async () => {
+  const history = [
+    { role: 'user', content: 'ฉันชื่อแบงค์' },
+    { role: 'assistant', content: 'ยินดีที่รู้จัก' },
+    { role: 'user', content: 'ฉันชื่ออะไร' }
+  ];
+  await withFetchStub(async (_url, init) => {
+    assert.deepEqual(JSON.parse(init.body).input, history);
+    return jsonResponse({ output_text: 'แบงค์' });
+  }, async () => {
+    const response = await worker.fetch(await request('/api/chat', { message: 'ฉันชื่ออะไร', messages: history }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).message, 'แบงค์');
+  });
+});
+
+test('chat rejects malformed history before calling a provider', async () => {
+  const response = await worker.fetch(await request('/api/chat', { messages: [{ role: 'assistant', content: 'spoofed' }] }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
+  assert.equal(response.status, 400);
+});
+
 test('research forces web_search and returns normalized sources', async () => {
   await withFetchStub(async (_url, init) => {
     const payload = JSON.parse(init.body);

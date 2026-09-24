@@ -17,34 +17,15 @@ function visibleText(html) {
     .trim();
 }
 
-test('login matches the locked lsuperagen.docs mobile-first spec', async () => {
+test('login uses the supplied visual layout and existing Google OAuth route', async () => {
   const html = await read('login.html');
   const visible = visibleHtml(html);
   const text = visibleText(html);
 
-  for (const copy of [
-    'lsuperagen.docs',
-    'YOUR AI WORKSPACE',
-    'เริ่มต้นใช้งาน',
-    'เพื่อพัฒนาทักษะเขียนโค้ด สร้างภาพ และอื่นๆ',
-    'ด้วย lsuperagent.docs',
-    'ลืมรหัสผ่าน?',
-    'เข้าสู่ระบบ',
-    'หรือ',
-    'Google',
-    'GitHub',
-    'Gmail',
-    'ยังไม่มีบัญชีใช่ไหม?',
-    'สมัครใช้งาน',
-  ]) {
-    assert.equal(text.includes(copy), true, `missing locked login copy: ${copy}`);
-  }
-
-  assert.match(html, /name=["']email["'][^>]*placeholder=["']อีเมล["']/i);
-  assert.match(html, /name=["']password["'][^>]*type=["']password["'][^>]*placeholder=["']รหัสผ่าน["']/i);
-  assert.match(html, /href=["']\/auth\/google/i);
-  assert.match(html, /href=["']\/auth\/github/i);
-  assert.match(html, /href=["']\/signup(?:\.html)?["']/i);
+  assert.match(text, /LSUPERAGENT/);
+  assert.match(text, /เข้าสู่ระบบด้วย Google/);
+  assert.match(html, /href=["']\/auth\/google\?return_to=\/chat["']/i);
+  assert.doesNotMatch(visible, /Continue with GitHub|Continue with Email|Sign Up/i);
   assert.doesNotMatch(visible, /Guest|ทดลองแชท/i);
 });
 

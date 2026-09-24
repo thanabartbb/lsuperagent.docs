@@ -21,17 +21,17 @@ const forbiddenVisibleTerms = [
   'NOT WIRED',
 ];
 
-test('public chat is an end-user workspace without developer readiness copy', async () => {
+test('public chat uses the supplied playground with a signed-session API client', async () => {
   const html = await read('chat.html');
   const visible = visibleHtml(html);
   for (const term of forbiddenVisibleTerms) {
     assert.equal(visible.includes(term), false, `chat.html exposes internal/public-inappropriate visible term: ${term}`);
   }
-  for (const label of ['Chat', 'Code', 'Image', 'Research', 'Read URL', 'Write']) {
-    assert.equal(visible.includes(label), true, `missing user mode: ${label}`);
-  }
-  assert.match(html, /copy/i, 'text answers need a Copy action');
-  assert.match(html, /download/i, 'image results need a Download action');
+  for (const id of ['chat', 'composer', 'input', 'send', 'signout']) assert.match(html, new RegExp(`id="${id}"`));
+  const client = await read('assets/chat.js');
+  assert.match(client, /\/api\/auth\/session/);
+  assert.match(client, /\/api\/chat/);
+  assert.match(client, /\/auth\/logout/);
 });
 
 test('public product uses the locked black white blue token contract', async () => {
@@ -65,15 +65,11 @@ test('large code input is no longer constrained to the audited 4000 character ce
   assert.ok(Number(match[1]) >= 30000, `message limit is still too small: ${match[1]}`);
 });
 
-test('login is the sole public entry and has account auth without guest bypass', async () => {
+test('login is the sole public entry and starts Google OAuth without guest bypass', async () => {
   const source = await read('src/index.js');
   assert.match(source, /pathname\s*===\s*['"]\/['"][\s\S]{0,360}\/login/);
   const login = visibleHtml(await read('login.html'));
-  assert.match(login, />Google</);
-  assert.match(login, />GitHub</);
-  assert.match(login, />Gmail</);
-  assert.match(login, /name="email"/i);
-  assert.match(login, /name="password"/i);
+  assert.match(login, /href="\/auth\/google\?return_to=\/chat"/);
   assert.equal(/Guest|ทดลองแชท/i.test(login), false, 'login must not offer an unauthenticated bypass');
 });
 
@@ -94,15 +90,13 @@ test('injected public navigation does not expose docs or developer surfaces', as
   }
 });
 
-test('authenticated product shell exposes chat, tools, and logout navigation', async () => {
-  for (const file of ['chat.html', 'tools.html']) {
-    const html = await read(file);
-    assert.match(html, /href=["']\/chat/i);
-    assert.match(html, /href=["']\/tools/i);
-    assert.match(html, /href=["']\/auth\/logout/i);
-    assert.match(html, /app-shell\.js/i);
-    assert.match(html, /data-shell-page=/);
-  }
+test('authenticated chat can sign out while the existing tools shell remains guarded', async () => {
+  const chat = await read('chat.html');
+  assert.match(chat, /id="signout"/);
+  assert.match(await read('assets/chat.js'), /\/auth\/logout/);
+  const tools = await read('tools.html');
+  assert.match(tools, /href=["']\/auth\/logout/i);
+  assert.match(tools, /app-shell\.js/i);
 });
 
 test('signup does not offer guest workspace bypass', async () => {

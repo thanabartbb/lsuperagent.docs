@@ -15,22 +15,21 @@
 
 ## Current correction
 
-Older context that makes Supabase, Firebase Auth, Trusted Gateway, or Claude/Anthropic the active first provider is not current.
+Firebase Auth and Google OAuth are active (since 2026-09-19). Older context that makes Supabase, Trusted Gateway, or Claude/Anthropic the active first provider is not current.
 
 Current active work path:
 
 ```txt
-Cloudflare Worker src/index.js
-→ /api/chat
-→ OpenAI first provider only when OPENAI_API_KEY exists as Cloudflare Secret
+Cloudflare Worker "lsuperagent-docs" → src/firebase-worker.js → src/index.js
+→ login (Google OAuth / Firebase) → signed session cookie
+→ /api/chat → OpenAI first provider only when OPENAI_API_KEY exists as Cloudflare Secret
 ```
 
 Hard rules:
 
 ```txt
 Do not wire Supabase unless explicitly approved.
-Do not wire Firebase unless explicitly approved.
-Do not add Auth unless explicitly approved.
+Firebase is for auth only; do not expand its scope unless explicitly approved.
 Do not require Trusted Gateway unless explicitly approved.
 Do not use Claude/Anthropic as first provider.
 Do not expose or commit secrets.

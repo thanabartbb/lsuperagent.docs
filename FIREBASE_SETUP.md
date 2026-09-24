@@ -45,10 +45,12 @@ The existing `AUTH_SESSION_SECRET` is also required for Firebase sessions to bec
 
 After deploy:
 
-1. `GET /api/firebase/status` should return `status: "configured"` and `firebase_session_bridge: true`.
+1. `GET /api/firebase/status` should return `status: "configured"`, `firebase_session_bridge: true`, and `platform_email_auth: true`.
 2. Open `/login.html` and sign in with Google or GitHub.
 3. After Firebase redirects back, `/api/auth/firebase/session` should set `lsuperagen_trial_session`.
 4. `GET /api/auth/session` should show the existing app session populated from Firebase identity claims.
 5. If Firebase config is absent, the original `/auth/google` and `/auth/github` links continue to work as before.
 
 Firebase Web SDK pinned for this integration: `12.19.0`.
+
+Thai step-by-step (PDF Web config → Cloudflare): see `docs/reference/FIREBASE_CLOUDFLARE_TH.md`.

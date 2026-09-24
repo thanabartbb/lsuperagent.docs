@@ -38,7 +38,81 @@ export function firebaseProviderFromClaims(claims = {}) {
   const provider = String(claims?.firebase?.sign_in_provider || '').toLowerCase();
   if (provider === 'google.com') return 'google';
   if (provider === 'github.com') return 'github';
+  if (provider === 'password') return 'email';
   return 'firebase';
+}
+
+const IDENTITY_TOOLKIT_ERRORS = {
+  EMAIL_NOT_FOUND: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+  INVALID_PASSWORD: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+  INVALID_LOGIN_CREDENTIALS: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+  INVALID_EMAIL: 'รูปแบบอีเมลไม่ถูกต้อง',
+  EMAIL_EXISTS: 'อีเมลนี้มีบัญชีอยู่แล้ว ลองเข้าสู่ระบบ',
+  WEAK_PASSWORD: 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',
+  TOO_MANY_ATTEMPTS_TRY_LATER: 'มีการลองหลายครั้ง กรุณารอสักครู่แล้วลองใหม่',
+  OPERATION_NOT_ALLOWED: 'ระบบอีเมลและรหัสผ่านยังไม่ได้เปิดใช้งานใน Firebase',
+};
+
+export function identityToolkitUserMessage(errorMessage) {
+  const code = String(errorMessage || '').trim();
+  return IDENTITY_TOOLKIT_ERRORS[code] || 'ไม่สามารถดำเนินการได้ กรุณาลองอีกครั้ง';
+}
+
+function basicEmail(value) {
+  const email = String(value || '').trim();
+  if (!email || email.length > 254) return '';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return '';
+  return email;
+}
+
+export async function firebaseIdentityToolkit(env, method, payload, fetchImpl = fetch) {
+  const apiKey = clean(env, 'FIREBASE_API_KEY');
+  if (!apiKey) throw new Error('firebase_not_configured');
+  const url = `https://identitytoolkit.googleapis.com/v1/accounts:${method}?key=${encodeURIComponent(apiKey)}`;
+  const response = await fetchImpl(url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', accept: 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = data?.error?.message || `identity_toolkit_${method}_failed`;
+    const err = new Error(message);
+    err.code = message;
+    throw err;
+  }
+  return data;
+}
+
+export async function platformEmailSignIn(env, email, password, fetchImpl = fetch) {
+  const normalized = basicEmail(email);
+  if (!normalized) throw new Error('INVALID_EMAIL');
+  if (typeof password !== 'string' || password.length < 6) throw new Error('WEAK_PASSWORD');
+  return firebaseIdentityToolkit(env, 'signInWithPassword', {
+    email: normalized,
+    password,
+    returnSecureToken: true,
+  }, fetchImpl);
+}
+
+export async function platformEmailSignUp(env, email, password, fetchImpl = fetch) {
+  const normalized = basicEmail(email);
+  if (!normalized) throw new Error('INVALID_EMAIL');
+  if (typeof password !== 'string' || password.length < 6) throw new Error('WEAK_PASSWORD');
+  return firebaseIdentityToolkit(env, 'signUp', {
+    email: normalized,
+    password,
+    returnSecureToken: true,
+  }, fetchImpl);
+}
+
+export async function platformEmailPasswordReset(env, email, fetchImpl = fetch) {
+  const normalized = basicEmail(email);
+  if (!normalized) throw new Error('INVALID_EMAIL');
+  return firebaseIdentityToolkit(env, 'sendOobCode', {
+    requestType: 'PASSWORD_RESET',
+    email: normalized,
+  }, fetchImpl);
 }
 
 export function validateFirebaseClaims(claims, projectId, nowSeconds = Math.floor(Date.now() / 1000)) {

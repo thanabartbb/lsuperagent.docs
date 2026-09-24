@@ -48,10 +48,12 @@ test('login matches the locked lsuperagen.docs mobile-first spec', async () => {
   assert.doesNotMatch(visible, /Guest|ทดลองแชท/i);
 });
 
-test('firebase auth client supports real email password sign-in and reset', async () => {
+test('firebase auth client uses platform email login and reset endpoints', async () => {
   const source = await read('firebase-auth.js');
-  assert.match(source, /signInWithEmailAndPassword/);
-  assert.match(source, /sendPasswordResetEmail/);
+  assert.match(source, /\/api\/auth\/platform\/login/);
+  assert.match(source, /\/api\/auth\/platform\/password-reset/);
+  assert.match(source, /\/api\/auth\/platform\/register/);
   assert.match(source, /\[data-email-login\]/);
   assert.match(source, /\[data-password-reset\]/);
+  assert.match(source, /\[data-email-register\]/);
 });

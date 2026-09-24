@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   firebaseConfigFromEnv,
   firebaseProviderFromClaims,
+  identityToolkitUserMessage,
   validateFirebaseClaims,
   createLegacySessionCookie,
 } from '../src/firebase-core.mjs';
@@ -38,7 +39,12 @@ test('firebaseConfigFromEnv returns public web config when required values exist
 test('firebaseProviderFromClaims maps Firebase provider IDs to existing app provider names', () => {
   assert.equal(firebaseProviderFromClaims({ firebase: { sign_in_provider: 'google.com' } }), 'google');
   assert.equal(firebaseProviderFromClaims({ firebase: { sign_in_provider: 'github.com' } }), 'github');
-  assert.equal(firebaseProviderFromClaims({ firebase: { sign_in_provider: 'password' } }), 'firebase');
+  assert.equal(firebaseProviderFromClaims({ firebase: { sign_in_provider: 'password' } }), 'email');
+});
+
+test('identityToolkitUserMessage maps common Firebase email auth errors to Thai copy', () => {
+  assert.match(identityToolkitUserMessage('EMAIL_NOT_FOUND'), /อีเมลหรือรหัสผ่าน/);
+  assert.match(identityToolkitUserMessage('EMAIL_EXISTS'), /มีบัญชีอยู่แล้ว/);
 });
 
 test('validateFirebaseClaims accepts a current token for the configured project', () => {

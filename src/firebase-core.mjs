@@ -175,7 +175,9 @@ export async function verifyFirebaseIdToken(idToken, projectId, fetchImpl = fetc
   });
   if (!jwksResponse.ok) throw new Error('Firebase signing keys unavailable');
   const jwks = await jwksResponse.json();
-  const jwk = jwks?.[header.kid];
+  const jwk = Array.isArray(jwks?.keys)
+    ? jwks.keys.find((candidate) => candidate.kid === header.kid && candidate.kty === 'RSA')
+    : null;
   if (!jwk) throw new Error('Firebase signing key not found');
 
   const key = await crypto.subtle.importKey(

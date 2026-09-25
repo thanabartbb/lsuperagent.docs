@@ -6,6 +6,7 @@ import {
   identityToolkitUserMessage,
   validateFirebaseClaims,
   createLegacySessionCookie,
+  verifyFirebaseIdToken,
 } from '../src/firebase-core.mjs';
 
 test('firebaseConfigFromEnv returns missing keys instead of partial config', () => {
@@ -76,6 +77,31 @@ test('validateFirebaseClaims rejects wrong audience and expired tokens', () => {
     iat: now - 3600,
     exp: now - 1,
   }, 'demo-project', now), /expired/i);
+});
+
+test('verifyFirebaseIdToken accepts a signed token with Google JWKS keys array', async () => {
+  const now = 1_800_000_000;
+  const pair = await crypto.subtle.generateKey(
+    { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+    true,
+    ['sign', 'verify'],
+  );
+  const jwk = { ...(await crypto.subtle.exportKey('jwk', pair.publicKey)), kid: 'test-kid' };
+  const encode = (value) => Buffer.from(JSON.stringify(value)).toString('base64url');
+  const unsigned = [
+    encode({ alg: 'RS256', kid: 'test-kid' }),
+    encode({ aud: 'demo-project', iss: 'https://securetoken.google.com/demo-project', sub: 'uid-123', iat: now - 60, exp: now + 3600 }),
+  ].join('.');
+  const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', pair.privateKey, new TextEncoder().encode(unsigned));
+  const token = unsigned + '.' + Buffer.from(signature).toString('base64url');
+  const fetchImpl = async () => new Response(JSON.stringify({ keys: [jwk] }), { status: 200 });
+
+  const claims = await verifyFirebaseIdToken(token, 'demo-project', fetchImpl, now);
+  assert.equal(claims.sub, 'uid-123');
+  await assert.rejects(
+    verifyFirebaseIdToken(token + 'x', 'demo-project', fetchImpl, now),
+    /signature invalid/,
+  );
 });
 
 test('createLegacySessionCookie creates the existing auth cookie without exposing the secret', async () => {

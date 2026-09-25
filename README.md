@@ -2,8 +2,10 @@
 
 AI Framework: **LSUPERAGENT public AI workspace**
 
-Last updated: **2026-09-25T09:15:53+07:00 Asia/Bangkok**
-Last update task: **Add a public /loading intro page from the supplied HTML and link both brand headings to it.**
+Last updated: **2026-09-25T10:35:52+07:00 Asia/Bangkok**
+Last update task: **Document the single-owner session continuity pilot without activating a database.**
+
+The proposed one-owner session continuity system is specified in [`docs/session-continuity-pilot.md`](docs/session-continuity-pilot.md). It is design-only; no database or resumable chat runtime has been created.
 
 This repository powers the public LSUPERAGENT AI Workspace. The login UI presents email/password, Google OAuth, and GitHub OAuth. The chat UI uses the existing signed session and server-side `/api/chat` route. Email/password depends on Firebase Web configuration and the Email/Password provider being enabled. GitHub OAuth depends on the existing Worker client ID/secret. Each login issues a six-hour signed cookie; historical session storage and server-side session revocation are not implemented.
 

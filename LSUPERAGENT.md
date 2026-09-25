@@ -63,6 +63,10 @@ src/firebase-worker.js
         ├─ /chat, /tools                  login required → /login?return_to=...
         ├─ /api/chat   POST               login required → OpenAI Responses API
         ├─ /api/image  POST               login required → OpenAI Images API
+        ├─ /guide  (/sdk → /guide)        login required → lsupergen-sdk guide with live "run" checks
+        ├─ /api/sdk/keys POST             login required, same-origin → stateless signed API key (lsg_…, 30 days)
+        ├─ /v1/health GET                 public status for the lsupergen-sdk API (CORS *)
+        ├─ /v1/me GET, /v1/chat POST, /v1/image POST   Bearer lsg_ key → same handlers as /api/chat, /api/image
         ├─ /dev, /dev-code-drop           owner-only (OWNER_GOOGLE_EMAIL / OWNER_GOOGLE_SUB)
         ├─ /admin                         → /dev
         └─ static assets via env.ASSETS + safe HTML enhancements
@@ -77,6 +81,18 @@ signed with `AUTH_SESSION_SECRET`:
 login.html  → /auth/google        (direct Google OAuth, current public login button)
 signup.html → firebase-auth.js    (Firebase client SDK) → /api/auth/firebase/session
 email form  → /api/auth/platform/login | register (server-side Firebase Identity Toolkit)
+```
+
+### SDK API (lsupergen-sdk)
+
+```txt
+npm package:  lsupergen-sdk (thanabartbb/npm-lsupergen-sdk)
+Base URL:     https://agents-sdk.space/v1   (SDK default api.lsupergen.com is NOT this site)
+API key:      POST /api/sdk/keys from /guide → HMAC token signed with AUTH_SESSION_SECRET, typ "sdk_key"
+              no storage; expires in 30 days; rotating AUTH_SESSION_SECRET revokes all keys (and sessions)
+Guide page:   guide.html + assets/guide.js, runs vendor/lsupergen-sdk/0.1.0/index.js
+              (byte-identical npm dist, sha256 pinned in tests/sdk-guide.test.mjs)
+0.1.0 caveat: browsers / Workers need `fetch: (...args) => fetch(...args)` (unbound fetch → Illegal invocation)
 ```
 
 ### AI runtime path
@@ -160,6 +176,8 @@ signup.html              sign-up (Firebase client SDK)
 firebase-auth.js         Firebase client SDK glue
 auth-all.html            all-in-one auth surface
 chat.html                AI Workspace chat UI (login required)
+guide.html               lsupergen-sdk guide (login required); assets/guide.js runs live checks
+vendor/lsupergen-sdk/    vendored npm build served same-origin (CSP allows 'self' scripts only)
 tools.html               tools catalog (login required)
 dev.html / dev-code-drop.html   owner-only dev surfaces
 admin.html               legacy, redirected to /dev
@@ -188,6 +206,7 @@ Live checklist:
 4. GET /api/firebase/status → configured: true, secret_values_exposed: false
 5. POST /api/chat signed out → 401 authentication_required
 6. POST /api/chat signed in  → real model output, ok: true
+6b. /guide signed in → create API key → "รันทั้งหมด" → Proof report PASS 5/5 (chat needs OPENAI_API_KEY)
 7. No secret appears in repo, logs, screenshots, or UI
 ```
 

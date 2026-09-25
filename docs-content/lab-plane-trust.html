@@ -5,5 +5,5 @@
 <tr><td>Least Privilege</td><td>ให้สิทธิ์ขั้นต่ำ</td><td><code>CapabilityLeaseBroker</code></td></tr>
 <tr><td>Secret Isolation</td><td>แยกความลับออกจากโค้ดและพรอมต์</td><td>อ่าน <code>OPENAI_API_KEY</code> จาก environment เท่านั้น</td></tr>
 <tr><td>Network Allowlist</td><td>จำกัดปลายทางที่ออกได้</td><td>ตั้งที่ sandbox / infrastructure</td></tr>
-<tr><td>Fail-Closed</td><td>ผิดพลาดเมื่อไหร่ หยุดทันที</td><td>ระดับที่ไม่รู้จัก → ไม่เช่าเครื่องมือ; ไม่มีการอนุมัติ → <code>PermissionError</code></td></tr>
+<tr><td>Fail-Closed</td><td>ผิดพลาดเมื่อไหร่ หยุดทันที</td><td>ระดับที่ไม่รู้จัก → ไม่มอบสิทธิ์เครื่องมือใดเลย; ไม่มีการอนุมัติ → <code>PermissionError</code></td></tr>
 </tbody></table>

@@ -73,7 +73,7 @@ export const NAV = [
       { slug: 'lab-quickstart', title: 'ติดตั้งและรัน', icon: 'download' },
       { slug: 'lab-code-contracts', title: 'Contracts (Pydantic)', icon: 'pencil' },
       { slug: 'lab-code-hooks', title: 'Evidence hooks', icon: 'eye' },
-      { slug: 'lab-code-leasing', title: 'Capability leasing', icon: 'key' },
+      { slug: 'lab-code-leasing', title: 'สิทธิ์เครื่องมือชั่วคราว', icon: 'key' },
       { slug: 'lab-code-approval', title: 'Approval 2 ชั้น', icon: 'shield' },
       { slug: 'lab-code-harness', title: 'Harness และ trace grader', icon: 'settings' },
       { slug: 'lab-action-ladder', title: 'Action Ladder', icon: 'layers' },

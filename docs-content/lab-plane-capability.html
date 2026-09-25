@@ -1,5 +1,6 @@
 <h1>ระนาบ 4 · Capability Fabric</h1>
-<p class="lead">จัดสรร ค้นหา และปล่อยเช่าเครื่องมือเฉพาะกิจ แทนการยัดทุกเครื่องมือลงพรอมต์</p>
+<p class="lead">เลือกและมอบสิทธิ์ใช้เครื่องมือให้ agent เฉพาะงานที่ทำอยู่ แทนการยัดทุกเครื่องมือลงพรอมต์</p>
+<div class="callout"><p><strong>Capability Leasing คืออะไร:</strong> ระบบของคุณเป็นเจ้าของเครื่องมือทั้งหมด และให้ agent ใช้ได้เฉพาะเครื่องมือที่งานนั้นต้องใช้ เฉพาะช่วงเวลาที่ทำงานนั้น พองานจบสิทธิ์ก็หมด คล้ายบัตรผ่านชั่วคราวที่ออกให้ทีละงาน</p><p><strong>ไม่ใช่</strong>การปล่อยเช่าเครื่องมือให้ AI หรือเปิดขายบริการ ไม่มีการเก็บเงิน และไม่มีบุคคลภายนอกมาเช่า คำว่า “leasing” ใช้ในความหมายว่า “ให้สิทธิ์แบบมีกำหนดเวลา” เท่านั้น</p></div>
 <h2>กลไกใน SDK</h2>
 <table><thead><tr><th>กลไก</th><th>ใช้ทำอะไร</th><th>สถานะ</th></tr></thead><tbody>
 <tr><td><code>ToolSearchTool()</code></td><td>ให้โมเดลโหลดเครื่องมือที่ถูกเลื่อนไว้ (deferred), namespace หรือ hosted MCP ตามต้องการ</td><td><span class="tag ok">ยืนยันแล้ว</span></td></tr>
@@ -33,4 +34,4 @@ class CapabilityLeaseBroker:
         if level in (ActionLadderLevel.PREPARE, ActionLadderLevel.EXECUTE):
             return [restart_production_service]
         return []  # unknown level: lease nothing (fail-closed, R7)</code></pre>
-<p>ระดับที่ไม่รู้จักได้รายการว่าง (fail-closed) และถ้าโมเดลพยายามเรียกเครื่องมือที่ไม่ได้เช่า SDK จะโยน <code>ModelBehaviorError</code> — ทดสอบแล้วใน <a href="/docs/lab-testing">ทดสอบแบบออฟไลน์</a></p>
+<p>ระดับที่ไม่รู้จักได้รายการว่าง (fail-closed) และถ้าโมเดลพยายามเรียกเครื่องมือที่ไม่ได้รับสิทธิ์ SDK จะโยน <code>ModelBehaviorError</code> — ทดสอบแล้วใน <a href="/docs/lab-testing">ทดสอบแบบออฟไลน์</a></p>

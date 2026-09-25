@@ -1,7 +1,7 @@
 <h1>ข้อตกลงสถาปัตยกรรม</h1>
 <p class="lead">Architecture Contract เปลี่ยนระบบจาก “กระบวนการเดาสุ่ม” (stochastic) ไปเป็น “การกำกับที่คาดการณ์ได้” (deterministic governance) มี 4 ข้อที่บังคับใช้ทุกระนาบ</p>
 <ol class="steps">
-<li><strong>ห้ามถือครองเครื่องมือถาวร</strong><br>เครื่องมือทุกชิ้นคือทรัพยากรภายนอกที่ต้องเช่าแบบมีขอบเขตตามขั้นตอนย่อย ไม่มี Global God-Agent → <a href="/docs/lab-plane-capability">ระนาบ 4</a></li>
+<li><strong>ห้ามถือครองเครื่องมือถาวร</strong><br>agent ได้สิทธิ์ใช้เครื่องมือเฉพาะขั้นตอนย่อยที่กำลังทำ มีขอบเขตและหมดอายุเมื่องานจบ ไม่มี Global God-Agent → <a href="/docs/lab-plane-capability">ระนาบ 4</a></li>
 <li><strong>Exclusive State Ownership</strong><br>หนึ่งการสนทนามีเจ้าของสถานะรายเดียว ห้ามประสานสถานะสองทาง → <a href="/docs/lab-plane-state">ระนาบ 2</a></li>
 <li><strong>ทุก side-effect ต้องมีเส้นทางอนุมัติที่ระบุชื่อได้</strong><br>ไม่มีการกระทำใดข้ามขอบเขตนโยบายได้หากไม่มี approval path → <a href="/docs/lab-plane-execution">ระนาบ 5</a></li>
 <li><strong>ห้ามแก้ตัวเองใน production</strong><br>การเรียนรู้เกิดในสภาพแวดล้อมคู่ขนานออฟไลน์ ผ่าน trace และ eval เท่านั้น → <a href="/docs/lab-plane-shadow">ระนาบ 7</a></li>

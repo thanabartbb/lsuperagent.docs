@@ -5,7 +5,7 @@
 <li>ล้าง ledger แล้ว <strong>acquire</strong> เจ้าของสถานะ (ระนาบ 2)</li>
 <li><strong>action_classifier</strong> สร้าง PlanContract (ระนาบ 5)</li>
 <li><strong>Plan gate</strong> ถ้าต้องอนุมัติแต่ไม่ได้รับ → ABORTED</li>
-<li>เช่าเครื่องมือตามระดับ (ระนาบ 4) แล้ว <code>Runner.run</code> พร้อม hooks (ระนาบ 6)</li>
+<li>มอบสิทธิ์เครื่องมือตามระดับ (ระนาบ 4) แล้ว <code>Runner.run</code> พร้อม hooks (ระนาบ 6)</li>
 <li>ถ้ามี <code>interruptions</code> → <strong>Tool gate</strong> แล้วรันต่อจาก RunState</li>
 <li><strong>trace_grader</strong> ให้คะแนน แล้ว <strong>release</strong> เจ้าของสถานะเสมอ (finally)</li>
 </ol>

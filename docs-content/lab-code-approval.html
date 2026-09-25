@@ -1,7 +1,7 @@
 <h1>Approval 2 ชั้น</h1>
 <p class="lead">ฉบับร่างหนึ่งใช้ <code>input()</code> ถามก่อนรัน อีกฉบับอ้าง “Approvals API” เมื่อตรวจกับ SDK จริง ทั้งสองแบบใช้คู่กันได้และเสริมกัน</p>
 <table><thead><tr><th>ชั้น</th><th>อยู่ที่</th><th>หยุดอะไร</th><th>กลไก</th></tr></thead><tbody>
-<tr><td>1. Plan gate</td><td>แอปของคุณ ก่อนเช่าเครื่องมือ</td><td>ทั้งงาน ไม่เรียกโมเดลเลย</td><td><code>approve(plan)</code></td></tr>
+<tr><td>1. Plan gate</td><td>แอปของคุณ ก่อนมอบสิทธิ์เครื่องมือ</td><td>ทั้งงาน ไม่เรียกโมเดลเลย</td><td><code>approve(plan)</code></td></tr>
 <tr><td>2. Tool gate</td><td>SDK ตอนโมเดลจะเรียกเครื่องมือ</td><td>การเรียกเครื่องมือครั้งนั้น</td><td><code>needs_approval=True</code> → <code>result.interruptions</code> → <code>RunState.approve/reject</code></td></tr>
 </tbody></table>
 <p>ทำไมต้องสองชั้น: ชั้นแผนอนุมัติ <em>เจตนา</em> ส่วนชั้นเครื่องมืออนุมัติ <em>อาร์กิวเมนต์จริง</em> ที่โมเดลสร้าง ซึ่งอาจต่างจากที่วางแผนไว้</p>

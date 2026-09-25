@@ -31,7 +31,7 @@ Store conversations, ordered messages, a request ledger, and optional confirmed 
 
 ## Proposed minimal runtime
 
-Use one Cloudflare D1 database bound to the existing Worker as `CONTINUITY_DB`, with an explicit SQL migration. D1 is a proposed resource, **not yet created or approved**. Keep the existing Firebase login, signed cookie, and OpenAI route; do not migrate auth providers.
+Use one Cloudflare D1 database bound to the existing Worker as `CONTINUITY_DB`, with an explicit SQL migration. D1 is an allowed implementation choice for this requested one-owner pilot, **not yet created**. Keep the existing Firebase login, signed cookie, and OpenAI route; do not migrate auth providers.
 
 1. `GET /api/conversations`: list only the signed-in owner's conversations.
 2. `POST /api/conversations`: create a conversation for that owner.
@@ -57,6 +57,6 @@ The current `/api/chat` can stay available while the pilot uses these new routes
 
 No online system can guarantee recovery of bytes that never reached durable storage. A provider may also finish a request just as the Worker fails, leaving its result unknown; retries can consume additional provider usage. The promise is to recover **confirmed saved state** and report uncertain state honestly, not "100% of all possible interruptions".
 
-## Activation gate
+## Activation checks
 
-Before creating the D1 resource or enabling the new routes in production, the owner must explicitly authorize one D1 database and its Worker binding, because `AGENTS.md` forbids creating D1/R2/KV resources without that authorization. Review the SQL migration, the one-account allowlist, and the cost limit first. Until then this file is a reviewable design, not a live feature.
+The owner's current instruction clarifies that D1 was not forbidden; this one-owner continuity feature may use one D1 database without another generic permission request. Before enabling the new routes, review the SQL migration, owner allowlist, cost boundary, rollback path, and recovery tests. Until the resource and runtime are verified this file is a reviewable design, not a live feature.

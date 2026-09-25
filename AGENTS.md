@@ -2,8 +2,8 @@
 
 AI Framework: **LSUPERAGENT Public Workspace Operating Instructions**
 
-Last updated: **2026-09-25T10:35:52+07:00 Asia/Bangkok**
-Last update task: **Record the single-owner session continuity design as docs-only; no storage resource created.**
+Last updated: **2026-09-25T10:38:47+07:00 Asia/Bangkok**
+Last update task: **Clarify D1 is allowed for the requested one-owner continuity pilot, subject to a data model and tests.**
 
 This file is the first file every AI agent must read before modifying this repository. It defines the repo memory boundary, write protocol, data contract discipline, and negative constraints.
 
@@ -35,11 +35,11 @@ primary_runtime_endpoint: /api/chat
 owner_workspace: /dev
 control_reference: /dev/control-plane/
 control_alias: /control -> /dev
-database_storage: none_by_default
+database_storage: none_currently
+continuity_pilot_storage:
+  D1: allowed_for_one_owner_pilot_with_schema_cost_review_and_tests
 forbidden_without_approval:
-  - D1
-  - R2
-  - KV
+  - unrelated_R2_or_KV_resources
   - new auth platform migration
   - new Supabase auth bridge
   - new Vercel migration
@@ -47,7 +47,7 @@ forbidden_without_approval:
   - unrelated markdown template overwrite
 ```
 
-The single-owner continuity proposal in `docs/session-continuity-pilot.md` is design-only. Do not describe it as a live memory or session-history feature.
+Storage policy clarified by the owner on 2026-09-25: "not yet installed" does **not** mean "prohibited." The one-owner session-continuity request authorizes choosing a small, suitable persistent store such as one D1 database. Before provisioning or wiring it, write the schema and migration, ownership rules, cost estimate, rollback path, and meaningful recovery tests. Do not ask for another generic D1 permission gate for this already authorized pilot. The current proposal in `docs/session-continuity-pilot.md` remains design-only until the resource, runtime, and end-to-end behavior are verified.
 
 Public route policy: `/loading` is a public informational page linked from the brand on `/login` and `/home`; its primary action uses `/` to select the existing login or home route. `/` opens `/login` without a valid signed session and `/home` with one; successful login defaults to `/home`, while explicit links to `/chat` still work. `/home`, `/chat`, `/tools`, `/api/chat`, and `/api/image` require that session. Public auth pages `/login`, `/signup`, and `/forgot-password` expose email/password and the existing Google/GitHub OAuth routes. Email auth uses the Firebase Identity Toolkit integration; GitHub login uses `read:user user:email` only and does not grant repository write access. `chat.html` uses `/api/auth/session` and `/api/chat`. Sessions are six-hour signed cookies; historical session storage is not installed. No guest path is allowed.
 
@@ -120,7 +120,7 @@ Keep these near the end of prompts because agents may over-weight recent instruc
 ```yaml
 negative_constraints:
   - Do not commit secrets, tokens, OAuth client secrets, signed URLs, or private credentials.
-  - Do not create D1/R2/KV resources unless the owner explicitly asks in the active task.
+  - Do not create storage without a user-requested feature, a concrete data model, cost boundary, and recovery tests. One D1 database is allowed for the current one-owner continuity pilot; unrelated storage still needs a separate reason.
   - Do not migrate authentication to a different platform unless explicitly requested in the active task.
   - Do not create or migrate to Supabase/Vercel/Railway unless explicitly requested in the active task.
   - Do not overwrite index.html with unrelated landing page templates.

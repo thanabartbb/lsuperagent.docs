@@ -2,8 +2,8 @@
 
 AI Framework: **LSUPERAGENT public AI workspace**
 
-Last updated: **2026-09-25T10:35:52+07:00 Asia/Bangkok**
-Last update task: **Document the single-owner session continuity pilot without activating a database.**
+Last updated: **2026-09-25T10:38:47+07:00 Asia/Bangkok**
+Last update task: **Clarify storage policy: D1 may be used for the one-owner continuity pilot.**
 
 The proposed one-owner session continuity system is specified in [`docs/session-continuity-pilot.md`](docs/session-continuity-pilot.md). It is design-only; no database or resumable chat runtime has been created.
 
@@ -85,7 +85,7 @@ And /dev/control-plane/ remains docs/reference unless explicitly changed
 Agents must not do the following:
 
 - Do not push unrelated templates into `main`.
-- Do not migrate auth to a different platform or add Supabase/Vercel/Railway/D1/R2/KV/new platform bindings unless the current task explicitly asks for it.
+- Do not migrate auth or platforms to Supabase/Vercel/Railway without a current owner instruction. A small D1 database is allowed for the requested one-owner continuity pilot after its data model, cost, rollback, and recovery checks are defined; no D1 binding exists yet.
 - Do not overwrite `index.html` with generic landing-page templates.
 - Do not change `/control` away from `/dev` unless the owner explicitly changes route policy.
 - Do not expose secrets or ask the owner to paste secrets into chat.

@@ -1,0 +1,26 @@
+<h1>เพิ่มหน้าเอกสาร</h1>
+<p class="lead">เพิ่มหน้าใหม่ได้ด้วย 2 ขั้น ไม่ต้องแก้ core</p>
+<ol class="steps">
+  <li><strong>สร้างไฟล์เนื้อหา</strong> ที่ <code>docs-content/&lt;slug&gt;.html</code> (slug ใช้ a-z, 0-9, - เท่านั้น)
+<pre data-title="docs-content/deploy.html"><code>&lt;h1&gt;การ deploy&lt;/h1&gt;
+&lt;p class="lead"&gt;คำอธิบายสั้น ๆ ใต้หัวเรื่อง&lt;/p&gt;
+
+&lt;h2&gt;หัวข้อย่อย&lt;/h2&gt;
+&lt;p&gt;เนื้อหา…&lt;/p&gt;
+&lt;pre data-title="terminal"&gt;&lt;code&gt;npx wrangler deploy&lt;/code&gt;&lt;/pre&gt;</code></pre></li>
+  <li><strong>เพิ่มเมนู</strong> ใน <code>assets/docs-nav.js</code>
+<pre data-title="assets/docs-nav.js"><code>{ slug: 'deploy', title: 'การ deploy', icon: 'rocket' },</code></pre></li>
+</ol>
+<p>หน้าใหม่จะอยู่ที่ <code>/docs/deploy</code> และขึ้นในเมนู ค้นหา สารบัญ และปุ่มก่อนหน้า/ถัดไปให้อัตโนมัติ</p>
+<h2>องค์ประกอบที่ใช้ได้</h2>
+<table>
+  <tbody>
+    <tr><td><code>&lt;p class="lead"&gt;</code></td><td>ข้อความนำใต้หัวเรื่อง</td></tr>
+    <tr><td><code>&lt;h2&gt;</code>, <code>&lt;h3&gt;</code></td><td>ขึ้นใน “ในหน้านี้” อัตโนมัติ</td></tr>
+    <tr><td><code>&lt;pre data-title="…"&gt;&lt;code&gt;</code></td><td>บล็อกโค้ดพร้อมชื่อไฟล์และปุ่มคัดลอก; <code>{{BASE}}</code> ถูกแทนด้วย API base URL</td></tr>
+    <tr><td><code>&lt;div class="callout"&gt;</code> / <code>callout warn</code></td><td>กล่องหมายเหตุ / คำเตือน</td></tr>
+    <tr><td><code>&lt;div class="cards"&gt;&lt;a class="card"&gt;</code></td><td>การ์ดลิงก์</td></tr>
+    <tr><td><code>&lt;ol class="steps"&gt;</code></td><td>ขั้นตอนมีเลขวงกลม</td></tr>
+  </tbody>
+</table>
+<p>ไอคอนที่มีให้เลือกอยู่ใน <code>ICONS</code> ของ <code>assets/docs-nav.js</code> และมีชุดทดสอบตรวจว่าทุกหน้าในเมนูมีไฟล์จริง</p>

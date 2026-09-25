@@ -1,0 +1,44 @@
+<h1>การตั้งค่า client</h1>
+<p class="lead">ตัวเลือกทั้งหมดของ <code>new Lsupergen(options)</code></p>
+<pre data-title="client.mjs"><code>import { Lsupergen } from 'lsupergen-sdk';
+
+const client = new Lsupergen({
+  apiKey: process.env.LSUPERGEN_API_KEY,
+  baseURL: '{{BASE}}',
+  timeout: 60_000,
+  maxRetries: 2,
+  defaultHeaders: { 'X-App': 'my-agent' },
+});</code></pre>
+<h2>ตัวเลือก</h2>
+<table>
+  <thead><tr><th>ตัวเลือก</th><th>ชนิด</th><th>ค่าเริ่มต้น</th></tr></thead>
+  <tbody>
+    <tr><td><code>apiKey</code></td><td>string</td><td><code>LSUPERGEN_API_KEY</code> (ไม่มี = throw ตอนสร้าง client)</td></tr>
+    <tr><td><code>baseURL</code></td><td>string</td><td><code>LSUPERGEN_BASE_URL</code> หรือ <code>https://api.lsupergen.com</code></td></tr>
+    <tr><td><code>timeout</code></td><td>number (ms)</td><td><code>60000</code></td></tr>
+    <tr><td><code>maxRetries</code></td><td>number</td><td><code>2</code></td></tr>
+    <tr><td><code>defaultHeaders</code></td><td>object</td><td><code>{}</code></td></tr>
+    <tr><td><code>fetch</code></td><td>function</td><td><code>globalThis.fetch</code></td></tr>
+  </tbody>
+</table>
+<div class="callout warn"><p>ต้องตั้ง <code>baseURL</code> เป็น <code data-base>…</code> เสมอ ค่าเริ่มต้น <code>api.lsupergen.com</code> ไม่ใช่ API ของเว็บนี้</p></div>
+<h2>เมธอด</h2>
+<pre data-title="methods"><code>client.get(path, options?)
+client.post(path, options?)
+client.put(path, options?)
+client.patch(path, options?)
+client.delete(path, options?)
+client.request(method, path, options?)</code></pre>
+<h3>ตัวเลือกต่อคำขอ</h3>
+<table>
+  <tbody>
+    <tr><td><code>body</code></td><td>แปลงเป็น JSON และตั้ง <code>Content-Type</code> ให้</td></tr>
+    <tr><td><code>query</code></td><td>object → query string (ข้าม <code>null</code>/<code>undefined</code>)</td></tr>
+    <tr><td><code>headers</code></td><td>header เพิ่มเฉพาะคำขอนี้</td></tr>
+    <tr><td><code>timeout</code>, <code>maxRetries</code></td><td>override ค่าของ client</td></tr>
+    <tr><td><code>signal</code></td><td><code>AbortSignal</code> สำหรับยกเลิก</td></tr>
+  </tbody>
+</table>
+<h3>TypeScript</h3>
+<pre data-title="typed.ts"><code>type ChatReply = { ok: boolean; status: string; message: string; sources: { title: string; url: string }[] };
+const reply = await client.post&lt;ChatReply&gt;('/chat', { body: { message: 'hi' } });</code></pre>

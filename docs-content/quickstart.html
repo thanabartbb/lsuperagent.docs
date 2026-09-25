@@ -1,0 +1,30 @@
+<h1>เริ่มต้นใน 5 นาที</h1>
+<p class="lead">จากโปรเจกต์ว่างจนได้คำตอบ AI จริงตัวแรก</p>
+<ol class="steps">
+  <li><strong>สร้างโปรเจกต์และติดตั้ง</strong>
+<pre data-title="terminal"><code>mkdir my-agent && cd my-agent
+npm init -y
+npm install lsupergen-sdk</code></pre></li>
+  <li><strong>สร้าง API key</strong> — เข้าสู่ระบบแล้วเปิด <a href="/guide#key">Playground</a> กด “สร้าง API key ใหม่” แล้วคัดลอก key (ขึ้นต้นด้วย <code>lsg_</code>)</li>
+  <li><strong>ตั้ง environment variable</strong>
+<pre data-title=".env"><code>LSUPERGEN_API_KEY=lsg_your_key_here
+LSUPERGEN_BASE_URL={{BASE}}</code></pre></li>
+  <li><strong>เขียนโค้ด</strong>
+<pre data-title="index.mjs"><code>import { Lsupergen, APIError } from 'lsupergen-sdk';
+
+const client = new Lsupergen(); // อ่าน LSUPERGEN_API_KEY และ LSUPERGEN_BASE_URL
+
+try {
+  const me = await client.get('/me');
+  console.log('บัญชี:', me.user.email);
+
+  const reply = await client.post('/chat', { body: { message: 'แนะนำตัวสั้น ๆ' } });
+  console.log('AI:', reply.message);
+} catch (err) {
+  if (err instanceof APIError) console.error(err.status, err.body);
+  else throw err;
+}</code></pre></li>
+  <li><strong>รัน</strong>
+<pre data-title="terminal"><code>node --env-file=.env index.mjs</code></pre></li>
+</ol>
+<div class="callout"><p>ได้ <code>401 invalid_api_key</code>? ดู <a href="/docs/troubleshooting">การแก้ไขปัญหา</a></p></div>

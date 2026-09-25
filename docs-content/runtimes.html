@@ -1,0 +1,34 @@
+<h1>Runtime ที่รองรับ</h1>
+<p class="lead">SDK ใช้ <code>fetch</code> มาตรฐาน จึงรันได้ทุกที่ที่มี fetch</p>
+<h2>Node.js</h2>
+<pre data-title="node.mjs"><code>import { Lsupergen } from 'lsupergen-sdk';
+const client = new Lsupergen({ baseURL: '{{BASE}}' });</code></pre>
+<h2>Cloudflare Workers</h2>
+<pre data-title="terminal"><code>npx wrangler secret put LSUPERGEN_API_KEY</code></pre>
+<pre data-title="src/index.js"><code>import { Lsupergen, APIError } from 'lsupergen-sdk';
+
+export default {
+  async fetch(request, env) {
+    const client = new Lsupergen({
+      apiKey: env.LSUPERGEN_API_KEY, // Workers ไม่มี process.env
+      baseURL: '{{BASE}}',
+      fetch: (...args) => fetch(...args), // จำเป็นใน 0.1.0
+    });
+    const { message } = await request.json();
+    try {
+      const reply = await client.post('/chat', { body: { message } });
+      return Response.json({ reply: reply.message });
+    } catch (err) {
+      return Response.json({ error: err.message }, { status: err instanceof APIError ? err.status : 502 });
+    }
+  },
+};</code></pre>
+<h2>เบราว์เซอร์</h2>
+<pre data-title="browser.js"><code>const client = new Lsupergen({
+  apiKey,                 // อย่าฝัง key จริงในโค้ดที่เผยแพร่
+  baseURL: '{{BASE}}',
+  fetch: (...args) => fetch(...args), // จำเป็นใน 0.1.0
+});</code></pre>
+<div class="callout warn">
+  <p><strong>lsupergen-sdk 0.1.0:</strong> ในเบราว์เซอร์, Workers และ Deno ต้องส่ง <code>fetch: (...args) =&gt; fetch(...args)</code> ไม่งั้นทุกคำขอจะเป็น <code>ConnectionError</code> (Illegal invocation) แก้แล้วในเวอร์ชัน 0.1.1 (เมื่อ publish ขึ้น npm)</p>
+</div>

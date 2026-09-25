@@ -63,6 +63,7 @@ src/firebase-worker.js
         ├─ /chat, /tools                  login required → /login?return_to=...
         ├─ /api/chat   POST               login required → OpenAI Responses API
         ├─ /api/image  POST               login required → OpenAI Images API
+        ├─ /docs, /docs/:page             login required → docs-shell.html (Docus-style docs: sidebar, search, TOC)
         ├─ /guide  (/sdk → /guide)        login required → lsupergen-sdk guide with live "run" checks
         ├─ /api/sdk/keys POST             login required, same-origin → stateless signed API key (lsg_…, 30 days)
         ├─ /v1/health GET                 public status for the lsupergen-sdk API (CORS *)
@@ -176,6 +177,8 @@ signup.html              sign-up (Firebase client SDK)
 firebase-auth.js         Firebase client SDK glue
 auth-all.html            all-in-one auth surface
 chat.html                AI Workspace chat UI (login required)
+docs-shell.html          docs shell; assets/docs.js + docs.css; menu in assets/docs-nav.js
+docs-content/*.html      one file per docs page (add file + one line in docs-nav.js)
 guide.html               lsupergen-sdk guide (login required); assets/guide.js runs live checks
 vendor/lsupergen-sdk/    vendored npm build served same-origin (CSP allows 'self' scripts only)
 tools.html               tools catalog (login required)

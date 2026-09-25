@@ -1,0 +1,32 @@
+<h1>โครงสร้างระบบ (core)</h1>
+<p class="lead">“core” ของเว็บ agents-sdk.space คือ Cloudflare Worker ตัวเดียว ทุกคำขอผ่านมันก่อนเสมอ แล้วมันตัดสินใจว่าจะตอบ API เอง หรือส่งไฟล์ HTML ให้เบราว์เซอร์</p>
+<h2>เส้นทางของคำขอ</h2>
+<pre data-title="flow"><code>เบราว์เซอร์ / SDK
+  ↓
+Cloudflare Worker "lsuperagent-docs"      (wrangler.toml)
+  ↓
+src/firebase-worker.js                     ← จุดเข้า: login ด้วย Firebase / email
+  ↓
+src/index.js                               ← core: routing, session, API, AI
+  ├─ /v1/*            → API ของ SDK (health, me, chat, image)
+  ├─ /api/chat        → แชทในหน้าเว็บ (ใช้ session cookie)
+  ├─ /docs/:page      → docs-shell.html (หน้าเอกสารนี้)
+  ├─ /guide           → guide.html (Playground)
+  └─ อื่น ๆ           → ไฟล์ static ใน repo (html, css, js)</code></pre>
+<h2>ไฟล์สำคัญ</h2>
+<table>
+  <thead><tr><th>ไฟล์</th><th>หน้าที่</th></tr></thead>
+  <tbody>
+    <tr><td><code>wrangler.toml</code></td><td>ตั้งค่า Worker: ชื่อ, จุดเข้า, โฟลเดอร์ static</td></tr>
+    <tr><td><code>src/index.js</code></td><td>core ทั้งหมด: เส้นทาง URL, ตรวจ login, เรียก OpenAI, API v1</td></tr>
+    <tr><td><code>src/firebase-worker.js</code></td><td>login ผ่าน Firebase แล้วส่งต่อให้ index.js</td></tr>
+    <tr><td><code>docs-shell.html</code> + <code>assets/docs.*</code></td><td>โครงหน้าเอกสาร (sidebar, ค้นหา, สารบัญ)</td></tr>
+    <tr><td><code>assets/docs-nav.js</code></td><td>รายการเมนูด้านซ้าย</td></tr>
+    <tr><td><code>docs-content/*.html</code></td><td>เนื้อหาแต่ละหน้าเอกสาร</td></tr>
+    <tr><td><code>tests/*.test.mjs</code></td><td>ชุดทดสอบ รันด้วย <code>node --test tests/*.test.mjs</code></td></tr>
+  </tbody>
+</table>
+<h2>การ deploy</h2>
+<p>merge เข้า branch <code>main</code> แล้ว Cloudflare Workers Builds จะ build และ deploy ให้อัตโนมัติ ความลับทั้งหมด (<code>OPENAI_API_KEY</code>, <code>AUTH_SESSION_SECRET</code> ฯลฯ) ตั้งใน Cloudflare dashboard ไม่อยู่ใน repo</p>
+<h2>ทำไมไม่ใช้ Docus/Nuxt</h2>
+<p>Docus สร้างด้วย Nuxt ต้องมีขั้น build และเปลี่ยนโครงสร้างทั้งเว็บ ระบบเอกสารนี้ทำหน้าที่เดียวกัน (sidebar แบ่งหมวด, ค้นหา, สารบัญ, ก่อนหน้า/ถัดไป) ด้วย HTML + JS ธรรมดาที่รันบน Worker เดิมได้เลย</p>

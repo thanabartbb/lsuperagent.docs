@@ -1,0 +1,16 @@
+<h1>Changelog</h1>
+<p class="lead">การเปลี่ยนแปลงของ SDK และ API</p>
+<h2>lsupergen-sdk 0.1.1 (รอ publish ขึ้น npm)</h2>
+<ul><li>แก้: เรียก <code>fetch</code> ด้วย <code>this</code> ที่ถูกต้อง ใช้ในเบราว์เซอร์, Workers และ Deno ได้โดยไม่ต้องส่ง <code>fetch</code> เอง</li></ul>
+<h2>API v1 · 2026-09-25</h2>
+<ul>
+  <li><code>GET /health</code>, <code>GET /me</code>, <code>POST /chat</code>, <code>POST /image</code></li>
+  <li>API key แบบ <code>lsg_</code> อายุ 30 วัน สร้างจาก Playground</li>
+  <li>หน้าเอกสาร <code>/docs</code> และ Playground <code>/guide</code></li>
+</ul>
+<h2>lsupergen-sdk 0.1.0 · 2026-09-25</h2>
+<ul>
+  <li>เปิดตัว: client <code>get</code>/<code>post</code>/<code>put</code>/<code>patch</code>/<code>delete</code></li>
+  <li>retry อัตโนมัติ, timeout, <code>AbortSignal</code></li>
+  <li>error: <code>LsupergenError</code>, <code>APIError</code>, <code>TimeoutError</code>, <code>ConnectionError</code></li>
+</ul>

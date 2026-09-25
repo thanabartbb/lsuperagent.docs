@@ -779,6 +779,16 @@ export default {
     }
     if ((pathname === '/login' || pathname === '/login.html') && await currentSession(request, env)) return redirectTo('/home', 302);
 
+    const docsPage = pathname === '/docs' ? 'introduction' : (/^\/docs\/([a-z0-9-]+)$/.exec(pathname) || [])[1];
+    if (docsPage) {
+      if (!await currentSession(request, env)) return redirectTo(`/login?return_to=${encodeURIComponent('/docs/' + docsPage)}`, 302);
+      if (pathname === '/docs') return redirectTo('/docs/introduction', 302);
+      const shellUrl = new URL(request.url);
+      shellUrl.pathname = '/docs-shell';
+      const shell = await env.ASSETS.fetch(new Request(shellUrl.toString(), request));
+      return new Response(shell.body, { status: shell.status, headers: htmlHeaders(shell, 'docs-shell-v1') });
+    }
+
     const response = await fetchAsset(request, env, pathname);
     if (!(response.headers.get('content-type') || '').includes('text/html')) return response;
     let html = await response.text();

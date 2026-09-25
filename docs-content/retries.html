@@ -1,0 +1,22 @@
+<h1>Retry และ timeout</h1>
+<p class="lead">SDK ลองใหม่ให้อัตโนมัติเมื่อปัญหาน่าจะหายเอง</p>
+<h2>เมื่อไหร่ที่ retry</h2>
+<ul>
+  <li>HTTP <code>408</code>, <code>409</code>, <code>429</code> และ <code>5xx</code></li>
+  <li>เครือข่ายล้มเหลวหรือ timeout</li>
+</ul>
+<p>ไม่ retry เมื่อได้ <code>400</code>, <code>401</code>, <code>404</code> ฯลฯ เพราะส่งซ้ำก็ได้ผลเดิม</p>
+<h2>ระยะรอ</h2>
+<p>ถ้าเซิร์ฟเวอร์ส่ง <code>Retry-After</code> (0–60 วินาที) SDK จะรอตามนั้น ไม่งั้นใช้ exponential backoff: 0.5s, 1s, 2s … สูงสุด 8s พร้อม jitter</p>
+<div class="callout"><p>API ของเว็บนี้จำกัด 10 คำขอ / 10 นาที ต่อเครื่องมือ เมื่อเกินจะได้ <code>429</code> พร้อม <code>Retry-After</code></p></div>
+<h2>ปรับค่า</h2>
+<pre data-title="retries.mjs"><code>// ทั้ง client
+const client = new Lsupergen({ baseURL: '{{BASE}}', maxRetries: 4, timeout: 30_000 });
+
+// เฉพาะคำขอเดียว
+await client.get('/health', { maxRetries: 0, timeout: 5_000 });</code></pre>
+<h2>ยกเลิกคำขอ</h2>
+<pre data-title="abort.mjs"><code>const controller = new AbortController();
+setTimeout(() => controller.abort(), 3_000);
+await client.post('/chat', { body: { message: 'hi' }, signal: controller.signal });</code></pre>
+<p>เมื่อยกเลิกด้วย <code>signal</code> SDK จะไม่ retry และโยน error ต้นทาง (<code>AbortError</code>) ออกมา</p>

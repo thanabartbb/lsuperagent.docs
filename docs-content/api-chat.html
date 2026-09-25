@@ -1,0 +1,39 @@
+<h1>POST /chat</h1>
+<p class="lead">ส่งข้อความไปยังโมเดล AI ของระบบและรับคำตอบจริง</p>
+<h2>Request body</h2>
+<table>
+  <thead><tr><th>ฟิลด์</th><th>ชนิด</th><th>คำอธิบาย</th></tr></thead>
+  <tbody>
+    <tr><td><code>message</code></td><td>string</td><td>ข้อความเดียว (ยาวได้ถึง 120,000 ตัวอักษร)</td></tr>
+    <tr><td><code>messages</code></td><td>array</td><td>บทสนทนา 1–20 turn สลับ <code>user</code>/<code>assistant</code> เริ่มและจบด้วย <code>user</code> (แต่ละ turn ≤ 12,000 ตัวอักษร)</td></tr>
+    <tr><td><code>tool</code></td><td>string</td><td><code>writer</code>, <code>research</code> (ค้นเว็บ), <code>url</code> (อ่านลิงก์), <code>code</code></td></tr>
+    <tr><td><code>mode</code></td><td>string</td><td>ป้ายกำกับโหมด (ไม่บังคับ)</td></tr>
+  </tbody>
+</table>
+<h2>ตัวอย่าง</h2>
+<pre data-title="SDK"><code>const reply = await client.post('/chat', { body: { message: 'สรุปข่าว AI วันนี้', tool: 'research' } });
+console.log(reply.message);
+for (const s of reply.sources) console.log(s.title, s.url);</code></pre>
+<pre data-title="บทสนทนา"><code>await client.post('/chat', {
+  body: {
+    messages: [
+      { role: 'user', content: 'ฉันชื่อแบงค์' },
+      { role: 'assistant', content: 'ยินดีที่รู้จัก' },
+      { role: 'user', content: 'ฉันชื่ออะไร' },
+    ],
+  },
+});</code></pre>
+<pre data-title="curl"><code>curl -sS {{BASE}}/chat \
+  -H "Authorization: Bearer $LSUPERGEN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"message":"สวัสดี"}'</code></pre>
+<h2>Response 200</h2>
+<pre data-title="JSON"><code>{ "ok": true, "status": "completed", "message": "…", "output": "…", "sources": [] }</code></pre>
+<p><code>sources</code> มีข้อมูลเมื่อใช้ <code>research</code> หรือ <code>url</code></p>
+<h2>Errors</h2>
+<table><tbody>
+  <tr><td><code>400</code> / <code>413</code></td><td><code>validation_error</code> — ข้อความว่าง ยาวเกิน หรือ <code>messages</code>/<code>tool</code> ไม่ถูกต้อง</td></tr>
+  <tr><td><code>401</code></td><td><code>invalid_api_key</code></td></tr>
+  <tr><td><code>429</code></td><td><code>rate_limited</code> — 10 คำขอ / 10 นาที ต่อเครื่องมือ</td></tr>
+  <tr><td><code>502</code> / <code>503</code></td><td><code>service_error</code> / <code>service_unavailable</code></td></tr>
+</tbody></table>

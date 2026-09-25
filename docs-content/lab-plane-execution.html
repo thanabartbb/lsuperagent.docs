@@ -1,0 +1,13 @@
+<h1>ระนาบ 5 · Execution / Side-Effect</h1>
+<p class="lead">แบ่งช่องทางทำงานตามระดับความเสี่ยงของผลข้างเคียง ด้วยบันได 4 ขั้น (Action Ladder)</p>
+<table><thead><tr><th>ระดับ</th><th>ความหมาย</th><th>ช่องทาง</th><th>ต้องอนุมัติ</th></tr></thead><tbody>
+<tr><td><strong>OBSERVE</strong></td><td>อ่าน/ค้นคว้า ไม่เปลี่ยนสถานะ</td><td>Read-only lane</td><td>ไม่</td></tr>
+<tr><td><strong>DRAFT</strong></td><td>ร่างเนื้อหา/แผน/patch ไม่เขียนลงระบบจริง</td><td>Read-only lane + artifact ชั่วคราว</td><td>ไม่</td></tr>
+<tr><td><strong>PREPARE</strong></td><td>เตรียมคำสั่งเสี่ยงสูง (staging, dry-run)</td><td>Approval Gate → Side-effect lane</td><td>ใช่</td></tr>
+<tr><td><strong>EXECUTE</strong></td><td>เปลี่ยนระบบจริงภายนอก</td><td>Approval Gate → Side-effect lane</td><td>ใช่ (บังคับ)</td></tr>
+</tbody></table>
+<h2>Approval 2 ชั้น</h2>
+<p>ชั้นที่ 1 อยู่ที่แผน (ก่อนเช่าเครื่องมือ) ชั้นที่ 2 อยู่ที่เครื่องมือ (<code>needs_approval=True</code> ทำให้ SDK หยุดรอ) รายละเอียดที่ <a href="/docs/lab-code-approval">Approval 2 ชั้น</a></p>
+<h2>Sandbox</h2>
+<p>SDK มี <code>ShellTool</code>, <code>ApplyPatchTool</code> <span class="tag ok">ยืนยันแล้ว</span> และ <code>SandboxAgent</code> ที่ต้อง import จาก <code>agents.sandbox</code> (ไม่ได้อยู่ที่ <code>agents</code> ระดับบนสุด) <span class="tag ok">ยืนยันแล้ว</span> ผลลัพธ์ที่เป็นไฟล์ควรผ่าน artifact boundary ที่กำหนด</p>
+<p>ตัวอย่างการเดินทางของคำขอทีละขั้น และโค้ด dispatcher ดู <a href="/docs/lab-action-ladder">Action Ladder</a></p>

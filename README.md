@@ -2,8 +2,8 @@
 
 AI Framework: **LSUPERAGENT public AI workspace**
 
-Last updated: **2026-09-25T10:51:46+07:00 Asia/Bangkok**
-Last update task: **Wire the Code card to the chat Code tool and label the current limits honestly.**
+Last updated: **2026-09-25T21:49:15+07:00 Asia/Bangkok**
+Last update task: **Add the login-gated `/docs` documentation site and record the `/guide`, `/api/sdk/keys` and `/v1` SDK API routes in the contract.**
 
 The proposed one-owner session continuity system is specified in [`docs/session-continuity-pilot.md`](docs/session-continuity-pilot.md). It is design-only; no database or resumable chat runtime has been created.
 
@@ -26,6 +26,8 @@ Agents working in this repository must treat this stack as pinned unless the own
 | Worker entry | `src/firebase-worker.js` → `src/index.js` |
 | Frontend surface | Static HTML/CSS/JS files |
 | Primary runtime endpoint | `POST /api/chat` |
+| SDK API | `GET /v1/health` (public); `GET /v1/me`, `POST /v1/chat`, `POST /v1/image` with a Bearer `lsg_` key from `POST /api/sdk/keys` |
+| Docs and playground | `/docs/:page` (docs site, login required) and `/guide` (`lsupergen-sdk` playground, login required) |
 | Auth surfaces | Public UI: email/password, Google OAuth, GitHub OAuth; runtime: existing signed user session and Owner Google Dev Gate |
 | Owner workspace | `/dev` |
 | Control-plane reference | `/dev/control-plane/` |
@@ -38,7 +40,7 @@ Agents working in this repository must treat this stack as pinned unless the own
 
 Build a public AI Workspace so authenticated users can safely use real AI capabilities without an anonymous access path, with `/login` as the public entry surface.
 
-The public auth pages are `login.html`, `signup.html`, and `forgot-password.html`. Brand links on `/login` and `/home` open the public `/loading` intro page adapted from the supplied HTML. Its primary action goes through `/` to `/login` or `/home` according to the signed session; the chat action uses the guarded `/chat`. Its news cards link to external publisher pages and are static links, not a live feed. Successful sign-in and the authenticated root default to `/home`; direct links to `/chat` remain available. Authenticated `/home` links to `/chat` and `/tools`. `assets/chat.js` checks `/api/auth/session` and sends conversation to `POST /api/chat`. Google and GitHub callbacks remain `/auth/google/callback` and `/auth/github/callback`. GitHub login uses `read:user user:email` only; it does not authorize repository writes or save a GitHub access token.
+The public auth pages are `login.html`, `signup.html`, and `forgot-password.html`. Brand links on `/login` and `/home` open the public `/loading` intro page adapted from the supplied HTML. Its primary action goes through `/` to `/login` or `/home` according to the signed session; the chat action uses the guarded `/chat`. Its news cards link to external publisher pages and are static links, not a live feed. Successful sign-in and the authenticated root default to `/home`; direct links to `/chat` remain available. Authenticated `/home` links to `/chat`, `/tools`, `/docs`, and `/guide`. The docs site (`docs-shell.html`, `assets/docs*.{js,css}`, `docs-content/*.html`) and its content route `/docs-content/*` require the signed session. `assets/chat.js` checks `/api/auth/session` and sends conversation to `POST /api/chat`. Google and GitHub callbacks remain `/auth/google/callback` and `/auth/github/callback`. GitHub login uses `read:user user:email` only; it does not authorize repository writes or save a GitHub access token.
 
 ### 3. Data Contract
 
@@ -58,6 +60,8 @@ Every feature or page must declare its data contract before implementation.
 | `intro_links` | static URLs | `loading.html` | Brand route `/loading`, session-aware CTA `/`, guarded `/chat`, and external news sources. |
 | `return_to` | relative path | login query/state | Must remain an internal, safe path and defaults to `/home`; explicit `/chat` is preserved. |
 | `mode` | enum `chat`, `code` | `/chat` query and `assets/chat.js` request | Code entry sends `tool: "code"` to the Worker. |
+| `docs_page` | slug `[a-z0-9-]+` | `/docs/:page`, `assets/docs-nav.js` | Must have a matching `docs-content/<slug>.html`; unknown slugs render a not-found message. |
+| `api_key` | string `lsg_…` | `POST /api/sdk/keys` | Stateless signed token, 30-day expiry, shown once; never stored or logged. |
 | `quota_remaining` | number or unavailable | `/api/chat` rate headers | Shows only the current isolate's temporary rate count after a successful response. |
 
 Mock fixtures are allowed only when named as fixtures. Placeholder content must not be presented as live functionality.

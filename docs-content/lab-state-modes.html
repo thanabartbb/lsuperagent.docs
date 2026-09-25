@@ -1,0 +1,39 @@
+<h1>State Ownership: 3 โหมด + Compaction</h1>
+<p class="lead">เลือกเจ้าของสถานะได้ 1 แบบต่อการสนทนา แต่ละแบบมีวิธีคุมขนาดบริบทต่างกัน</p>
+<h2>โค้ดทั้ง 3 โหมด</h2>
+<pre data-title="3 โหมด (ใช้ทีละแบบ)"><code>from agents import Runner, SQLiteSession
+
+# 1) SDK Session — แอปเป็นเจ้าของประวัติ
+result = await Runner.run(agent, &quot;hi&quot;, session=SQLiteSession(&quot;user-42&quot;))
+
+# 2) Conversation — เซิร์ฟเวอร์ OpenAI เป็นเจ้าของ
+result = await Runner.run(agent, &quot;hi&quot;, conversation_id=&quot;conv_...&quot;)
+
+# 3) Response chaining — ต่อโซ่ทีละ turn
+first = await Runner.run(agent, &quot;hi&quot;)
+result = await Runner.run(agent, &quot;and then?&quot;, previous_response_id=first.last_response_id)</code></pre>
+<h2>Compaction</h2>
+<p>ฉบับร่างหนึ่งเขียนเงื่อนไข 80% ด้วยมือ อีกฉบับอ้าง <code>/responses/compact</code> ข้อยุติ: SDK มี <code>OpenAIResponsesCompactionSession</code> ที่เรียก <code>responses.compact</code> ให้เอง และรับฟังก์ชันตัดสินใจ <code>should_trigger_compaction</code> เราจึงใส่เงื่อนไข 80% เป็นฟังก์ชันนั้น <span class="tag ok">ยืนยันแล้ว</span></p>
+<pre data-title="lab_patterns.py · context budget" data-source="lab_patterns.py"><code># ---------------------------------------------------------------- Context budget ledger
+def make_compaction_trigger(context_window_tokens: int, ratio: float = 0.8):
+    &quot;&quot;&quot;Build a should_trigger_compaction hook for OpenAIResponsesCompactionSession.
+
+    The SDK passes a dict with `session_items` and `compaction_candidate_items`; it does not
+    pass a token count, so this estimates ~4 characters per token.
+    &quot;&quot;&quot;
+
+    def should_trigger(context: dict[str, Any]) -&gt; bool:
+        chars = sum(len(str(item)) for item in context[&quot;session_items&quot;])
+        return chars / 4 &gt; ratio * context_window_tokens
+
+    return should_trigger</code></pre>
+<pre data-title="ใช้งาน"><code>from agents import OpenAIResponsesCompactionSession, SQLiteSession
+from lab_patterns import make_compaction_trigger
+
+session = OpenAIResponsesCompactionSession(
+    &quot;user-42&quot;,
+    SQLiteSession(&quot;user-42&quot;),
+    should_trigger_compaction=make_compaction_trigger(context_window_tokens=128_000),
+)
+result = await Runner.run(agent, &quot;hi&quot;, session=session)</code></pre>
+<div class="callout warn"><p>ค่าเริ่มต้นของ SDK คือ compact เมื่อมี candidate ≥ 10 รายการ และ <code>OpenAIResponsesCompactionSession</code> <strong>ครอบ</strong> <code>OpenAIConversationsSession</code> ไม่ได้ (โหมด conversation จัดการประวัติบนเซิร์ฟเวอร์เอง) <span class="tag ok">ยืนยันแล้ว</span></p></div>

@@ -1,0 +1,22 @@
+<h1>GET /health</h1>
+<p class="lead">ตรวจสถานะ API ไม่ต้องใช้ key</p>
+<pre data-title="fetch (ไม่ต้องมี key)"><code>const health = await fetch('{{BASE}}/health').then((r) => r.json());</code></pre>
+<pre data-title="curl"><code>curl -sS {{BASE}}/health</code></pre>
+<pre data-title="SDK (ต้องสร้าง client ด้วย key)"><code>const health = await client.get('/health');</code></pre>
+<div class="callout"><p>endpoint นี้ไม่ตรวจ key แต่ <code>new Lsupergen()</code> ใน 0.1.0 จะโยน <code>LsupergenError: Missing API key</code> ถ้าไม่มี <code>apiKey</code> หรือ <code>LSUPERGEN_API_KEY</code> ถ้ายังไม่มี key ให้ใช้ <code>fetch</code> หรือ curl ด้านบน</p></div>
+<h2>Response 200</h2>
+<pre data-title="JSON"><code>{
+  "ok": true,
+  "service": "lsupergen-api",
+  "api_version": "v1",
+  "ai_ready": true,
+  "auth_ready": true,
+  "package": { "name": "lsupergen-sdk", "version": "0.1.0", "npm": "https://www.npmjs.com/package/lsupergen-sdk" },
+  "time": "2026-09-25T13:16:15.000Z"
+}</code></pre>
+<table>
+  <tbody>
+    <tr><td><code>ai_ready</code></td><td><code>false</code> = <code>/chat</code> และ <code>/image</code> จะตอบ 503</td></tr>
+    <tr><td><code>auth_ready</code></td><td><code>false</code> = สร้างหรือตรวจ key ไม่ได้</td></tr>
+  </tbody>
+</table>

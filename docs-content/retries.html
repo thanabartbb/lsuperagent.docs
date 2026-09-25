@@ -1,0 +1,33 @@
+<h1>Retry และ timeout</h1>
+<p class="lead">SDK ลองใหม่ให้อัตโนมัติเมื่อปัญหาน่าจะหายเอง</p>
+<h2>เมื่อไหร่ที่ retry</h2>
+<ul>
+  <li>HTTP <code>408</code>, <code>409</code>, <code>429</code> และ <code>5xx</code></li>
+  <li>เครือข่ายล้มเหลวหรือ timeout</li>
+</ul>
+<p>ไม่ retry เมื่อได้ <code>400</code>, <code>401</code>, <code>404</code> ฯลฯ เพราะส่งซ้ำก็ได้ผลเดิม</p>
+<div class="callout warn"><p>SDK retry ทุกเมธอดรวมถึง <code>POST</code> ถ้าคำขอ <code>/chat</code> หรือ <code>/image</code> ไปถึงเซิร์ฟเวอร์แล้วแต่คำตอบหายหรือหมดเวลา SDK จะส่งซ้ำ ทำให้สร้างผลลัพธ์ซ้ำ เสียโควตาเพิ่ม และอาจเสียค่าใช้จ่ายซ้ำ API ยังไม่มี idempotency key ถ้ารับผลซ้ำไม่ได้ให้ตั้ง <code>maxRetries: 0</code> สำหรับคำขอสร้างเนื้อหา</p></div>
+<pre data-title="no-retry.mjs"><code>await client.post('/image', { body: { prompt }, maxRetries: 0, timeout: 180_000 });</code></pre>
+<h2>ระยะรอ</h2>
+<p>ถ้าเซิร์ฟเวอร์ส่ง <code>Retry-After</code> (0–60 วินาที) SDK จะรอตามนั้น ไม่งั้นใช้ exponential backoff: 0.5s, 1s, 2s … สูงสุด 8s พร้อม jitter</p>
+<div class="callout warn"><p>API ของเว็บนี้จำกัด 10 คำขอ / 10 นาที ต่อ IP และเครื่องมือ นับในหน่วยความจำของ Worker แต่ละ isolate (ไม่ใช่โควตาต่อ API key หรือโควตารวม คนที่ใช้ IP เดียวกันจะนับรวมกัน) เมื่อเกินจะได้ <code>429</code> พร้อม <code>Retry-After</code> ที่อาจยาวถึง 600 วินาที ซึ่งเกิน 60 วินาทีที่ SDK ยอมรอ SDK จึง retry เร็ว ๆ แล้วได้ <code>429</code> ซ้ำ ให้จับ <code>APIError</code> แล้วรอตาม header เอง</p></div>
+<pre data-title="rate-limit.mjs"><code>try {
+  await client.post('/chat', { body: { message: 'hi' }, maxRetries: 0 });
+} catch (err) {
+  if (err instanceof APIError &amp;&amp; err.status === 429) {
+    const waitSeconds = Number(err.headers.get('retry-after') ?? 60);
+    console.log(`รออีก ${waitSeconds} วินาทีก่อนส่งใหม่`);
+  }
+}</code></pre>
+<h2>ปรับค่า</h2>
+<pre data-title="retries.mjs"><code>// ทั้ง client
+const client = new Lsupergen({ baseURL: '{{BASE}}', maxRetries: 4, timeout: 30_000 });
+
+// เฉพาะคำขอเดียว
+await client.get('/health', { maxRetries: 0, timeout: 5_000 });</code></pre>
+<h2>ยกเลิกคำขอ</h2>
+<pre data-title="abort.mjs"><code>const controller = new AbortController();
+setTimeout(() => controller.abort(), 3_000);
+await client.post('/chat', { body: { message: 'hi' }, signal: controller.signal });</code></pre>
+<p>ถ้ายกเลิก<strong>ระหว่างที่คำขอกำลังส่ง</strong> SDK จะไม่ retry และโยน error ต้นทาง (<code>AbortError</code>) ออกมา</p>
+<div class="callout warn"><p><strong>ข้อจำกัดของ 0.1.0:</strong> ถ้า <code>signal</code> ถูกยกเลิกไปแล้วก่อนเริ่ม หรือยกเลิกระหว่างที่ SDK กำลังรอเพื่อ retry คำขอถัดไปจะยังถูกส่งออกไป และอาจจบด้วย <code>APIError</code> แทน <code>AbortError</code> ถ้าต้องการให้การยกเลิกหยุดทุกอย่างจริง ให้ตั้ง <code>maxRetries: 0</code> และเช็ก <code>signal.aborted</code> ก่อนเรียก</p></div>

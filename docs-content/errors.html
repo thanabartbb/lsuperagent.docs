@@ -1,0 +1,32 @@
+<h1>การจัดการข้อผิดพลาด</h1>
+<p class="lead">error ที่ SDK สร้างเองสืบทอดจาก <code>LsupergenError</code> ยกเว้นการยกเลิกด้วย <code>AbortController</code> ของคุณ ซึ่ง SDK โยน <code>AbortError</code> ของ runtime ออกมาตรง ๆ</p>
+<table>
+  <thead><tr><th>คลาส</th><th>เกิดเมื่อ</th><th>ข้อมูล</th></tr></thead>
+  <tbody>
+    <tr><td><code>APIError</code></td><td>เซิร์ฟเวอร์ตอบ non-2xx</td><td><code>status</code>, <code>body</code>, <code>headers</code></td></tr>
+    <tr><td><code>TimeoutError</code></td><td>เกิน <code>timeout</code></td><td><code>message</code></td></tr>
+    <tr><td><code>ConnectionError</code></td><td>เครือข่ายล้มเหลว</td><td><code>cause</code> คือ error ต้นทาง</td></tr>
+    <tr><td><code>AbortError</code> (native, <strong>ไม่ใช่</strong> <code>LsupergenError</code>)</td><td>คุณยกเลิกด้วย <code>signal</code> ระหว่างที่คำขอกำลังส่ง</td><td>ตรวจด้วย <code>err.name === 'AbortError'</code></td></tr>
+    <tr><td><code>LsupergenError</code></td><td>ตั้งค่าผิด เช่น ไม่มี apiKey</td><td><code>message</code></td></tr>
+  </tbody>
+</table>
+<h2>ตัวอย่าง</h2>
+<pre data-title="errors.mjs"><code>import { APIError, TimeoutError, ConnectionError } from 'lsupergen-sdk';
+
+try {
+  await client.post('/chat', { body: { message: 'hi' } });
+} catch (err) {
+  if (err instanceof APIError) {
+    if (err.status === 401) console.error('key ผิดหรือหมดอายุ');
+    else if (err.status === 429) console.error('ส่งถี่เกินไป');
+    else console.error(err.status, err.body);
+  } else if (err instanceof TimeoutError) {
+    console.error('หมดเวลา');
+  } else if (err instanceof ConnectionError) {
+    console.error('เชื่อมต่อไม่ได้', err.cause);
+  }
+}</code></pre>
+<h2>รูปแบบ error body</h2>
+<pre data-title="401"><code>{ "ok": false, "error": "invalid_api_key", "message": "Missing, invalid, or expired API key. Create one at /guide." }</code></pre>
+<pre data-title="503"><code>{ "ok": false, "status": "service_unavailable", "message": "บริการ AI ยังไม่พร้อมใช้งานในขณะนี้" }</code></pre>
+<p>ข้อความใน <code>body.message</code> ถูกใช้เป็น <code>err.message</code> ด้วย</p>

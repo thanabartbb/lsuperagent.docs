@@ -1,0 +1,35 @@
+<h1>กฎ 2 ชุดที่ใช้คู่ขนาน</h1>
+<p class="lead">ต้นฉบับ Blueprint บอกว่ามี “กฎ 10 ประการ” แต่ไม่ได้ระบุรายการ ฉบับร่างสองฉบับจึงแต่งขึ้นมาคนละชุด เมื่ออ่านละเอียดพบว่าไม่ได้ขัดกัน แต่อยู่คนละชั้น: ชุด R กำกับ <em>ทั้งระบบ</em> ส่วนชุด C กำกับ <em>การประชุมของสภา Creative Friction</em> จึงใช้คู่ขนานกันได้</p>
+<p><span class="tag warn">สกัดขึ้นใหม่ รอเจ้าของรับรอง</span> ทั้งสองชุดเป็นการสกัดจากเนื้อหาต้นฉบับ ควรให้เจ้าของระบบทบทวนและรับรองก่อนใช้เป็นกฎบัตรจริง</p>
+<h2>ชุด R — กฎบัตรระบบ (ใช้ทุกคำขอ)</h2>
+<table><thead><tr><th>#</th><th>กฎ</th><th>สาระ</th></tr></thead><tbody>
+<tr><td>R1</td><td>Least-Capability Leasing</td><td>ไม่ถือเครื่องมือถาวร เช่าตามภารกิจย่อย</td></tr>
+<tr><td>R2</td><td>Exclusive State Ownership</td><td>เจ้าของสถานะรายเดียว RunState เป็น checkpoint ไม่ใช่ที่เก็บที่สอง</td></tr>
+<tr><td>R3</td><td>Explicit Approval Path</td><td>side-effect ทุกชนิดผ่าน Approval Gate ที่ระบุชื่อ</td></tr>
+<tr><td>R4</td><td>No Production Self-Modification</td><td>แก้พรอมต์/ทักษะ/นโยบายผ่าน Shadow Reflection + Promotion Gate เท่านั้น</td></tr>
+<tr><td>R5</td><td>Evidence-Bound Claims</td><td>ข้ออ้างต้องชี้ Source ID, Tool Call ID, Artifact Path, Trace Span ID ได้</td></tr>
+<tr><td>R6</td><td>Zero-Trust Inputs</td><td>input และ output ของเครื่องมือต้องผ่าน structured extraction + schema validation</td></tr>
+<tr><td>R7</td><td>Fail-Closed Default</td><td>นโยบายหรือการตรวจล้มเหลว → หยุดทันที</td></tr>
+<tr><td>R8</td><td>Eval-Gated Promotion</td><td>ทุก change proposal ผ่าน offline eval + regression gate และมี rollback point</td></tr>
+<tr><td>R9</td><td>Action-Ladder Routing</td><td>OBSERVE/DRAFT → read-only lane; PREPARE/EXECUTE → ผ่าน Approval Gate ก่อน</td></tr>
+<tr><td>R10</td><td>Budget-Aware Friction</td><td>เรียกสภาเฉพาะความเสี่ยงสูง (HIGH หรือ PREPARE/EXECUTE) ที่เหลือใช้ fast lane</td></tr>
+</tbody></table>
+<h2>ชุด C — กฎการประชุมของสภา (ใช้เมื่อ R10 เรียกสภา)</h2>
+<table><thead><tr><th>#</th><th>กฎ</th><th>สอดคล้องกับ</th></tr></thead><tbody>
+<tr><td>C1</td><td>ทุกแผนต้องผ่านการทดสอบสมมติฐาน</td><td>R5</td></tr>
+<tr><td>C2</td><td>Breaker มีสิทธิ์ยับยั้งแบบส่งกลับ (suspensive veto)</td><td>R7</td></tr>
+<tr><td>C3</td><td>Evidence Skeptic กำหนดภาระการพิสูจน์</td><td>R5</td></tr>
+<tr><td>C4</td><td>Constraint Broker คุมงบประมาณเวลาและต้นทุน</td><td>R10</td></tr>
+<tr><td>C5</td><td>Convergence Judge ตัดสินขั้นสุดท้าย</td><td>R3</td></tr>
+<tr><td>C6</td><td>ห้าม groupthink: ทุกบทบาทต้องให้ความเห็นแยกกันก่อนรวม</td><td>—</td></tr>
+<tr><td>C7</td><td>ห้าม confirmation bias: หลักฐานแย้งต้องถูกบันทึกใน Proposal Pack</td><td>R5</td></tr>
+<tr><td>C8</td><td>Proposal Pack มีทางเลือกอย่างน้อย 2 แนวทาง</td><td>—</td></tr>
+<tr><td>C9</td><td>ห้ามกลับไปใช้สมมติฐานที่ถูกตีตกโดยไม่มีหลักฐานใหม่</td><td>R5</td></tr>
+<tr><td>C10</td><td>แผนที่ผ่านต้องมีแผนสำรองหรือ rollback</td><td>R8</td></tr>
+</tbody></table>
+<h2>จุดที่ดูเหมือนขัด และข้อยุติ</h2>
+<table><thead><tr><th>ดูเหมือนขัด</th><th>ข้อยุติที่ทำให้ใช้คู่กันได้</th></tr></thead><tbody>
+<tr><td>C1 “ทุกแผนต้องทดสอบ” vs R10 “เรียกสภาเฉพาะงานเสี่ยงสูง”</td><td>กฎ C ใช้เฉพาะเมื่อสภาถูกเรียก งานใน fast lane ไม่ต้องผ่านสภา แต่ยังอยู่ใต้กฎ R ครบทุกข้อ</td></tr>
+<tr><td>C2 “Breaker ยับยั้งได้” vs C5 “Judge ตัดสินขั้นสุดท้าย”</td><td>veto ของ Breaker เป็นแบบส่งกลับ: แผนต้องกลับไปแก้หรือบันทึกเหตุผลที่ไม่รับข้อคัดค้าน Judge จึงตัดสินได้ ห้ามตัดสินทับข้อคัดค้านที่ยังไม่ถูกตอบ</td></tr>
+<tr><td>C8 “ต้องมี 2 ทางเลือก” vs R10 “คุม latency”</td><td>ทางเลือกที่สองอาจเป็นแค่ “ไม่ทำ / ทำแบบ dry-run” ไม่ต้องวางแผนเต็มสองชุด</td></tr>
+</tbody></table>

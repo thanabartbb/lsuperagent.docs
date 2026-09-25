@@ -1,0 +1,53 @@
+<h1>Action Ladder</h1>
+<p class="lead">ตัวอย่างการเดินทางของคำขอ และ dispatcher ที่ route ตามระดับ</p>
+<h2>คำขอ “อัปเกรด config ของ payment-gateway”</h2>
+<ol class="steps">
+<li><strong>OBSERVE</strong> — อ่าน config ปัจจุบันและเอกสารเวอร์ชันล่าสุด (ไม่ต้องอนุมัติ)</li>
+<li><strong>DRAFT</strong> — ร่าง diff และ rollback plan ลง artifact ชั่วคราว</li>
+<li><strong>PREPARE</strong> — apply patch บน staging + smoke test (อนุมัติครั้งที่ 1)</li>
+<li><strong>EXECUTE</strong> — deploy production (อนุมัติครั้งที่ 2) บันทึก transaction ID ลง ledger</li>
+<li><strong>Evidence Spine</strong> — ทุกขั้นมี Tool Call ID + Artifact Path + Span ID → Trace Grader PASS</li>
+</ol>
+<h2>Dispatcher</h2>
+<p>ฉบับร่างหนึ่งเรียก handler ที่ไม่ได้ประกาศไว้ (รันแล้วจะ <code>NameError</code>) ฉบับนี้ประกาศครบและทดสอบแล้ว</p>
+<pre data-title="lab_patterns.py · dispatcher" data-source="lab_patterns.py"><code># ---------------------------------------------------------------- Action Ladder dispatcher
+@runtime_checkable
+class ActionHandler(Protocol):
+    def can_handle(self, level: ActionLadderLevel) -&gt; bool: ...
+    def execute(self, plan: PlanContract) -&gt; dict[str, Any]: ...
+
+
+class ReadOnlyHandler:
+    &quot;&quot;&quot;OBSERVE and DRAFT: read-only lane, no approval.&quot;&quot;&quot;
+
+    def can_handle(self, level: ActionLadderLevel) -&gt; bool:
+        return level in (ActionLadderLevel.OBSERVE, ActionLadderLevel.DRAFT)
+
+    def execute(self, plan: PlanContract) -&gt; dict[str, Any]:
+        return {&quot;lane&quot;: &quot;read-only&quot;, &quot;task_id&quot;: plan.task_id}
+
+
+class SideEffectHandler:
+    &quot;&quot;&quot;PREPARE and EXECUTE: side-effect lane, refuses plans that skipped approval.&quot;&quot;&quot;
+
+    def __init__(self, approved_task_ids: set[str]) -&gt; None:
+        self.approved_task_ids = approved_task_ids
+
+    def can_handle(self, level: ActionLadderLevel) -&gt; bool:
+        return level in (ActionLadderLevel.PREPARE, ActionLadderLevel.EXECUTE)
+
+    def execute(self, plan: PlanContract) -&gt; dict[str, Any]:
+        if plan.task_id not in self.approved_task_ids:
+            raise PermissionError(f&quot;{plan.task_id} has no recorded approval&quot;)  # fail-closed (R7)
+        return {&quot;lane&quot;: &quot;side-effect&quot;, &quot;task_id&quot;: plan.task_id}
+
+
+class ActionLadderDispatcher:
+    def __init__(self, handlers: list[ActionHandler]) -&gt; None:
+        self.handlers = handlers
+
+    def dispatch(self, plan: PlanContract) -&gt; dict[str, Any]:
+        for handler in self.handlers:
+            if handler.can_handle(plan.action_type):
+                return handler.execute(plan)
+        raise ValueError(f&quot;no handler for {plan.action_type}&quot;)</code></pre>

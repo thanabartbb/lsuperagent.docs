@@ -1,0 +1,33 @@
+<h1>Contracts (Pydantic)</h1>
+<p class="lead">สัญญาข้อมูลระหว่างระนาบ: <code>IntentEnvelope</code> (ระนาบ 1 → 2) และ <code>PlanContract</code> (ระนาบ 3 → 4, 5)</p>
+<pre data-title="lab_harness.py · contracts" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 1: contracts
+class ActionLadderLevel(str, Enum):
+    OBSERVE = &quot;OBSERVE&quot;
+    DRAFT = &quot;DRAFT&quot;
+    PREPARE = &quot;PREPARE&quot;
+    EXECUTE = &quot;EXECUTE&quot;
+
+
+class IntentEnvelope(BaseModel):
+    goal: str
+    constraints: list[str] = Field(default_factory=list)
+    risk_tier: str = &quot;LOW&quot;  # LOW | MEDIUM | HIGH
+    autonomy_level: int = 1  # 1-4
+    evidence_burden: str = &quot;STRICT&quot;  # STRICT | MODERATE | MINIMAL
+    latency_budget_ms: int = 5000
+
+
+class PlanContract(BaseModel):
+    task_id: str
+    action_type: ActionLadderLevel
+    target_tool: str
+    parameters: dict[str, Any]
+    requires_approval: bool
+    evidence_rationale: str</code></pre>
+<h2>ฟิลด์ที่ควรรู้</h2>
+<table><tbody>
+<tr><td><code>risk_tier</code></td><td>ตัดสินว่าจะเรียกสภา Creative Friction หรือไม่ (R10)</td></tr>
+<tr><td><code>evidence_burden</code></td><td>ความเข้มของการตรวจหลักฐานใน Evidence Spine</td></tr>
+<tr><td><code>action_type</code></td><td>ระดับบน Action Ladder กำหนดว่าจะเช่าเครื่องมืออะไร</td></tr>
+<tr><td><code>requires_approval</code></td><td>เปิด Approval Gate ชั้นแผน</td></tr>
+</tbody></table>

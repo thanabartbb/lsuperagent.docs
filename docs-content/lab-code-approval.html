@@ -1,0 +1,100 @@
+<h1>Approval 2 ชั้น</h1>
+<p class="lead">ฉบับร่างหนึ่งใช้ <code>input()</code> ถามก่อนรัน อีกฉบับอ้าง “Approvals API” เมื่อตรวจกับ SDK จริง ทั้งสองแบบใช้คู่กันได้และเสริมกัน</p>
+<table><thead><tr><th>ชั้น</th><th>อยู่ที่</th><th>หยุดอะไร</th><th>กลไก</th></tr></thead><tbody>
+<tr><td>1. Plan gate</td><td>แอปของคุณ ก่อนเช่าเครื่องมือ</td><td>ทั้งงาน ไม่เรียกโมเดลเลย</td><td><code>approve(plan)</code></td></tr>
+<tr><td>2. Tool gate</td><td>SDK ตอนโมเดลจะเรียกเครื่องมือ</td><td>การเรียกเครื่องมือครั้งนั้น</td><td><code>needs_approval=True</code> → <code>result.interruptions</code> → <code>RunState.approve/reject</code></td></tr>
+</tbody></table>
+<p>ทำไมต้องสองชั้น: ชั้นแผนอนุมัติ <em>เจตนา</em> ส่วนชั้นเครื่องมืออนุมัติ <em>อาร์กิวเมนต์จริง</em> ที่โมเดลสร้าง ซึ่งอาจต่างจากที่วางแผนไว้</p>
+<h2>โค้ดส่วน harness</h2>
+<pre data-title="lab_harness.py · harness" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 5 + 6: harness
+class MinimalAgentHarness:
+    def __init__(self, model: Any = None, approve: Any = None) -&gt; None:
+        self.hooks = EvidenceSpineHooks()
+        self.state_gate = StateOwnershipGate()
+        self.model = model  # None -&gt; SDK default model (or OPENAI_DEFAULT_MODEL)
+        self.approve = approve or (lambda plan: input(f&quot;approve {plan.target_tool}? (yes/no): &quot;).strip().lower() == &quot;yes&quot;)
+
+    def action_classifier(self, intent: IntentEnvelope) -&gt; PlanContract:
+        if &quot;restart&quot; in intent.goal.lower():
+            return PlanContract(
+                task_id=&quot;TASK-9901&quot;, action_type=ActionLadderLevel.EXECUTE,
+                target_tool=&quot;restart_production_service&quot;, parameters={&quot;service_name&quot;: &quot;payment-gateway&quot;},
+                requires_approval=True, evidence_rationale=&quot;request changes real system state&quot;,
+            )
+        return PlanContract(
+            task_id=&quot;TASK-9902&quot;, action_type=ActionLadderLevel.OBSERVE,
+            target_tool=&quot;read_system_status&quot;, parameters={&quot;service_name&quot;: &quot;payment-gateway&quot;},
+            requires_approval=False, evidence_rationale=&quot;read-only request&quot;,
+        )
+
+    def trace_grader(self) -&gt; dict[str, Any]:
+        ledger = self.hooks.evidence_ledger
+        starts = sum(e[&quot;event&quot;] == &quot;tool_start&quot; for e in ledger)
+        ends = sum(e[&quot;event&quot;] == &quot;tool_end&quot; for e in ledger)
+        has_claim = any(e[&quot;event&quot;] == &quot;agent_end&quot; for e in ledger)
+        passed = starts == ends and has_claim
+        return {&quot;trace_score&quot;: 1.0 if passed else 0.0, &quot;trace_status&quot;: &quot;PASS&quot; if passed else &quot;FAIL&quot;, &quot;entries&quot;: len(ledger)}
+
+    async def execute_slice(self, intent: IntentEnvelope) -&gt; dict[str, Any]:
+        self.hooks.evidence_ledger.clear()
+        owner = self.state_gate.acquire(f&quot;run-{intent.goal[:12]}&quot;, &quot;SDK_SESSION&quot;)
+        try:
+            plan = self.action_classifier(intent)
+            # Gate 1 (plan level, R3): refuse before any tool is leased.
+            if plan.requires_approval and not self.approve(plan):
+                return {&quot;status&quot;: &quot;ABORTED&quot;, &quot;level&quot;: plan.action_type.value, &quot;gate&quot;: &quot;plan&quot;}
+            worker = Agent(
+                name=&quot;SpecialistWorker&quot;,
+                instructions=&quot;Use only the leased tools. Base the answer on tool output.&quot;,
+                tools=CapabilityLeaseBroker.get_tools_for_level(plan.action_type),
+                **({&quot;model&quot;: self.model} if self.model is not None else {}),
+            )
+            task = f&quot;Run {plan.target_tool} with {plan.parameters}&quot;
+            result = await Runner.run(worker, input=task, hooks=self.hooks)
+            # Gate 2 (tool level): needs_approval=True pauses the run; resume from RunState.
+            while result.interruptions:
+                state = result.to_state()
+                for item in result.interruptions:
+                    (state.approve if self.approve(plan) else state.reject)(item)
+                result = await Runner.run(worker, state, hooks=self.hooks)
+            return {&quot;status&quot;: &quot;DONE&quot;, &quot;level&quot;: plan.action_type.value, &quot;output&quot;: result.final_output, **self.trace_grader()}
+        finally:
+            self.state_gate.release(owner.owner_id)
+
+
+def offline_model(level: str) -&gt; Any:
+    &quot;&quot;&quot;Deterministic model script: call the leased tool once, then answer.&quot;&quot;&quot;
+    from agents.testing import ScriptedModel, assistant_message, function_call
+
+    tool = &quot;restart_production_service&quot; if level == &quot;EXECUTE&quot; else &quot;read_system_status&quot;
+    return ScriptedModel([
+        [function_call(tool, {&quot;service_name&quot;: &quot;payment-gateway&quot;}, call_id=&quot;call-1&quot;)],
+        [assistant_message(f&quot;{tool} finished for payment-gateway&quot;)],
+    ])
+
+
+async def main() -&gt; None:
+    offline = &quot;--offline&quot; in sys.argv
+    if not offline and not os.environ.get(&quot;OPENAI_API_KEY&quot;):
+        sys.exit(&quot;Set OPENAI_API_KEY or run with --offline&quot;)
+    cases = [
+        IntentEnvelope(goal=&quot;check payment-gateway status&quot;, risk_tier=&quot;LOW&quot;),
+        IntentEnvelope(goal=&quot;restart payment-gateway to fix latency&quot;, risk_tier=&quot;HIGH&quot;),
+    ]
+    for intent in cases:
+        level = &quot;EXECUTE&quot; if &quot;restart&quot; in intent.goal else &quot;OBSERVE&quot;
+        harness = MinimalAgentHarness(
+            model=offline_model(level) if offline else None,
+            approve=(lambda plan: True) if offline else None,
+        )
+        print(intent.goal, &quot;-&gt;&quot;, await harness.execute_slice(intent))
+
+
+if __name__ == &quot;__main__&quot;:
+    asyncio.run(main())</code></pre>
+<h2>พฤติกรรมที่ทดสอบแล้ว</h2>
+<ul>
+<li>งาน EXECUTE ถามอนุมัติ 2 ครั้ง (แผน + เครื่องมือ)</li>
+<li>ปฏิเสธที่ชั้นแผน → <code>ABORTED</code> โมเดลไม่ถูกเรียกเลย</li>
+<li>อนุมัติแผนแต่ปฏิเสธเครื่องมือ → เครื่องมือไม่ถูกรัน</li>
+</ul>

@@ -1,0 +1,21 @@
+<h1>การแนะนำ</h1>
+<p class="lead">เอกสารของ <strong>lsupergen-sdk</strong> และ API ของ agents-sdk.space ใช้ SDK ตัวเดียวเรียก AI Chat, สร้างภาพ และตรวจบัญชีจากโค้ดของคุณเองได้ ทั้ง Node.js, Cloudflare Workers และเบราว์เซอร์</p>
+<div class="cards">
+  <a class="card" href="/docs/installation"><strong>ติดตั้ง →</strong><span>npm install lsupergen-sdk แล้วเริ่มได้ทันที</span></a>
+  <a class="card" href="/docs/quickstart"><strong>เริ่มต้นใน 5 นาที →</strong><span>จากศูนย์จนได้คำตอบ AI จริงตัวแรก</span></a>
+  <a class="card" href="/guide"><strong>Playground →</strong><span>กดรันทุกขั้นกับเซิร์ฟเวอร์จริงในเบราว์เซอร์</span></a>
+  <a class="card" href="/docs/architecture"><strong>โครงสร้างระบบ →</strong><span>core ของเว็บนี้ทำงานอย่างไร และแก้ไฟล์ไหน</span></a>
+</div>
+<h2>มีอะไรบ้าง</h2>
+<ul>
+  <li><strong>SDK</strong> — แพ็กเกจ <code>lsupergen-sdk</code> บน npm, มี type ครบ, ไม่มี dependency, retry และ timeout ให้อัตโนมัติ</li>
+  <li><strong>API v1</strong> — <code data-base>…</code> มี <code>/health</code>, <code>/me</code>, <code>/chat</code>, <code>/image</code></li>
+  <li><strong>API key</strong> — สร้างเองได้ที่หน้า Playground หลังเข้าสู่ระบบ อายุ 30 วัน</li>
+</ul>
+<h2>ตัวอย่างสั้นที่สุด</h2>
+<pre data-title="index.mjs"><code>import { Lsupergen } from 'lsupergen-sdk';
+
+const client = new Lsupergen({ baseURL: '{{BASE}}' }); // อ่าน key จาก LSUPERGEN_API_KEY
+const reply = await client.post('/chat', { body: { message: 'สวัสดี' } });
+console.log(reply.message);</code></pre>
+<div class="callout"><p>ทุกคำตอบของ AI มาจากโมเดลจริงของระบบ ถ้าบริการยังไม่พร้อม API จะตอบ <code>503</code> ตรง ๆ ไม่มีคำตอบจำลอง</p></div>

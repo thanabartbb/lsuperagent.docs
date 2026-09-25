@@ -1,0 +1,15 @@
+<h1>GET /me</h1>
+<p class="lead">คืนข้อมูลเจ้าของ API key และวันหมดอายุ ใช้ตรวจว่า key ใช้งานได้</p>
+<pre data-title="SDK"><code>const me = await client.get('/me');</code></pre>
+<pre data-title="curl"><code>curl -sS {{BASE}}/me -H "Authorization: Bearer $LSUPERGEN_API_KEY"</code></pre>
+<h2>Response 200</h2>
+<pre data-title="JSON"><code>{
+  "ok": true,
+  "user": { "provider": "google", "id": "…", "email": "you@example.com", "name": "…" },
+  "key": { "id": "key_0e3a07474aee444e", "issued_at": "2026-09-25T13:17:16.000Z", "expires_at": "2026-10-25T13:17:16.000Z" }
+}</code></pre>
+<h2>Errors</h2>
+<table><tbody>
+  <tr><td><code>401</code></td><td><code>invalid_api_key</code> — ไม่มี key, key ผิด หรือหมดอายุ</td></tr>
+  <tr><td><code>405</code></td><td>ใช้เมธอดอื่นที่ไม่ใช่ GET</td></tr>
+</tbody></table>

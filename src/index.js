@@ -622,6 +622,7 @@ const SDK_CORS_HEADERS = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET, POST, OPTIONS',
   'access-control-allow-headers': 'authorization, content-type, accept',
+  'access-control-expose-headers': 'retry-after, x-lsuperagen-rate-limit, x-lsuperagen-rate-remaining, x-lsuperagen-rate-reset',
   'access-control-max-age': '600'
 };
 
@@ -778,6 +779,23 @@ export default {
       return redirectTo(`/login?return_to=${encodeURIComponent(workspacePaths.get(pathname))}`, 302);
     }
     if ((pathname === '/login' || pathname === '/login.html') && await currentSession(request, env)) return redirectTo('/home', 302);
+
+    if (pathname === '/docs-shell' || pathname === '/docs-shell.html' || pathname.startsWith('/docs-content/')) {
+      if (!await currentSession(request, env)) {
+        return pathname.startsWith('/docs-content/')
+          ? json({ ok: false, error: 'authentication_required', message: 'กรุณาเข้าสู่ระบบก่อนอ่านเอกสาร' }, 401)
+          : redirectTo('/login?return_to=%2Fdocs', 302);
+      }
+    }
+    const docsPage = pathname === '/docs' ? 'introduction' : (/^\/docs\/([a-z0-9-]+)$/.exec(pathname) || [])[1];
+    if (docsPage) {
+      if (!await currentSession(request, env)) return redirectTo(`/login?return_to=${encodeURIComponent('/docs/' + docsPage)}`, 302);
+      if (pathname === '/docs') return redirectTo('/docs/introduction', 302);
+      const shellUrl = new URL(request.url);
+      shellUrl.pathname = '/docs-shell';
+      const shell = await env.ASSETS.fetch(new Request(shellUrl.toString(), request));
+      return new Response(shell.body, { status: shell.status, headers: htmlHeaders(shell, 'docs-shell-v1') });
+    }
 
     const response = await fetchAsset(request, env, pathname);
     if (!(response.headers.get('content-type') || '').includes('text/html')) return response;

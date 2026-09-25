@@ -1,8 +1,7 @@
 <h1>ติดตั้งและรัน</h1>
-<p class="lead">รันสถาปัตยกรรมขั้นต่ำ (minimal vertical slice) ได้ทันทีแบบออฟไลน์ ไม่ต้องมี API key</p>
-<div class="callout"><p>หลักการ: อย่าเริ่มจากสภา Creative Friction เต็มรูปแบบ ทำเส้นทางแนวดิ่งขั้นต่ำให้ครบวงจรก่อน แล้วเก็บ trace จริง<br>
-Intent Envelope → State Ownership Gate → Action Classifier → Approval Gate → Capability Lease Broker → Runner → Evidence Spine → Trace Grader</p></div>
-<h2>1. ดาวน์โหลดไฟล์</h2>
+<p class="lead">รันตัวอย่างครบทุกระนาบบนเครื่องของคุณ แบบออฟไลน์ได้โดยไม่ต้องมี API key</p>
+<p>ลำดับการทำงาน: Intent Envelope → State Ownership Gate → Action Classifier → Approval Gate → Tool Access Broker → Runner → Evidence Spine → Trace Grader</p>
+<h2>1. ดาวน์โหลด</h2>
 <p><a href="/assets/lab/lab_harness.py" download>lab_harness.py</a> · <a href="/assets/lab/lab_patterns.py" download>lab_patterns.py</a> · <a href="/assets/lab/test_lab.py" download>test_lab.py</a> · <a href="/assets/lab/test_patterns.py" download>test_patterns.py</a> · <a href="/assets/lab/requirements.txt" download>requirements.txt</a></p>
 <h2>2. ติดตั้ง</h2>
 <pre data-title="terminal"><code>python3 -m venv .venv &amp;&amp; . .venv/bin/activate
@@ -12,13 +11,11 @@ pydantic&gt;=2
 pytest</code></pre>
 <h2>3. รันแบบออฟไลน์</h2>
 <pre data-title="terminal"><code>OPENAI_AGENTS_DISABLE_TRACING=1 python lab_harness.py --offline</code></pre>
-<p>ผลลัพธ์ที่ได้จริง:</p>
 <pre data-title="output"><code>check payment-gateway status -&gt; {&#x27;status&#x27;: &#x27;DONE&#x27;, &#x27;level&#x27;: &#x27;OBSERVE&#x27;, &#x27;output&#x27;: &#x27;read_system_status finished for payment-gateway&#x27;, &#x27;trace_score&#x27;: 1.0, &#x27;trace_status&#x27;: &#x27;PASS&#x27;, &#x27;entries&#x27;: 4}
 restart payment-gateway to fix latency -&gt; {&#x27;status&#x27;: &#x27;DONE&#x27;, &#x27;level&#x27;: &#x27;EXECUTE&#x27;, &#x27;output&#x27;: &#x27;restart_production_service finished for payment-gateway&#x27;, &#x27;trace_score&#x27;: 1.0, &#x27;trace_status&#x27;: &#x27;PASS&#x27;, &#x27;entries&#x27;: 5}</code></pre>
-<h2>4. รันกับ OpenAI จริง</h2>
+<h2>4. รันกับ OpenAI</h2>
 <pre data-title="terminal"><code>export OPENAI_API_KEY=sk-...
 python lab_harness.py</code></pre>
-<p>โหมดนี้จะถามอนุมัติในเทอร์มินัลสองครั้งสำหรับงาน restart (ชั้นแผน + ชั้นเครื่องมือ) ถ้าไม่ระบุ <code>model</code> SDK ใช้โมเดลเริ่มต้นของเวอร์ชันที่ติดตั้ง</p>
+<p>งาน restart จะถามอนุมัติในเทอร์มินัล 2 ครั้ง (แผน + เครื่องมือ)</p>
 <h2>5. รันชุดทดสอบ</h2>
 <pre data-title="terminal"><code>OPENAI_AGENTS_DISABLE_TRACING=1 python -m pytest -q test_lab.py test_patterns.py</code></pre>
-<p>ผลที่ตรวจแล้ว: <code>10 passed</code></p>

@@ -1,12 +1,12 @@
-<h1>Approval 2 ชั้น</h1>
-<p class="lead">ฉบับร่างหนึ่งใช้ <code>input()</code> ถามก่อนรัน อีกฉบับอ้าง “Approvals API” เมื่อตรวจกับ SDK จริง ทั้งสองแบบใช้คู่กันได้และเสริมกัน</p>
+<h1>อนุมัติ 2 ชั้น</h1>
+<p class="lead">อนุมัติทั้งแผนและการเรียกเครื่องมือจริง</p>
 <table><thead><tr><th>ชั้น</th><th>อยู่ที่</th><th>หยุดอะไร</th><th>กลไก</th></tr></thead><tbody>
-<tr><td>1. Plan gate</td><td>แอปของคุณ ก่อนมอบสิทธิ์เครื่องมือ</td><td>ทั้งงาน ไม่เรียกโมเดลเลย</td><td><code>approve(plan)</code></td></tr>
-<tr><td>2. Tool gate</td><td>SDK ตอนโมเดลจะเรียกเครื่องมือ</td><td>การเรียกเครื่องมือครั้งนั้น</td><td><code>needs_approval=True</code> → <code>result.interruptions</code> → <code>RunState.approve/reject</code></td></tr>
+<tr><td>1. Plan gate</td><td>แอปของคุณ ก่อนให้สิทธิ์เครื่องมือ</td><td>ทั้งงาน</td><td><code>approve(plan)</code></td></tr>
+<tr><td>2. Tool gate</td><td>SDK ตอนโมเดลจะเรียกเครื่องมือ</td><td>การเรียกครั้งนั้น</td><td><code>needs_approval=True</code> → <code>result.interruptions</code> → <code>RunState.approve/reject</code></td></tr>
 </tbody></table>
-<p>ทำไมต้องสองชั้น: ชั้นแผนอนุมัติ <em>เจตนา</em> ส่วนชั้นเครื่องมืออนุมัติ <em>อาร์กิวเมนต์จริง</em> ที่โมเดลสร้าง ซึ่งอาจต่างจากที่วางแผนไว้</p>
-<h2>โค้ดส่วน harness</h2>
-<pre data-title="lab_harness.py · harness" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 5 + 6: harness
+<p>ชั้นแรกอนุมัติเจตนา ชั้นที่สองอนุมัติอาร์กิวเมนต์จริงที่โมเดลสร้าง ซึ่งอาจต่างจากแผน</p>
+<h2>Harness</h2>
+<pre data-title="lab_harness.py" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 5 + 6: harness
 class MinimalAgentHarness:
     def __init__(self, model: Any = None, approve: Any = None) -&gt; None:
         self.hooks = EvidenceSpineHooks()
@@ -40,13 +40,13 @@ class MinimalAgentHarness:
         owner = self.state_gate.acquire(f&quot;run-{intent.goal[:12]}&quot;, &quot;SDK_SESSION&quot;)
         try:
             plan = self.action_classifier(intent)
-            # Gate 1 (plan level, R3): refuse before any tool is leased.
+            # Gate 1 (plan level, R3): refuse before any tool access is granted.
             if plan.requires_approval and not self.approve(plan):
                 return {&quot;status&quot;: &quot;ABORTED&quot;, &quot;level&quot;: plan.action_type.value, &quot;gate&quot;: &quot;plan&quot;}
             worker = Agent(
                 name=&quot;SpecialistWorker&quot;,
-                instructions=&quot;Use only the leased tools. Base the answer on tool output.&quot;,
-                tools=CapabilityLeaseBroker.get_tools_for_level(plan.action_type),
+                instructions=&quot;Use only the tools you were given. Base the answer on tool output.&quot;,
+                tools=ToolAccessBroker.get_tools_for_level(plan.action_type),
                 **({&quot;model&quot;: self.model} if self.model is not None else {}),
             )
             task = f&quot;Run {plan.target_tool} with {plan.parameters}&quot;
@@ -63,7 +63,7 @@ class MinimalAgentHarness:
 
 
 def offline_model(level: str) -&gt; Any:
-    &quot;&quot;&quot;Deterministic model script: call the leased tool once, then answer.&quot;&quot;&quot;
+    &quot;&quot;&quot;Deterministic model script: call the granted tool once, then answer.&quot;&quot;&quot;
     from agents.testing import ScriptedModel, assistant_message, function_call
 
     tool = &quot;restart_production_service&quot; if level == &quot;EXECUTE&quot; else &quot;read_system_status&quot;
@@ -92,9 +92,9 @@ async def main() -&gt; None:
 
 if __name__ == &quot;__main__&quot;:
     asyncio.run(main())</code></pre>
-<h2>พฤติกรรมที่ทดสอบแล้ว</h2>
+<h2>พฤติกรรม</h2>
 <ul>
-<li>งาน EXECUTE ถามอนุมัติ 2 ครั้ง (แผน + เครื่องมือ)</li>
-<li>ปฏิเสธที่ชั้นแผน → <code>ABORTED</code> โมเดลไม่ถูกเรียกเลย</li>
-<li>อนุมัติแผนแต่ปฏิเสธเครื่องมือ → เครื่องมือไม่ถูกรัน</li>
+<li>งาน EXECUTE ถามอนุมัติ 2 ครั้ง</li>
+<li>ปฏิเสธที่ชั้นแผน → <code>ABORTED</code> และไม่เรียกโมเดล</li>
+<li>อนุมัติแผนแต่ปฏิเสธเครื่องมือ → เครื่องมือไม่ถูกเรียก</li>
 </ul>

@@ -1,14 +1,13 @@
 <h1>ระนาบ 1 · Human / Channel</h1>
-<p class="lead">จุดสัมผัสผู้ใช้ แปลงคำขอเป็น “สัญญาเจตจำนง” (Intent Envelope) ที่ตรวจแล้ว</p>
-<h2>ลำดับการทำงาน</h2>
+<p class="lead">รับคำขอจากผู้ใช้หรือ API แล้วแปลงเป็น Intent Envelope ที่ตรวจแล้ว</p>
 <ol class="steps">
-<li>รับคำขอจากผู้ใช้หรือ API</li>
+<li>รับคำขอ</li>
 <li><strong>Input Guardrail</strong> กั้น prompt injection และคำขอนอกนโยบาย</li>
-<li>ตรวจว่าเงื่อนไขครบหรือไม่ ถ้ากำกวม บังคับ <strong>Clarification / Constraint Repair</strong> ถามกลับก่อน</li>
+<li>ถ้าคำขอกำกวม ถามกลับ (<strong>Clarification Gate</strong>) ก่อนทำต่อ</li>
 <li>บรรจุเป็น <strong>Intent Envelope</strong></li>
 </ol>
 <h2>Intent Envelope</h2>
-<pre data-title="lab_harness.py · Plane 1" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 1: contracts
+<pre data-title="lab_harness.py" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 1: contracts
 class ActionLadderLevel(str, Enum):
     OBSERVE = &quot;OBSERVE&quot;
     DRAFT = &quot;DRAFT&quot;
@@ -32,5 +31,4 @@ class PlanContract(BaseModel):
     parameters: dict[str, Any]
     requires_approval: bool
     evidence_rationale: str</code></pre>
-<h2>ใน OpenAI Agents SDK</h2>
-<p>Input Guardrail ใช้ <code>@input_guardrail</code> แล้วใส่ใน <code>Agent(input_guardrails=[...])</code> <span class="tag ok">ยืนยันแล้ว</span></p>
+<p>ใน SDK ใช้ <code>@input_guardrail</code> แล้วใส่ใน <code>Agent(input_guardrails=[...])</code></p>

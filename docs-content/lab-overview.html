@@ -1,30 +1,24 @@
 <h1>AGENTS-SDK-LAB</h1>
-<p class="lead">สถาปัตยกรรมอ้างอิง (reference architecture) สำหรับระบบ multi-agent ที่อิงหลักฐาน และให้ agent ใช้เครื่องมือได้เฉพาะงานที่ได้รับมอบหมาย (สิทธิ์ชั่วคราว) สร้างบน OpenAI Agents SDK (Python) + Responses API + MCP หมวดนี้รวมสองฉบับร่างเข้าด้วยกัน แก้จุดที่ขัดกันด้วยการตรวจกับโค้ดจริง และแตกเป็นหน้าเล็ก ๆ ให้เรียนทีละเรื่อง</p>
-<div class="callout"><p><strong>สถานะตอนนี้: รากฐานพร้อมต่อยอด</strong></p>
-<p>✅ โครงสถาปัตยกรรมครบ 8 ระนาบ · ✅ โค้ดตรวจกับ SDK จริง (<code>openai-agents 0.22.3</code>) · ✅ ชุดทดสอบผ่าน 10/10 · ✅ ระบบอนุมัติ 2 ชั้นทำงานจริง</p>
-<p>🔜 ขั้นต่อไปคือเสียบระบบจริงของคุณแทนเครื่องมือตัวอย่าง (ตอนนี้ติดป้าย <code>[SIMULATED]</code> ไว้เพื่อให้รู้ว่าจุดไหนรอเชื่อมต่อ) ดูแผนทีละขั้นที่ <a href="/docs/lab-roadmap">เส้นทางสู่ production</a></p></div>
-<h2>ปัญหาที่ต้องการแก้</h2>
+<p class="lead">สถาปัตยกรรมสำหรับระบบ multi-agent ที่ทุกคำตอบตรวจย้อนหลักฐานได้ และ agent เข้าถึงได้เฉพาะเครื่องมือที่งานนั้นต้องใช้ สร้างบน OpenAI Agents SDK (Python), Responses API และ MCP</p>
+<h2>ปัญหาที่แก้</h2>
 <table><thead><tr><th>ปัญหา</th><th>คำอธิบาย</th><th>ผลกระทบ</th></tr></thead><tbody>
 <tr><td><strong>Context Explosion</strong></td><td>ใส่สคีมาเครื่องมือจำนวนมากลงพรอมต์ทุกรอบ</td><td>ต้นทุนโทเคนสูง โมเดลเลือกเครื่องมือผิด</td></tr>
-<tr><td><strong>Side-effect Indeterminism</strong></td><td>ผลกระทบต่อระบบภายนอกคาดเดาและควบคุมไม่ได้</td><td>ความเสี่ยงด้านความปลอดภัย สถานะเปลี่ยนโดยไม่ตั้งใจ</td></tr>
-<tr><td><strong>Traceability Deficit</strong></td><td>สืบย้อนไม่ได้ว่าข้อสรุปมาจากหลักฐานใด</td><td>ตรวจความถูกต้องไม่ได้ ขาดความน่าเชื่อถือ</td></tr>
+<tr><td><strong>Side-effect Indeterminism</strong></td><td>ผลกระทบต่อระบบภายนอกคาดเดาและควบคุมไม่ได้</td><td>สถานะระบบเปลี่ยนโดยไม่ตั้งใจ</td></tr>
+<tr><td><strong>Traceability Deficit</strong></td><td>สืบย้อนไม่ได้ว่าข้อสรุปมาจากหลักฐานใด</td><td>ตรวจความถูกต้องไม่ได้</td></tr>
 </tbody></table>
-<h2>ปรัชญา 4 มิติ</h2>
+<h2>หลักการ 4 ข้อ</h2>
 <ol>
-<li><strong>Capability-minimal</strong> — ให้สิทธิ์เครื่องมือเท่าที่ภารกิจย่อยต้องใช้</li>
-<li><strong>Evidence-carrying</strong> — ผลลัพธ์ผูกกับหลักฐานที่ตรวจย้อนได้</li>
-<li><strong>Approval-aware</strong> — การกระทำที่มีผลข้างเคียงต้องผ่านเส้นทางอนุมัติ</li>
-<li><strong>Eval-driven</strong> — ปรับปรุงระบบผ่านการประเมินเชิงปริมาณ ไม่ใช่ความรู้สึก</li>
+<li><strong>Least privilege</strong>: agent ได้สิทธิ์เครื่องมือเท่าที่งานย่อยต้องใช้</li>
+<li><strong>Evidence-carrying</strong>: ผลลัพธ์ผูกกับหลักฐานที่ตรวจย้อนได้</li>
+<li><strong>Approval-aware</strong>: การกระทำที่เปลี่ยนระบบต้องผ่านการอนุมัติ</li>
+<li><strong>Eval-driven</strong>: ปรับปรุงระบบด้วยการประเมินเชิงปริมาณ</li>
 </ol>
-<h2>ต่างจาก Global God-Agent อย่างไร</h2>
-<p>เฟรมเวิร์กทั่วไปมักมีเอเจนต์ตัวเดียวถือเครื่องมือและสถานะทั้งหมดตลอดอายุการทำงาน AGENTS-SDK-LAB ปฏิเสธแบบนั้น: agent ได้ <em>สิทธิ์ใช้เครื่องมือชั่วคราว</em> ตามระดับความเสี่ยงของแต่ละขั้น พองานจบสิทธิ์ก็หมด และสถานะมีเจ้าของรายเดียว</p>
-<div class="callout"><p><strong>Capability Leasing คืออะไร:</strong> ระบบของคุณเป็นเจ้าของเครื่องมือทั้งหมด และให้ agent ใช้ได้เฉพาะเครื่องมือที่งานนั้นต้องใช้ เฉพาะช่วงเวลาที่ทำงานนั้น พองานจบสิทธิ์ก็หมด คล้ายบัตรผ่านชั่วคราวที่ออกให้ทีละงาน</p><p><strong>ไม่ใช่</strong>การปล่อยเช่าเครื่องมือให้ AI หรือเปิดขายบริการ ไม่มีการเก็บเงิน และไม่มีบุคคลภายนอกมาเช่า คำว่า “leasing” ใช้ในความหมายว่า “ให้สิทธิ์แบบมีกำหนดเวลา” เท่านั้น</p></div>
-<h2>เส้นทางการเรียน</h2>
+<h2>ต่างจากเอเจนต์ตัวเดียวที่ถือทุกอย่าง</h2>
+<p>หลายระบบมีเอเจนต์ตัวเดียวถือเครื่องมือทุกตัวและสถานะทั้งหมดตลอดการทำงาน AGENTS-SDK-LAB แยกสองเรื่องนี้ออกจากกัน: แต่ละขั้นของงานได้สิทธิ์ใช้เฉพาะเครื่องมือที่จำเป็นตามระดับความเสี่ยง (<a href="/docs/lab-plane-capability">Scoped Tool Access</a>) และสถานะของการสนทนามีเจ้าของรายเดียว</p>
+<h2>เริ่มอ่านจากตรงไหน</h2>
 <div class="cards">
-<a class="card" href="/docs/lab-contract"><strong>1. ข้อตกลงสถาปัตยกรรม →</strong><span>4 ข้อที่ห้ามประนีประนอม</span></a>
-<a class="card" href="/docs/lab-planes"><strong>2. 8 ระนาบ →</strong><span>ภาพรวมแล้วลงลึกทีละระนาบ</span></a>
-<a class="card" href="/docs/lab-quickstart"><strong>3. ลงมือทำ →</strong><span>ติดตั้งและรันแบบออฟไลน์ได้ทันที</span></a>
-<a class="card" href="/docs/lab-conflicts"><strong>4. ข้อขัดแย้งและข้อยุติ →</strong><span>จุดที่สองฉบับร่างไม่ตรงกัน และคำตอบที่ตรวจแล้ว</span></a>
-<a class="card" href="/docs/lab-roadmap"><strong>5. เส้นทางสู่ production →</strong><span>ทำอะไรเสร็จแล้ว และขั้นต่อไปทีละขั้น</span></a>
+<a class="card" href="/docs/lab-contract"><strong>ข้อตกลงสถาปัตยกรรม →</strong><span>4 ข้อที่ทุกส่วนต้องทำตาม</span></a>
+<a class="card" href="/docs/lab-planes"><strong>8 ระนาบ →</strong><span>ภาพรวม แล้วลงลึกทีละระนาบ</span></a>
+<a class="card" href="/docs/lab-quickstart"><strong>ติดตั้งและรัน →</strong><span>รันตัวอย่างได้ในไม่กี่นาที</span></a>
+<a class="card" href="/docs/lab-roadmap"><strong>ขึ้น production →</strong><span>เชื่อมกับระบบจริงทีละขั้น</span></a>
 </div>
-<div class="callout"><p>ทุกข้อที่ติดป้าย <strong>ยืนยันแล้ว</strong> ตรวจกับแพ็กเกจจริง <code>openai-agents==0.22.3</code> (Python) และเอกสารทางการ ณ 25 ก.ย. 2026 ดูวิธีตรวจที่ <a href="/docs/lab-conflicts">ข้อขัดแย้งและข้อยุติ</a></p></div>

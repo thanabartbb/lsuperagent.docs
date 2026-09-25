@@ -1,17 +1,15 @@
 <h1>ระนาบ 3 · Creative Friction</h1>
-<p class="lead">สร้างความเห็นแย้งอย่างมีโครงสร้างเพื่อกลั่นกรองแผนก่อนลงมือ แก้ groupthink และ confirmation bias ของเอเจนต์ลำดับเดียว</p>
-<h2>สภา 4 บทบาท + ผู้ตัดสิน</h2>
-<table><thead><tr><th>บทบาท</th><th>หน้าที่</th><th>มุมมอง</th></tr></thead><tbody>
-<tr><td>Explorer</td><td>หาทางเลือกที่เป็นไปได้ คิดนอกกรอบ</td><td>กว้าง</td></tr>
-<tr><td>Breaker</td><td>เป็นฝ่ายค้าน เจาะหาจุดพัง</td><td>ลึก วิพากษ์</td></tr>
-<tr><td>Constraint Broker</td><td>คุมต้นทุน เวลาแฝง และนโยบาย</td><td>จำกัด</td></tr>
-<tr><td>Evidence Skeptic</td><td>ตั้งคำถามต่อข้ออ้าง กำหนดภาระการพิสูจน์</td><td>หลักฐาน</td></tr>
-<tr><td>Convergence Judge</td><td>รวมข้อเสนอ ตัดสินเป็น Plan Contract</td><td>ตัดสิน</td></tr>
+<p class="lead">ให้หลายบทบาทแย้งกันอย่างมีโครงสร้างก่อนลงมือ ลดความผิดพลาดที่เกิดจากการคิดทางเดียว</p>
+<table><thead><tr><th>บทบาท</th><th>หน้าที่</th></tr></thead><tbody>
+<tr><td>Explorer</td><td>หาทางเลือกที่เป็นไปได้</td></tr>
+<tr><td>Breaker</td><td>หาจุดที่แผนจะพัง</td></tr>
+<tr><td>Constraint Broker</td><td>คุมต้นทุน เวลา และนโยบาย</td></tr>
+<tr><td>Evidence Skeptic</td><td>ตั้งคำถามต่อข้ออ้าง กำหนดภาระการพิสูจน์</td></tr>
+<tr><td>Convergence Judge</td><td>รวมข้อเสนอแล้วตัดสินเป็น Plan Contract</td></tr>
 </tbody></table>
 <h2>ขั้นตอน</h2>
-<p>Friction Dispatcher → แต่ละบทบาทเสนอแยกกัน (C6) → รวมเป็น Proposal Pack (≥ 2 ทางเลือก, C8) → Breaker veto ได้แบบส่งกลับ (C2) → Judge ตัดสิน → <strong>Plan Contract</strong></p>
-<h2>เรียกสภาเมื่อไหร่</h2>
-<p>เฉพาะ <code>risk_tier == "HIGH"</code> หรือระดับ PREPARE/EXECUTE (R10) เพราะสภาเต็มรูปแบบเพิ่มการเรียก LLM ราว 4 เท่า งานระดับ OBSERVE ใช้ fast lane</p>
-<h2>ใน OpenAI Agents SDK</h2>
-<p>ทำได้ด้วย agent หลายตัว เรียกกันผ่าน handoffs หรือ <code>agent.as_tool()</code> <span class="tag ok">ยืนยันแล้ว</span> SDK ไม่มีคลาส “Council” สำเร็จรูป สภาเป็นรูปแบบการออกแบบ (pattern) ที่คุณประกอบเอง</p>
-<p>กฎของสภาทั้ง 10 ข้อ ดู <a href="/docs/lab-rules">ชุด C</a></p>
+<p>Friction Dispatcher → แต่ละบทบาทเสนอแยกกัน → รวมเป็น Proposal Pack → Breaker ส่งกลับได้ถ้าพบจุดพัง → Judge ตัดสิน → <strong>Plan Contract</strong></p>
+<h2>ใช้เมื่อไหร่</h2>
+<p>เฉพาะ <code>risk_tier == "HIGH"</code> หรือระดับ PREPARE/EXECUTE เพราะการประชุมเต็มรูปแบบเพิ่มการเรียกโมเดลราว 4 เท่า งาน OBSERVE ใช้ fast lane</p>
+<h2>ใน SDK</h2>
+<p>ประกอบจาก agent หลายตัวที่ส่งงานต่อกันด้วย handoffs หรือ <code>agent.as_tool()</code></p>

@@ -1,9 +1,9 @@
 <h1>ข้อตกลงสถาปัตยกรรม</h1>
-<p class="lead">Architecture Contract เปลี่ยนระบบจาก “กระบวนการเดาสุ่ม” (stochastic) ไปเป็น “การกำกับที่คาดการณ์ได้” (deterministic governance) มี 4 ข้อที่บังคับใช้ทุกระนาบ</p>
+<p class="lead">4 ข้อที่ทุกระนาบต้องทำตาม ทำให้พฤติกรรมของระบบคาดการณ์และตรวจสอบได้</p>
 <ol class="steps">
-<li><strong>ห้ามถือครองเครื่องมือถาวร</strong><br>agent ได้สิทธิ์ใช้เครื่องมือเฉพาะขั้นตอนย่อยที่กำลังทำ มีขอบเขตและหมดอายุเมื่องานจบ ไม่มี Global God-Agent → <a href="/docs/lab-plane-capability">ระนาบ 4</a></li>
-<li><strong>Exclusive State Ownership</strong><br>หนึ่งการสนทนามีเจ้าของสถานะรายเดียว ห้ามประสานสถานะสองทาง → <a href="/docs/lab-plane-state">ระนาบ 2</a></li>
-<li><strong>ทุก side-effect ต้องมีเส้นทางอนุมัติที่ระบุชื่อได้</strong><br>ไม่มีการกระทำใดข้ามขอบเขตนโยบายได้หากไม่มี approval path → <a href="/docs/lab-plane-execution">ระนาบ 5</a></li>
-<li><strong>ห้ามแก้ตัวเองใน production</strong><br>การเรียนรู้เกิดในสภาพแวดล้อมคู่ขนานออฟไลน์ ผ่าน trace และ eval เท่านั้น → <a href="/docs/lab-plane-shadow">ระนาบ 7</a></li>
+<li><strong>ไม่มี agent ใดถือเครื่องมือถาวร</strong><br>สิทธิ์ใช้เครื่องมือผูกกับงานย่อยที่กำลังทำ และหมดเมื่องานจบ → <a href="/docs/lab-plane-capability">ระนาบ 4</a></li>
+<li><strong>สถานะมีเจ้าของรายเดียว</strong><br>หนึ่งการสนทนามีเจ้าของสถานะเพียงหนึ่งเดียว → <a href="/docs/lab-plane-state">ระนาบ 2</a></li>
+<li><strong>ทุกการเปลี่ยนแปลงระบบมีเส้นทางอนุมัติ</strong><br>การกระทำที่มีผลข้างเคียงต้องผ่าน approval gate ที่ระบุชื่อได้ → <a href="/docs/lab-plane-execution">ระนาบ 5</a></li>
+<li><strong>ไม่แก้ตัวเองใน production</strong><br>การปรับปรุงทำแบบออฟไลน์และผ่านการประเมินก่อนใช้งานจริง → <a href="/docs/lab-plane-shadow">ระนาบ 7</a></li>
 </ol>
-<p>ข้อตกลงทั้ง 4 ข้อนี้ถูกขยายเป็นกฎปฏิบัติ 2 ชุดที่ใช้คู่ขนานกัน ดู <a href="/docs/lab-rules">กฎ R และกฎ C</a></p>
+<p>รายละเอียดที่ใช้ปฏิบัติอยู่ใน <a href="/docs/lab-rules">กฎของระบบ</a></p>

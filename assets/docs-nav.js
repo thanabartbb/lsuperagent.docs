@@ -47,9 +47,9 @@ export const NAV = [
     pages: [
       { slug: 'lab-overview', title: 'ภาพรวม AGENTS-SDK-LAB', icon: 'home' },
       { slug: 'lab-contract', title: 'ข้อตกลงสถาปัตยกรรม', icon: 'key' },
-      { slug: 'lab-rules', title: 'กฎ 2 ชุด (R และ C)', icon: 'scale' },
+      { slug: 'lab-rules', title: 'กฎของระบบ', icon: 'scale' },
       { slug: 'lab-planes', title: '8 ระนาบ (ภาพรวม)', icon: 'layers' },
-      { slug: 'lab-roadmap', title: 'เส้นทางสู่ production', icon: 'rocket' }
+      { slug: 'lab-roadmap', title: 'ขึ้น production', icon: 'rocket' }
     ]
   },
   {
@@ -59,7 +59,7 @@ export const NAV = [
       { slug: 'lab-plane-channel', title: '1 · Human / Channel', icon: 'user' },
       { slug: 'lab-plane-state', title: '2 · State Ownership', icon: 'tree' },
       { slug: 'lab-plane-friction', title: '3 · Creative Friction', icon: 'brain' },
-      { slug: 'lab-plane-capability', title: '4 · Capability Fabric', icon: 'key' },
+      { slug: 'lab-plane-capability', title: '4 · Scoped Tool Access', icon: 'key' },
       { slug: 'lab-plane-execution', title: '5 · Execution', icon: 'zap' },
       { slug: 'lab-plane-evidence', title: '6 · Evidence Spine', icon: 'eye' },
       { slug: 'lab-plane-shadow', title: '7 · Shadow Reflection', icon: 'refresh' },
@@ -71,13 +71,13 @@ export const NAV = [
     icon: 'rocket',
     pages: [
       { slug: 'lab-quickstart', title: 'ติดตั้งและรัน', icon: 'download' },
-      { slug: 'lab-code-contracts', title: 'Contracts (Pydantic)', icon: 'pencil' },
+      { slug: 'lab-code-contracts', title: 'Contracts', icon: 'pencil' },
       { slug: 'lab-code-hooks', title: 'Evidence hooks', icon: 'eye' },
-      { slug: 'lab-code-leasing', title: 'สิทธิ์เครื่องมือชั่วคราว', icon: 'key' },
-      { slug: 'lab-code-approval', title: 'Approval 2 ชั้น', icon: 'shield' },
+      { slug: 'lab-code-access', title: 'Scoped Tool Access', icon: 'key' },
+      { slug: 'lab-code-approval', title: 'อนุมัติ 2 ชั้น', icon: 'shield' },
       { slug: 'lab-code-harness', title: 'Harness และ trace grader', icon: 'settings' },
       { slug: 'lab-action-ladder', title: 'Action Ladder', icon: 'layers' },
-      { slug: 'lab-state-modes', title: 'State 3 โหมด + compaction', icon: 'tree' },
+      { slug: 'lab-state-modes', title: 'State และ compaction', icon: 'tree' },
       { slug: 'lab-testing', title: 'ทดสอบแบบออฟไลน์', icon: 'flask' }
     ]
   },
@@ -85,11 +85,10 @@ export const NAV = [
     title: 'Lab · อ้างอิง',
     icon: 'book',
     pages: [
-      { slug: 'lab-substrate', title: 'OpenAI substrate mapping', icon: 'server' },
-      { slug: 'lab-conflicts', title: 'ข้อขัดแย้งและข้อยุติ', icon: 'scale' },
-      { slug: 'lab-caveats', title: 'ข้อควรระวัง', icon: 'alert' },
+      { slug: 'lab-substrate', title: 'SDK mapping', icon: 'server' },
+      { slug: 'lab-caveats', title: 'ข้อควรรู้', icon: 'alert' },
       { slug: 'lab-tradeoffs', title: 'Trade-offs', icon: 'wrench' },
-      { slug: 'lab-references', title: 'แหล่งอ้างอิงและเครดิต', icon: 'book' }
+      { slug: 'lab-references', title: 'อ้างอิง', icon: 'book' }
     ]
   }
 ];

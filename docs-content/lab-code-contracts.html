@@ -1,6 +1,6 @@
-<h1>Contracts (Pydantic)</h1>
-<p class="lead">สัญญาข้อมูลระหว่างระนาบ: <code>IntentEnvelope</code> (ระนาบ 1 → 2) และ <code>PlanContract</code> (ระนาบ 3 → 4, 5)</p>
-<pre data-title="lab_harness.py · contracts" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 1: contracts
+<h1>Contracts</h1>
+<p class="lead"><code>IntentEnvelope</code> ส่งจากระนาบ 1 ไประนาบ 2 และ <code>PlanContract</code> ส่งจากระนาบ 3 ไประนาบ 4–5</p>
+<pre data-title="lab_harness.py" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 1: contracts
 class ActionLadderLevel(str, Enum):
     OBSERVE = &quot;OBSERVE&quot;
     DRAFT = &quot;DRAFT&quot;
@@ -24,10 +24,9 @@ class PlanContract(BaseModel):
     parameters: dict[str, Any]
     requires_approval: bool
     evidence_rationale: str</code></pre>
-<h2>ฟิลด์ที่ควรรู้</h2>
 <table><tbody>
-<tr><td><code>risk_tier</code></td><td>ตัดสินว่าจะเรียกสภา Creative Friction หรือไม่ (R10)</td></tr>
-<tr><td><code>evidence_burden</code></td><td>ความเข้มของการตรวจหลักฐานใน Evidence Spine</td></tr>
-<tr><td><code>action_type</code></td><td>ระดับบน Action Ladder กำหนดว่า agent ได้สิทธิ์ใช้เครื่องมืออะไร</td></tr>
-<tr><td><code>requires_approval</code></td><td>เปิด Approval Gate ชั้นแผน</td></tr>
+<tr><td><code>risk_tier</code></td><td>ใช้ตัดสินว่าต้องประชุมสภา Creative Friction หรือไม่</td></tr>
+<tr><td><code>evidence_burden</code></td><td>ความเข้มของการตรวจหลักฐาน</td></tr>
+<tr><td><code>action_type</code></td><td>ระดับบน Action Ladder กำหนดชุดเครื่องมือที่ agent ใช้ได้</td></tr>
+<tr><td><code>requires_approval</code></td><td>เปิด approval gate ชั้นแผน</td></tr>
 </tbody></table>

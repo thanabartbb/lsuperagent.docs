@@ -1,16 +1,16 @@
 <h1>ระนาบ 2 · State Ownership</h1>
-<p class="lead">กฎหลัก: <strong>หนึ่งการสนทนา มีเจ้าของสถานะรายเดียว</strong> (R2) และบริหารงบบริบทไม่ให้ล้น</p>
-<h2>เลือกเจ้าของสถานะ 1 จาก 3 โหมด</h2>
-<table><thead><tr><th>โหมด</th><th>เจ้าของ</th><th>ใน SDK</th><th>ข้อควรระวัง</th></tr></thead><tbody>
-<tr><td>SDK Session</td><td>แอปของคุณ</td><td><code>Runner.run(..., session=SQLiteSession(id))</code></td><td>ต้องคุมขนาดประวัติเอง → ใช้ compaction</td></tr>
-<tr><td>Conversation</td><td>เซิร์ฟเวอร์ OpenAI</td><td><code>conversation_id=</code> หรือ <code>OpenAIConversationsSession</code></td><td>ใช้ร่วมกับ <code>previous_response_id</code> ไม่ได้</td></tr>
-<tr><td>Response chaining</td><td>เซิร์ฟเวอร์ OpenAI (ทีละ turn)</td><td><code>previous_response_id=</code></td><td>ลด payload แต่ไม่ลดโทเคนที่เซิร์ฟเวอร์ประมวลผล</td></tr>
+<p class="lead">หนึ่งการสนทนามีเจ้าของสถานะรายเดียว และคุมขนาดบริบทไม่ให้เกินเพดาน</p>
+<h2>3 แบบให้เลือก</h2>
+<table><thead><tr><th>แบบ</th><th>เจ้าของประวัติ</th><th>ใน SDK</th><th>ข้อควรรู้</th></tr></thead><tbody>
+<tr><td>SDK Session</td><td>แอปของคุณ</td><td><code>session=SQLiteSession(id)</code></td><td>คุมขนาดด้วย compaction</td></tr>
+<tr><td>Conversation</td><td>OpenAI</td><td><code>conversation_id=</code> / <code>OpenAIConversationsSession</code></td><td>ใช้คู่กับ <code>previous_response_id</code> ไม่ได้</td></tr>
+<tr><td>Response chaining</td><td>OpenAI (ทีละ turn)</td><td><code>previous_response_id=</code></td><td>ลดขนาดข้อมูลที่ส่ง แต่โทเคนที่ประมวลผลไม่ลด</td></tr>
 </tbody></table>
-<div class="callout warn"><p><strong>ข้อค้นพบจากโค้ดจริง:</strong> output guardrail ใช้ร่วมกับ <code>conversation_id</code> หรือ <code>previous_response_id</code> ไม่ได้ SDK จะโยน <code>UserError</code> ถ้าใช้ output guardrail ตรวจหลักฐาน (<a href="/docs/lab-plane-evidence">ระนาบ 6</a>) ต้องเลือกโหมด <strong>SDK Session</strong> <span class="tag ok">ยืนยันแล้ว</span></p></div>
-<h2>RunState คือ checkpoint ไม่ใช่ที่เก็บที่สอง</h2>
-<p>เมื่อหยุดรอคนอนุมัติ SDK คืน <code>result.interruptions</code> แปลงเป็น <code>result.to_state()</code> แล้ว <code>approve()</code>/<code>reject()</code> และรันต่อด้วย <code>Runner.run(agent, state)</code> RunState แค่บันทึกจุดหยุดของรันเดิม ห้ามใช้เป็นประวัติการสนทนาอีกชุด</p>
+<div class="callout"><p>ถ้าใช้ output guardrail ตรวจหลักฐาน (<a href="/docs/lab-plane-evidence">ระนาบ 6</a>) ให้เลือก SDK Session เพราะ output guardrail ใช้ร่วมกับ <code>conversation_id</code> และ <code>previous_response_id</code> ไม่ได้</p></div>
+<h2>RunState</h2>
+<p>เมื่อต้องรอคนอนุมัติ SDK คืน <code>result.interruptions</code> แปลงเป็น <code>result.to_state()</code> แล้ว <code>approve()</code> หรือ <code>reject()</code> ก่อนรันต่อด้วย <code>Runner.run(agent, state)</code> RunState คือจุดพักของรันเดิม ไม่ใช่ประวัติอีกชุด</p>
 <h2>State Ownership Gate</h2>
-<pre data-title="lab_harness.py · Plane 2" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 2: single state owner
+<pre data-title="lab_harness.py" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 2: single state owner
 @dataclass
 class StateOwnership:
     owner_id: str
@@ -35,4 +35,4 @@ class StateOwnershipGate:
             self._ownership.is_active = False
             return True
         return False</code></pre>
-<p>ต่อด้วย <a href="/docs/lab-state-modes">โค้ด 3 โหมดและ compaction</a></p>
+<p>ต่อที่ <a href="/docs/lab-state-modes">โค้ด 3 แบบและ compaction</a></p>

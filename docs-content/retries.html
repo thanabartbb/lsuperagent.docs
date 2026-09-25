@@ -8,7 +8,7 @@
 <p>ไม่ retry เมื่อได้ <code>400</code>, <code>401</code>, <code>404</code> ฯลฯ เพราะส่งซ้ำก็ได้ผลเดิม</p>
 <h2>ระยะรอ</h2>
 <p>ถ้าเซิร์ฟเวอร์ส่ง <code>Retry-After</code> (0–60 วินาที) SDK จะรอตามนั้น ไม่งั้นใช้ exponential backoff: 0.5s, 1s, 2s … สูงสุด 8s พร้อม jitter</p>
-<div class="callout warn"><p>API ของเว็บนี้จำกัด 10 คำขอ / 10 นาที ต่อเครื่องมือ เมื่อเกินจะได้ <code>429</code> พร้อม <code>Retry-After</code> ที่อาจยาวถึง 600 วินาที ซึ่งเกิน 60 วินาทีที่ SDK ยอมรอ SDK จึง retry เร็ว ๆ แล้วได้ <code>429</code> ซ้ำ ให้จับ <code>APIError</code> แล้วรอตาม header เอง</p></div>
+<div class="callout warn"><p>API ของเว็บนี้จำกัด 10 คำขอ / 10 นาที ต่อ IP และเครื่องมือ นับในหน่วยความจำของ Worker แต่ละ isolate (ไม่ใช่โควตาต่อ API key หรือโควตารวม คนที่ใช้ IP เดียวกันจะนับรวมกัน) เมื่อเกินจะได้ <code>429</code> พร้อม <code>Retry-After</code> ที่อาจยาวถึง 600 วินาที ซึ่งเกิน 60 วินาทีที่ SDK ยอมรอ SDK จึง retry เร็ว ๆ แล้วได้ <code>429</code> ซ้ำ ให้จับ <code>APIError</code> แล้วรอตาม header เอง</p></div>
 <pre data-title="rate-limit.mjs"><code>try {
   await client.post('/chat', { body: { message: 'hi' }, maxRetries: 0 });
 } catch (err) {
@@ -27,4 +27,5 @@ await client.get('/health', { maxRetries: 0, timeout: 5_000 });</code></pre>
 <pre data-title="abort.mjs"><code>const controller = new AbortController();
 setTimeout(() => controller.abort(), 3_000);
 await client.post('/chat', { body: { message: 'hi' }, signal: controller.signal });</code></pre>
-<p>เมื่อยกเลิกด้วย <code>signal</code> SDK จะไม่ retry และโยน error ต้นทาง (<code>AbortError</code>) ออกมา</p>
+<p>ถ้ายกเลิก<strong>ระหว่างที่คำขอกำลังส่ง</strong> SDK จะไม่ retry และโยน error ต้นทาง (<code>AbortError</code>) ออกมา</p>
+<div class="callout warn"><p><strong>ข้อจำกัดของ 0.1.0:</strong> ถ้า <code>signal</code> ถูกยกเลิกไปแล้วก่อนเริ่ม หรือยกเลิกระหว่างที่ SDK กำลังรอเพื่อ retry คำขอถัดไปจะยังถูกส่งออกไป และอาจจบด้วย <code>APIError</code> แทน <code>AbortError</code> ถ้าต้องการให้การยกเลิกหยุดทุกอย่างจริง ให้ตั้ง <code>maxRetries: 0</code> และเช็ก <code>signal.aborted</code> ก่อนเรียก</p></div>

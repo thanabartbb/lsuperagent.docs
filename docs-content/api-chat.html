@@ -34,6 +34,6 @@ for (const s of reply.sources) console.log(s.title, s.url);</code></pre>
 <table><tbody>
   <tr><td><code>400</code> / <code>413</code></td><td><code>validation_error</code> — ข้อความว่าง ยาวเกิน หรือ <code>messages</code>/<code>tool</code> ไม่ถูกต้อง</td></tr>
   <tr><td><code>401</code></td><td><code>invalid_api_key</code></td></tr>
-  <tr><td><code>429</code></td><td><code>rate_limited</code> — 10 คำขอ / 10 นาที ต่อเครื่องมือ</td></tr>
+  <tr><td><code>429</code></td><td><code>rate_limited</code> — 10 คำขอ / 10 นาที ต่อ IP และเครื่องมือ นับในหน่วยความจำของ Worker แต่ละ isolate (ไม่ใช่โควตาต่อ API key หรือโควตารวม คนที่ใช้ IP เดียวกันจะนับรวมกัน)</td></tr>
   <tr><td><code>502</code> / <code>503</code></td><td><code>service_error</code> / <code>service_unavailable</code></td></tr>
 </tbody></table>

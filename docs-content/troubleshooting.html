@@ -13,6 +13,6 @@
 <h2>503 service_unavailable</h2>
 <p>ระบบยังไม่ได้ตั้ง <code>OPENAI_API_KEY</code> ตรวจด้วย <code>GET /health</code> ว่า <code>ai_ready</code> เป็น <code>true</code></p>
 <h2>429 rate_limited</h2>
-<p>เกิน 10 คำขอ / 10 นาที <code>Retry-After</code> อาจยาวถึง 600 วินาที ซึ่ง SDK ไม่รอให้ (รอเฉพาะ ≤ 60 วินาที) ต้องรอตาม <code>err.headers.get('retry-after')</code> เองแล้วค่อยส่งใหม่ ดู <a href="/docs/retries">Retry และ timeout</a></p>
+<p>เกิน 10 คำขอ / 10 นาที (ต่อ IP และเครื่องมือ นับในหน่วยความจำของ Worker แต่ละ isolate (ไม่ใช่โควตาต่อ API key หรือโควตารวม คนที่ใช้ IP เดียวกันจะนับรวมกัน)) <code>Retry-After</code> อาจยาวถึง 600 วินาที ซึ่ง SDK ไม่รอให้ (รอเฉพาะ ≤ 60 วินาที) ต้องรอตาม <code>err.headers.get('retry-after')</code> เองแล้วค่อยส่งใหม่ ดู <a href="/docs/retries">Retry และ timeout</a></p>
 <h2>Missing API key ตอนสร้าง client</h2>
 <p>ไม่ได้ส่ง <code>apiKey</code> และไม่มี <code>LSUPERGEN_API_KEY</code> ใน environment ใน Workers ต้องส่ง <code>apiKey: env.LSUPERGEN_API_KEY</code> เอง</p>

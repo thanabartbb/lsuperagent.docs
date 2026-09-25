@@ -30,11 +30,18 @@ function renderSidebar(current) {
     </section>`;
 }
 
+const mobileLayout = window.matchMedia('(max-width: 860px)');
+
+// On mobile the open sidebar covers the page, so the page behind it must not take focus.
 function setMenu(open) {
+  const wasOpen = document.body.classList.contains('menu-open');
   document.body.classList.toggle('menu-open', open);
   menuToggle.setAttribute('aria-expanded', String(open));
   menuToggle.setAttribute('aria-label', open ? 'ปิดเมนู' : 'เปิดเมนู');
+  content.inert = toc.inert = open && mobileLayout.matches;
+  if (wasOpen && !open && sidebar.contains(document.activeElement)) menuToggle.focus();
 }
+mobileLayout.addEventListener('change', () => setMenu(false));
 
 async function fetchPage(slug) {
   if (cache.has(slug)) return cache.get(slug);
@@ -159,15 +166,19 @@ let opener = null;
 
 async function buildIndex() {
   if (index) return index;
-  index = await Promise.all(PAGES.map(async (page) => {
+  let complete = true;
+  const built = await Promise.all(PAGES.map(async (page) => {
     let text = '';
     try {
       const doc = new DOMParser().parseFromString(await fetchPage(page.slug), 'text/html');
       text = doc.body.textContent.replace(/\s+/g, ' ').trim();
-    } catch (_) {}
+    } catch (_) {
+      complete = false;
+    }
     return { ...page, text };
   }));
-  return index;
+  if (complete) index = built; // a partial index is used once, then rebuilt on the next search
+  return built;
 }
 
 function snippet(text, query) {
@@ -239,7 +250,7 @@ document.addEventListener('keydown', (event) => {
   else if (event.key === 'Escape') closeSearch();
   else if (event.key === 'ArrowDown') { event.preventDefault(); moveSelection(1); }
   else if (event.key === 'ArrowUp') { event.preventDefault(); moveSelection(-1); }
-  else if (event.key === 'Enter') { event.preventDefault(); results.querySelectorAll('a')[selected]?.click(); }
+  else if (event.key === 'Enter' && document.activeElement === searchInput) { event.preventDefault(); results.querySelectorAll('a')[selected]?.click(); }
 });
 
 show(slugFromPath(location.pathname), { hash: location.hash });

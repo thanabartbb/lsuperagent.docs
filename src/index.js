@@ -668,7 +668,7 @@ export default {
     const url = new URL(request.url);
     const pathname = url.pathname.replace(/\/+$/, '') || '/';
 
-    if (pathname === '/' || pathname === '/home' || pathname === '/index.html') {
+    if (pathname === '/' || pathname === '/index.html') {
       return redirectTo(await currentSession(request, env) ? '/chat' : '/login', 302);
     }
     const legacyPublic = new Set(['/examples','/examples.html','/getting-started','/getting-started.html','/api','/api.html','/guides','/guides.html','/changelog','/changelog.html','/workspace','/workspace.html','/provider-connect','/provider-connect.html','/secret-handoff','/secret-handoff.html','/endpoints','/endpoints.html','/system-registry','/system-registry.html']);
@@ -702,6 +702,7 @@ export default {
     }
 
     const workspacePaths = new Map([
+      ['/home', '/home'], ['/home.html', '/home'],
       ['/chat', '/chat'], ['/chat.html', '/chat'],
       ['/tools', '/tools'], ['/tools.html', '/tools']
     ]);

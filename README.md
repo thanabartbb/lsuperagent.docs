@@ -2,10 +2,10 @@
 
 AI Framework: **LSUPERAGENT public AI workspace**
 
-Last updated: **2026-09-25T02:11:38+07:00 Asia/Bangkok**
-Last update task: **Use the supplied BASE-CLAUDE login and chat views with the existing Google OAuth session.**
+Last updated: **2026-09-25T07:02:38+07:00 Asia/Bangkok**
+Last update task: **Expose existing email registration/login/reset and GitHub OAuth, and add an authenticated home page.**
 
-This repository powers the public LSUPERAGENT AI Workspace. The public login UI presents the existing Google OAuth flow. The chat UI comes from the supplied BASE-CLAUDE package and uses the existing signed session and server-side `/api/chat` route. The package's D1/KV auth and quota runtime is not installed here.
+This repository powers the public LSUPERAGENT AI Workspace. The login UI presents email/password, Google OAuth, and GitHub OAuth. The chat UI uses the existing signed session and server-side `/api/chat` route. Email/password depends on Firebase Web configuration and the Email/Password provider being enabled. GitHub OAuth depends on the existing Worker client ID/secret. Each login issues a six-hour signed cookie; historical session storage and server-side session revocation are not implemented.
 
 ## AI Framework Contract
 
@@ -22,11 +22,11 @@ Agents working in this repository must treat this stack as pinned unless the own
 | Worker entry | `src/firebase-worker.js` → `src/index.js` |
 | Frontend surface | Static HTML/CSS/JS files |
 | Primary runtime endpoint | `POST /api/chat` |
-| Auth surfaces | Public UI: Google OAuth via `/auth/google`; runtime: existing signed user session and Owner Google Dev Gate |
+| Auth surfaces | Public UI: email/password, Google OAuth, GitHub OAuth; runtime: existing signed user session and Owner Google Dev Gate |
 | Owner workspace | `/dev` |
 | Control-plane reference | `/dev/control-plane/` |
 | Route decision | `/control` redirects to `/dev` |
-| Database/storage | No D1/R2/KV unless owner approves a data model |
+| Database/storage | No D1/R2/KV binding currently; session history requires a durable store and migration |
 | Design base | Supplied BASE-CLAUDE black/white login and chat views |
 | Deployment rule | Do not claim live/deployed without verifiable evidence |
 
@@ -34,7 +34,7 @@ Agents working in this repository must treat this stack as pinned unless the own
 
 Build a public AI Workspace so authenticated users can safely use real AI capabilities without an anonymous access path, with `/login` as the public entry surface.
 
-The public pages are `login.html` and `chat.html`; `assets/chat.js` checks `/api/auth/session`, sends the conversation to `POST /api/chat`, and leaves model credentials on the Worker. The Google callback remains `/auth/google/callback`. Other pre-existing authentication endpoints remain in the runtime for compatibility but are not offered by the public login UI.
+The public auth pages are `login.html`, `signup.html`, and `forgot-password.html`. Authenticated `/home` links to `/chat` and `/tools`. `assets/chat.js` checks `/api/auth/session` and sends conversation to `POST /api/chat`. Google and GitHub callbacks remain `/auth/google/callback` and `/auth/github/callback`. GitHub login uses `read:user user:email` only; it does not authorize repository writes or save a GitHub access token.
 
 ### 3. Data Contract
 

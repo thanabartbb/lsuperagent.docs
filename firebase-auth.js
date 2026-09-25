@@ -82,7 +82,6 @@ function providerFor(name, { GoogleAuthProvider, GithubAuthProvider }) {
 }
 
 function attachEmailLogin(form, queryReturnTo) {
-  const resetButton = document.querySelector('[data-password-reset]');
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const submit = form.querySelector('button[type="submit"]');
@@ -107,11 +106,16 @@ function attachEmailLogin(form, queryReturnTo) {
         return;
       }
       window.location.replace(data.return_to || queryReturnTo);
+    } catch (_) {
+      setNotice('เชื่อมต่อระบบเข้าสู่ระบบไม่สำเร็จ กรุณาลองอีกครั้ง');
     } finally {
       setBusy(submit, false);
     }
   });
+}
 
+function attachPasswordReset(form) {
+  const resetButton = form?.querySelector('[data-password-reset]');
   resetButton?.addEventListener('click', async () => {
     const emailInput = form?.querySelector('input[name="email"]');
     const email = String(emailInput?.value || '').trim();
@@ -129,6 +133,8 @@ function attachEmailLogin(form, queryReturnTo) {
         return;
       }
       setNotice(data.message || 'ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลแล้ว', 'success');
+    } catch (_) {
+      setNotice('เชื่อมต่อระบบรีเซ็ตรหัสผ่านไม่สำเร็จ กรุณาลองอีกครั้ง');
     } finally {
       setBusy(resetButton, false);
     }
@@ -165,6 +171,8 @@ function attachEmailRegister(form, queryReturnTo) {
         return;
       }
       window.location.replace(data.return_to || queryReturnTo);
+    } catch (_) {
+      setNotice('เชื่อมต่อระบบสมัครสมาชิกไม่สำเร็จ กรุณาลองอีกครั้ง');
     } finally {
       setBusy(submit, false);
     }
@@ -203,12 +211,22 @@ async function attachOAuthProviders(queryReturnTo) {
 
 async function main() {
   const queryReturnTo = safeReturnTo(new URLSearchParams(window.location.search).get('return_to'));
+  for (const link of document.querySelectorAll('a[href^="/auth/google"], a[href^="/auth/github"]')) {
+    const target = new URL(link.href, window.location.origin);
+    target.searchParams.set('return_to', queryReturnTo);
+    link.href = target.pathname + target.search;
+  }
+  for (const link of document.querySelectorAll('a[href="/signup"], a[href="/login"]')) {
+    if (queryReturnTo !== '/chat') link.href += '?return_to=' + encodeURIComponent(queryReturnTo);
+  }
   const loginForm = document.querySelector('[data-email-login]');
   const registerForm = document.querySelector('[data-email-register]');
+  const resetForm = document.querySelector('[data-email-reset]');
 
   if (loginForm) attachEmailLogin(loginForm, queryReturnTo);
   if (registerForm) attachEmailRegister(registerForm, queryReturnTo);
-  await attachOAuthProviders(queryReturnTo);
+  if (resetForm) attachPasswordReset(resetForm);
+  if (document.querySelector('[data-firebase-provider]')) await attachOAuthProviders(queryReturnTo);
 }
 
 main().catch((error) => {

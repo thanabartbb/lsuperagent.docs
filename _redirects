@@ -4,7 +4,7 @@
 # /control stays owner/dev workspace.
 # /dev/control-plane/ is docs-only public reference and contains no secret/action runtime.
 
-/sdk /examples 301
+/sdk /guide 301
 /control /dev 301
 /routes /endpoints 301
 /endpoint /endpoints 301

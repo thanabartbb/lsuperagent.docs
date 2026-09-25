@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#000000">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<title>SDK Guide · LSUPERAGENT SDK</title>
+<style>
+:root{color-scheme:dark;--bg:#000;--surface:#0a0a0a;--line:#2a2a2a;--line2:#4a4a4a;--text:#fff;--muted:#a0a0a0;--accent:#3b82f6;--ok:#34d399;--bad:#ff7d86;--mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;padding:28px 16px 64px;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Thai",sans-serif;overflow-x:hidden}
+main{max-width:860px;margin:auto}
+a{color:inherit;text-decoration:none}
+b{color:var(--accent)}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:22px}
+header strong{display:flex;align-items:center;gap:12px;font-size:1.1rem}
+header img{width:34px;height:34px}
+header nav{display:flex;gap:14px;flex-wrap:wrap}
+header nav a{color:var(--muted)}
+header nav a:hover,header nav a[aria-current]{color:var(--text)}
+h1{font-size:clamp(2rem,7vw,3rem);margin:56px 0 12px;letter-spacing:-.03em}
+h2{font-size:1.25rem;margin:0 0 8px}
+h3{font-size:1rem;margin:22px 0 8px}
+p,li{color:var(--muted);line-height:1.65}
+code{font-family:var(--mono);font-size:.88em;color:var(--text)}
+.lead{max-width:640px}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 8px}
+.fact{border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:.84rem;color:var(--muted);background:var(--surface)}
+.fact strong{color:var(--text);font-weight:600}
+.toc{display:grid;gap:6px;margin:26px 0 0;padding:0;list-style:none;counter-reset:toc}
+.toc a{color:var(--muted)}.toc a:hover{color:var(--text)}
+.step{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:20px;margin-top:18px;scroll-margin-top:16px}
+.step-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.step-num{font:700 .72rem var(--mono);letter-spacing:.14em;color:var(--accent);margin-bottom:6px}
+.badge{flex:none;font:700 .7rem var(--mono);letter-spacing:.08em;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
+.badge.pass{color:var(--ok);border-color:rgba(52,211,153,.5)}
+.badge.fail{color:var(--bad);border-color:rgba(255,125,134,.5)}
+.badge.run{color:var(--accent);border-color:rgba(59,130,246,.5)}
+.code{position:relative;margin:12px 0 0}
+pre{margin:0;background:#000;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;font:.84rem/1.6 var(--mono);color:#e6e6e6;white-space:pre}
+.copy{position:absolute;top:8px;right:8px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--muted);font:600 .74rem inherit;padding:5px 9px;cursor:pointer}
+.copy:hover{color:var(--text)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+button.run,button.primary{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:9px;padding:9px 14px;font:600 .9rem inherit;cursor:pointer}
+button.ghost{border:1px solid var(--line2);background:transparent;color:var(--text);border-radius:9px;padding:9px 14px;font:600 .9rem inherit;cursor:pointer}
+button:disabled{opacity:.5;cursor:progress}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input,textarea{width:100%;background:#000;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:10px 12px;font:.9rem var(--mono)}
+textarea{min-height:70px;resize:vertical;font-family:inherit}
+label{display:block;font-size:.84rem;color:var(--muted);margin:12px 0 6px}
+.out{margin-top:12px}
+.out pre{max-height:360px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}
+.out .meta{font:.74rem var(--mono);color:var(--muted);margin-bottom:6px}
+.note{border-left:2px solid var(--accent);padding:2px 0 2px 12px;margin:14px 0 0}
+.warn{border-left-color:var(--bad)}
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.88rem}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600}
+.table-wrap{overflow-x:auto}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.tab{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:6px 11px;font:600 .82rem inherit;cursor:pointer}
+.tab[aria-selected="true"]{color:var(--text);border-color:var(--accent)}
+.summary{display:grid;gap:6px;margin-top:12px}
+.summary div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding:7px 0;font-size:.9rem}
+.summary span:last-child{font:700 .76rem var(--mono)}
+footer{margin-top:44px;color:var(--muted);font-size:.84rem;border-top:1px solid var(--line);padding-top:18px}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <a class="brand-link" href="/home" aria-label="กลับหน้าแรก"><strong><img src="/logo.svg" alt="">LSUPERAGENT <b>SDK</b></strong></a>
+    <nav aria-label="เมนูหลัก"><a href="/home">หน้าแรก</a><a href="/chat">แชท</a><a href="/guide" aria-current="page">SDK Guide</a><a href="/auth/logout">ออกจากระบบ</a></nav>
+  </header>
+
+  <h1>คู่มือ lsupergen-sdk</h1>
+  <p class="lead">ติดตั้งแพ็กเกจ <a href="https://www.npmjs.com/package/lsupergen-sdk"><code>lsupergen-sdk</code></a> จาก npm แล้วเรียก API ของ agents-sdk.space ได้ทันที ทุกขั้นในหน้านี้มีปุ่ม <strong>รันจริง</strong> ที่เรียกผ่านแพ็กเกจตัวเดียวกับที่เผยแพร่บน npm (เวอร์ชัน 0.1.0) และแสดงผลตอบกลับจริงจากเซิร์ฟเวอร์ ไม่มีผลลัพธ์จำลอง</p>
+  <div class="facts" aria-label="ข้อมูลแพ็กเกจ">
+    <span class="fact">แพ็กเกจ <strong>lsupergen-sdk</strong></span>
+    <span class="fact">SDK ที่โหลดในหน้านี้ <strong id="sdk-version">…</strong></span>
+    <span class="fact">API base <strong id="base-url">…</strong></span>
+    <span class="fact">บัญชี <strong id="who">…</strong></span>
+  </div>
+
+  <ol class="toc">
+    <li><a href="#install">1. ติดตั้งแพ็กเกจ</a></li>
+    <li><a href="#key">2. สร้าง API key</a></li>
+    <li><a href="#config">3. ตั้งค่า client</a></li>
+    <li><a href="#health">4. ตรวจสถานะ API</a></li>
+    <li><a href="#me">5. ยืนยันตัวตนด้วย key</a></li>
+    <li><a href="#chat">6. เรียก AI Chat</a></li>
+    <li><a href="#errors">7. จัดการข้อผิดพลาด</a></li>
+    <li><a href="#verify">8. ตรวจสอบทั้งคู่มือ (Proof report)</a></li>
+    <li><a href="#runtimes">9. ใช้ใน Node.js / Cloudflare Workers / curl</a></li>
+    <li><a href="#reference">10. API reference</a></li>
+  </ol>
+
+  <section class="step" id="install">
+    <div class="step-head"><div><div class="step-num">STEP 1</div><h2>ติดตั้งแพ็กเกจ</h2></div><span class="badge" data-badge="install">พร้อมรัน</span></div>
+    <p>ต้องใช้ Node.js 18 ขึ้นไป (หรือ Bun, Deno, Cloudflare Workers, เบราว์เซอร์รุ่นใหม่) แพ็กเกจไม่มี runtime dependency และรองรับทั้ง ESM และ CommonJS</p>
+    <div class="code"><pre>npm install lsupergen-sdk
+# หรือ
+pnpm add lsupergen-sdk
+yarn add lsupergen-sdk
+bun add lsupergen-sdk</pre></div>
+    <p class="note">ปุ่มรันจริงจะโหลดไฟล์ <code>dist/index.js</code> ของ lsupergen-sdk@0.1.0 (ไฟล์เดียวกับใน npm tarball) แล้วตรวจว่า export ครบ</p>
+    <div class="actions"><button class="run" data-run="install">รันจริง</button></div>
+    <div class="out" data-out="install" hidden></div>
+  </section>
+
+  <section class="step" id="key">
+    <div class="step-head"><div><div class="step-num">STEP 2</div><h2>สร้าง API key</h2></div><span class="badge" data-badge="key">พร้อมรัน</span></div>
+    <p>API key ผูกกับบัญชีที่เข้าสู่ระบบอยู่ มีอายุ 30 วัน และแสดงเพียงครั้งเดียว หน้านี้เก็บ key ไว้ในหน่วยความจำของแท็บนี้เท่านั้น (ไม่บันทึกลงเบราว์เซอร์)</p>
+    <div class="actions"><button class="primary" data-run="key">สร้าง API key ใหม่</button></div>
+    <label for="api-key">API key ที่ใช้ในขั้นถัดไป (สร้างใหม่ หรือวาง key เดิมที่ยังไม่หมดอายุ)</label>
+    <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="lsg_…">
+    <div class="actions"><button class="ghost" id="toggle-key" type="button">แสดง key</button><button class="ghost" id="copy-key" type="button">คัดลอก key</button></div>
+    <p class="note warn">อย่า commit key ลง Git และอย่าฝัง key ในโค้ดฝั่งเบราว์เซอร์ที่เผยแพร่ ให้เก็บเป็น environment variable หรือ Cloudflare Secret</p>
+    <div class="out" data-out="key" hidden></div>
+  </section>
+
+  <section class="step" id="config">
+    <div class="step-head"><div><div class="step-num">STEP 3</div><h2>ตั้งค่า client</h2></div></div>
+    <p>ตั้ง environment variable สองตัว แล้ว client จะอ่านค่าเองโดยอัตโนมัติ</p>
+    <div class="code"><pre data-template>LSUPERGEN_API_KEY=lsg_your_key_here
+LSUPERGEN_BASE_URL={{BASE}}</pre></div>
+    <div class="code"><pre data-template>import { Lsupergen } from 'lsupergen-sdk';
+
+const client = new Lsupergen({
+  apiKey: process.env.LSUPERGEN_API_KEY,   // ค่าเริ่มต้นอ่านจาก LSUPERGEN_API_KEY
+  baseURL: process.env.LSUPERGEN_BASE_URL, // {{BASE}}
+  timeout: 60_000,                         // ms
+  maxRetries: 2,                           // retry 408/409/429/5xx อัตโนมัติ
+});</pre></div>
+    <h3>เบราว์เซอร์ / Cloudflare Workers / Deno</h3>
+    <p>lsupergen-sdk 0.1.0 เรียก <code>fetch</code> ที่เก็บไว้โดยไม่ผูก <code>this</code> ซึ่ง Node.js ยอมให้ แต่เบราว์เซอร์และ Cloudflare Workers จะปฏิเสธด้วย <code>Illegal invocation</code> (SDK จะโยน <code>ConnectionError</code>) ให้ส่ง <code>fetch</code> เข้าไปเองตามนี้ ปุ่มรันจริงในหน้านี้ก็ใช้วิธีเดียวกัน</p>
+    <div class="code"><pre data-template>const client = new Lsupergen({
+  apiKey,
+  baseURL: '{{BASE}}',
+  fetch: (...args) => fetch(...args), // จำเป็นสำหรับเบราว์เซอร์และ Workers ในเวอร์ชัน 0.1.0
+});</pre></div>
+    <p class="note">ต้องตั้ง <code>baseURL</code> เป็น <code data-base>…</code> เสมอ เพราะค่าเริ่มต้นในแพ็กเกจ 0.1.0 ชี้ไปที่ <code>https://api.lsupergen.com</code> ซึ่งไม่ใช่ API ของเว็บไซต์นี้</p>
+  </section>
+
+  <section class="step" id="health">
+    <div class="step-head"><div><div class="step-num">STEP 4</div><h2>ตรวจสถานะ API</h2></div><span class="badge" data-badge="health">พร้อมรัน</span></div>
+    <p><code>GET /health</code> ไม่ต้องใช้ key ใช้ตรวจว่าเชื่อมต่อได้ และบริการ AI พร้อมหรือไม่ (<code>ai_ready</code>)</p>
+    <div class="code"><pre>const health = await client.get('/health');
+console.log(health.ok, health.ai_ready);</pre></div>
+    <div class="actions"><button class="run" data-run="health">รันจริง</button></div>
+    <div class="out" data-out="health" hidden></div>
+  </section>
+
+  <section class="step" id="me">
+    <div class="step-head"><div><div class="step-num">STEP 5</div><h2>ยืนยันตัวตนด้วย key</h2></div><span class="badge" data-badge="me">พร้อมรัน</span></div>
+    <p><code>GET /me</code> ส่ง <code>Authorization: Bearer &lt;key&gt;</code> ให้อัตโนมัติ และตอบกลับบัญชีเจ้าของ key พร้อมวันหมดอายุ</p>
+    <div class="code"><pre>const me = await client.get('/me');
+console.log(me.user.email, me.key.expires_at);</pre></div>
+    <div class="actions"><button class="run" data-run="me">รันจริง</button></div>
+    <div class="out" data-out="me" hidden></div>
+  </section>
+
+  <section class="step" id="chat">
+    <div class="step-head"><div><div class="step-num">STEP 6</div><h2>เรียก AI Chat</h2></div><span class="badge" data-badge="chat">พร้อมรัน</span></div>
+    <p><code>POST /chat</code> ส่งข้อความไปยังโมเดล AI จริงของระบบ ผลลัพธ์อยู่ใน <code>message</code> ถ้าบริการ AI ยังไม่พร้อม API จะตอบ <code>503</code> ตามจริง ไม่มีคำตอบปลอม</p>
+    <div class="code"><pre>const reply = await client.post('/chat', {
+  body: { message: 'สรุปจุดเด่นของ lsupergen-sdk ใน 1 ประโยค' },
+});
+console.log(reply.message);
+
+// ต่อบทสนทนา: ส่ง messages สลับ user / assistant และจบด้วย user
+await client.post('/chat', {
+  body: {
+    messages: [
+      { role: 'user', content: 'ฉันชื่อแบงค์' },
+      { role: 'assistant', content: 'ยินดีที่รู้จัก' },
+      { role: 'user', content: 'ฉันชื่ออะไร' },
+    ],
+  },
+});
+
+// โหมดเครื่องมือ: tool = 'writer' | 'research' | 'url' | 'code'
+await client.post('/chat', { body: { message: 'ค้นข่าว AI ล่าสุด', tool: 'research' } });</pre></div>
+    <label for="chat-message">ข้อความทดสอบ</label>
+    <textarea id="chat-message">ตอบสั้น ๆ 1 ประโยคว่า lsupergen-sdk เชื่อมต่อสำเร็จ</textarea>
+    <div class="actions"><button class="run" data-run="chat">รันจริง</button></div>
+    <div class="out" data-out="chat" hidden></div>
+  </section>
+
+  <section class="step" id="errors">
+    <div class="step-head"><div><div class="step-num">STEP 7</div><h2>จัดการข้อผิดพลาด</h2></div><span class="badge" data-badge="errors">พร้อมรัน</span></div>
+    <p>ทุก error สืบทอดจาก <code>LsupergenError</code> เมื่อเซิร์ฟเวอร์ตอบ non-2xx จะได้ <code>APIError</code> ที่มี <code>status</code> และ <code>body</code> ปุ่มรันจริงจะส่ง key ที่ไม่ถูกต้องเพื่อพิสูจน์ว่าได้ <code>APIError 401</code></p>
+    <div class="code"><pre>import { Lsupergen, APIError, TimeoutError, ConnectionError } from 'lsupergen-sdk';
+
+try {
+  await client.get('/me');
+} catch (err) {
+  if (err instanceof APIError) {
+    console.error(err.status, err.body);   // เช่น 401 { error: 'invalid_api_key' }
+  } else if (err instanceof TimeoutError) {
+    // เกิน timeout
+  } else if (err instanceof ConnectionError) {
+    // เครือข่ายมีปัญหา
+  }
+}</pre></div>
+    <div class="actions"><button class="run" data-run="errors">รันจริง</button></div>
+    <div class="out" data-out="errors" hidden></div>
+  </section>
+
+  <section class="step" id="verify">
+    <div class="step-head"><div><div class="step-num">STEP 8</div><h2>ตรวจสอบทั้งคู่มือ</h2></div><span class="badge" data-badge="all">พร้อมรัน</span></div>
+    <p>รันขั้นที่ 1, 4, 5, 6 และ 7 ต่อกันด้วย SDK จริง แล้วสร้าง Proof report (JSON) ที่มีเวลา สถานะ HTTP และผลลัพธ์ของแต่ละขั้น ต้องมี API key จากขั้นที่ 2 ก่อน</p>
+    <div class="actions"><button class="primary" data-run="all">รันทั้งหมด</button><button class="ghost" id="copy-report" type="button" disabled>คัดลอก report</button></div>
+    <div class="summary" id="summary" hidden></div>
+    <div class="out" data-out="all" hidden></div>
+  </section>
+
+  <section class="step" id="runtimes">
+    <div class="step-head"><div><div class="step-num">STEP 9</div><h2>ใช้ใน Node.js / Cloudflare Workers / curl</h2></div></div>
+    <div class="tabs" role="tablist" aria-label="ตัวอย่างตาม runtime">
+      <button class="tab" role="tab" aria-selected="true" data-tab="node">Node.js (ESM)</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="cjs">CommonJS</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="worker">Cloudflare Worker</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="curl">curl</button>
+    </div>
+    <div class="code" data-panel="node"><pre data-template>// quickstart.mjs — รัน: LSUPERGEN_API_KEY=lsg_... node quickstart.mjs
+import { Lsupergen, APIError } from 'lsupergen-sdk';
+
+const client = new Lsupergen({ baseURL: '{{BASE}}' });
+
+try {
+  const health = await client.get('/health');
+  const me = await client.get('/me');
+  const reply = await client.post('/chat', { body: { message: 'สวัสดี' } });
+  console.log({ ai_ready: health.ai_ready, user: me.user.email, reply: reply.message });
+} catch (err) {
+  if (err instanceof APIError) console.error('API error', err.status, err.body);
+  else throw err;
+  process.exitCode = 1;
+}</pre></div>
+    <div class="code" data-panel="cjs" hidden><pre data-template>// quickstart.cjs
+const { Lsupergen } = require('lsupergen-sdk');
+
+const client = new Lsupergen({ baseURL: '{{BASE}}' });
+
+client.post('/chat', { body: { message: 'สวัสดี' } })
+  .then((reply) => console.log(reply.message))
+  .catch((err) => { console.error(err.status, err.body); process.exitCode = 1; });</pre></div>
+    <div class="code" data-panel="worker" hidden><pre data-template>// src/index.js — เก็บ key ด้วย: npx wrangler secret put LSUPERGEN_API_KEY
+import { Lsupergen, APIError } from 'lsupergen-sdk';
+
+export default {
+  async fetch(request, env) {
+    const client = new Lsupergen({
+      apiKey: env.LSUPERGEN_API_KEY,   // Workers ไม่มี process.env ต้องส่ง apiKey เอง
+      baseURL: '{{BASE}}',
+      fetch: (...args) => fetch(...args), // Workers ต้องใช้ fetch ที่ผูก this ถูกต้อง
+    });
+    const { message } = await request.json();
+    try {
+      const reply = await client.post('/chat', { body: { message } });
+      return Response.json({ reply: reply.message });
+    } catch (err) {
+      const status = err instanceof APIError ? err.status : 502;
+      return Response.json({ error: err.message }, { status });
+    }
+  },
+};</pre></div>
+    <div class="code" data-panel="curl" hidden><pre data-template>curl -sS {{BASE}}/health
+
+curl -sS {{BASE}}/me \
+  -H "Authorization: Bearer $LSUPERGEN_API_KEY"
+
+curl -sS {{BASE}}/chat \
+  -H "Authorization: Bearer $LSUPERGEN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"message":"สวัสดี"}'</pre></div>
+  </section>
+
+  <section class="step" id="reference">
+    <div class="step-head"><div><div class="step-num">STEP 10</div><h2>API reference</h2></div></div>
+    <p>Base URL: <code data-base>…</code> ทุก response เป็น JSON และมี <code>ok</code> บอกผลลัพธ์</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Method / Path</th><th>Auth</th><th>คำอธิบาย</th></tr></thead>
+      <tbody>
+        <tr><td><code>GET /health</code></td><td>ไม่ต้อง</td><td>สถานะบริการ: <code>ok</code>, <code>ai_ready</code>, <code>package</code>, <code>time</code></td></tr>
+        <tr><td><code>GET /me</code></td><td>Bearer</td><td>เจ้าของ key: <code>user</code>, <code>key.expires_at</code></td></tr>
+        <tr><td><code>POST /chat</code></td><td>Bearer</td><td>body: <code>message</code> หรือ <code>messages</code> (สูงสุด 20 turn), <code>tool</code>, <code>mode</code> → <code>{ ok, status, message, output, sources }</code></td></tr>
+        <tr><td><code>POST /image</code></td><td>Bearer</td><td>body: <code>prompt</code> → <code>{ ok, image: { mime_type, data_base64, filename } }</code></td></tr>
+      </tbody>
+    </table></div>
+    <h3>รหัสสถานะ</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>HTTP</th><th>ความหมาย</th></tr></thead>
+      <tbody>
+        <tr><td><code>400 / 413</code></td><td>ข้อมูลไม่ถูกต้อง หรือยาวเกินกำหนด (<code>validation_error</code>)</td></tr>
+        <tr><td><code>401</code></td><td>ไม่มี key, key ผิด หรือหมดอายุ (<code>invalid_api_key</code>)</td></tr>
+        <tr><td><code>429</code></td><td>เกินโควตา 10 คำขอ / 10 นาที ต่อเครื่องมือ SDK จะ retry ตาม <code>Retry-After</code> ให้เอง</td></tr>
+        <tr><td><code>502 / 503</code></td><td>บริการ AI ขัดข้อง หรือยังไม่ได้ตั้งค่า (<code>service_unavailable</code>)</td></tr>
+      </tbody>
+    </table></div>
+    <h3>ข้อควรรู้</h3>
+    <ul>
+      <li>API key เป็น token ที่เซ็นด้วยกุญแจของเซิร์ฟเวอร์ หมดอายุใน 30 วัน ถ้า key หลุดให้หยุดใช้และสร้างใหม่ ผู้ดูแลระบบยกเลิก key ทั้งหมดได้ด้วยการเปลี่ยน <code>AUTH_SESSION_SECRET</code></li>
+      <li>ตั้ง <code>maxRetries: 0</code> ถ้าไม่ต้องการ retry อัตโนมัติ และส่ง <code>signal</code> จาก <code>AbortController</code> เพื่อยกเลิกคำขอ</li>
+      <li>API เปิด CORS สำหรับการเรียกด้วย Bearer key แต่ควรเรียกจากฝั่งเซิร์ฟเวอร์เพื่อไม่ให้ key รั่ว</li>
+    </ul>
+  </section>
+
+  <footer>lsupergen-sdk · MIT · <a href="https://www.npmjs.com/package/lsupergen-sdk">npm</a> · <a href="https://github.com/thanabartbb/npm-lsupergen-sdk">GitHub</a></footer>
+</main>
+<script type="module" src="/assets/guide.js"></script>
+</body>
+</html>

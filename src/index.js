@@ -8,7 +8,7 @@ const AUTH_SESSION_TTL_SECONDS = 6 * 60 * 60;
 const AUTH_STATE_TTL_SECONDS = 10 * 60;
 
 const ALIASES = {
-  '/sdk': '/examples',
+  '/sdk': '/guide',
   '/control': '/dev',
   '/owner': '/dev',
   '/routes': '/endpoints',
@@ -614,6 +614,70 @@ async function handleImage(request, env) {
   }, lastStatus === 429 ? 429 : 502, baseHeaders);
 }
 
+const SDK_KEY_PREFIX = 'lsg_';
+const SDK_KEY_TYP = 'sdk_key';
+const SDK_KEY_TTL_DAYS = 30;
+const SDK_PACKAGE = { name: 'lsupergen-sdk', version: '0.1.0', npm: 'https://www.npmjs.com/package/lsupergen-sdk' };
+const SDK_CORS_HEADERS = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'GET, POST, OPTIONS',
+  'access-control-allow-headers': 'authorization, content-type, accept',
+  'access-control-max-age': '600'
+};
+
+function sdkJson(data, status = 200, headers = {}) {
+  return json(data, status, { ...SDK_CORS_HEADERS, 'x-lsuperagen-api': 'v1', ...headers });
+}
+
+function withSdkHeaders(response) {
+  const headers = new Headers(response.headers);
+  for (const [key, value] of Object.entries(SDK_CORS_HEADERS)) headers.set(key, value);
+  headers.set('x-lsuperagen-api', 'v1');
+  return new Response(response.body, { status: response.status, headers });
+}
+
+function bearerToken(request) {
+  const match = /^Bearer\s+(\S+)$/i.exec(request.headers.get('authorization') || '');
+  return match ? match[1] : '';
+}
+
+async function sdkKeyFromRequest(request, env) {
+  const raw = bearerToken(request);
+  if (!raw.startsWith(SDK_KEY_PREFIX)) return null;
+  return verifySignedToken(raw.slice(SDK_KEY_PREFIX.length), env, SDK_KEY_TYP);
+}
+
+function sdkKeyInfo(key) {
+  return { id: key.kid, issued_at: new Date(key.iat * 1000).toISOString(), expires_at: new Date(key.exp * 1000).toISOString() };
+}
+
+async function handleSdkKeyCreate(request, env) {
+  if (request.method !== 'POST') return json({ ok: false, status: 'method_not_allowed', message: 'ส่งคำขอด้วย POST เท่านั้น' }, 405, { allow: 'POST' });
+  const origin = request.headers.get('origin');
+  if (origin && origin !== new URL(request.url).origin) return json({ ok: false, error: 'forbidden_origin', message: 'สร้าง API key ได้จากหน้า Guide ของเว็บไซต์นี้เท่านั้น' }, 403);
+  const session = await currentSession(request, env);
+  if (!session) return json({ ok: false, error: 'authentication_required', message: 'กรุณาเข้าสู่ระบบก่อนสร้าง API key' }, 401);
+  const kid = 'key_' + (crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '').slice(0, 16) : String(Date.now()));
+  const token = await createSignedToken({ kid, provider: session.provider, id: session.id, email: session.email || null, name: session.name || null }, env, SDK_KEY_TYP, SDK_KEY_TTL_DAYS * 24 * 60 * 60);
+  const key = await verifySignedToken(token, env, SDK_KEY_TYP);
+  return json({ ok: true, api_key: SDK_KEY_PREFIX + token, key: sdkKeyInfo(key), base_url: publicOrigin(new URL(request.url), env) + '/v1', package: SDK_PACKAGE }, 201);
+}
+
+async function handleSdkApi(request, env, pathname) {
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: SDK_CORS_HEADERS });
+  if (pathname === '/v1' || pathname === '/v1/health') {
+    if (request.method !== 'GET') return sdkJson({ ok: false, error: 'method_not_allowed', message: 'Use GET' }, 405, { allow: 'GET, OPTIONS' });
+    return sdkJson({ ok: true, service: 'lsupergen-api', api_version: 'v1', ai_ready: truthySecret(env, 'OPENAI_API_KEY'), auth_ready: truthySecret(env, 'AUTH_SESSION_SECRET'), package: SDK_PACKAGE, time: new Date().toISOString() });
+  }
+  const routes = { '/v1/me': 'GET', '/v1/chat': 'POST', '/v1/image': 'POST' };
+  if (!routes[pathname]) return sdkJson({ ok: false, error: 'not_found', message: 'Unknown endpoint: ' + pathname }, 404);
+  const key = await sdkKeyFromRequest(request, env);
+  if (!key) return sdkJson({ ok: false, error: 'invalid_api_key', message: 'Missing, invalid, or expired API key. Create one at /guide.' }, 401, { 'www-authenticate': 'Bearer' });
+  if (request.method !== routes[pathname]) return sdkJson({ ok: false, error: 'method_not_allowed', message: 'Use ' + routes[pathname] }, 405, { allow: routes[pathname] + ', OPTIONS' });
+  if (pathname === '/v1/me') return sdkJson({ ok: true, user: { provider: key.provider, id: key.id, email: key.email, name: key.name }, key: sdkKeyInfo(key) });
+  return withSdkHeaders(pathname === '/v1/chat' ? await handleChat(request, env) : await handleImage(request, env));
+}
+
 function plannedEndpoint(pathname) {
   const planned = {
     '/admin/auth/github': { status: 'retired', method: 'GET', message: 'Use /dev.' },
@@ -693,6 +757,9 @@ export default {
     if (pathname === '/api/chat') return handleChat(request, env);
     if (pathname === '/api/image') return handleImage(request, env);
 
+    if (pathname === '/api/sdk/keys') return handleSdkKeyCreate(request, env);
+    if (pathname === '/v1' || pathname.startsWith('/v1/')) return handleSdkApi(request, env, pathname);
+
     const planned = plannedEndpoint(pathname);
     if (planned) return planned;
 
@@ -704,7 +771,8 @@ export default {
     const workspacePaths = new Map([
       ['/home', '/home'], ['/home.html', '/home'],
       ['/chat', '/chat'], ['/chat.html', '/chat'],
-      ['/tools', '/tools'], ['/tools.html', '/tools']
+      ['/tools', '/tools'], ['/tools.html', '/tools'],
+      ['/guide', '/guide'], ['/guide.html', '/guide']
     ]);
     if (workspacePaths.has(pathname) && !await currentSession(request, env)) {
       return redirectTo(`/login?return_to=${encodeURIComponent(workspacePaths.get(pathname))}`, 302);

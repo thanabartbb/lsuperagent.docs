@@ -1,0 +1,30 @@
+<h1>เส้นทางสู่ production</h1>
+<p class="lead">สิ่งที่เสร็จแล้วคือรากฐานที่ตรวจและทดสอบจริง หน้านี้แบ่งงานที่เหลือเป็นขั้นเล็ก ๆ ทำทีละขั้นได้ ทุกขั้นมีวิธีเช็กว่าเสร็จ</p>
+<h2>✅ เสร็จแล้ว</h2>
+<ul>
+<li>สถาปัตยกรรม 8 ระนาบ + ข้อตกลง 4 ข้อ + กฎร่างแรก 2 ชุด</li>
+<li>Harness ที่ประกอบทุกระนาบเข้าด้วยกัน รันได้ทั้งออฟไลน์และกับ OpenAI จริง</li>
+<li>อนุมัติ 2 ชั้น (แผน + เครื่องมือ) ใช้กลไกของ SDK จริง ทดสอบทั้งกรณีอนุมัติและปฏิเสธ</li>
+<li>Evidence ledger, trace grader, dispatcher, compaction trigger — ชุดทดสอบ 10/10</li>
+<li>ทุกข้ออ้างที่ขัดกันถูกตรวจกับแพ็กเกจจริงแล้ว</li>
+</ul>
+<h2>🔜 ขั้นต่อไป</h2>
+<ol class="steps">
+<li><strong>เสียบระบบจริงแทนเครื่องมือตัวอย่าง</strong><br>แก้ตัวฟังก์ชันใน <code>lab_harness.py</code> ให้เรียก API ของคุณ คง <code>needs_approval=True</code> ไว้กับเครื่องมือที่เปลี่ยนระบบ
+<pre data-title="ตัวอย่าง: เปลี่ยนเป็นการเรียก API จริง"><code>import httpx
+
+@function_tool
+def read_system_status(service_name: str) -&gt; str:
+    &quot;&quot;&quot;Read a service&#x27;s status (OBSERVE).&quot;&quot;&quot;
+    r = httpx.get(f&quot;https://status.example.internal/api/{service_name}&quot;, timeout=10)
+    r.raise_for_status()
+    return r.text</code></pre>
+<em>เสร็จเมื่อ:</em> ledger แสดงผลจากระบบจริง และปฏิเสธที่ชั้นเครื่องมือแล้วระบบไม่ถูกแตะ</li>
+<li><strong>รันกับ OpenAI จริง</strong><br><code>export OPENAI_API_KEY=...</code> แล้ว <code>python lab_harness.py</code><br><em>เสร็จเมื่อ:</em> ทั้งสองกรณีได้ <code>trace_status: PASS</code> กับโมเดลจริง</li>
+<li><strong>เก็บสถานะถาวร</strong><br>ใช้ <code>SQLiteSession("ชื่อไฟล์.db")</code> ครอบด้วย <code>OpenAIResponsesCompactionSession</code> ตาม <a href="/docs/lab-state-modes">State 3 โหมด</a><br><em>เสร็จเมื่อ:</em> ปิดแล้วเปิดโปรแกรมใหม่ บทสนทนายังต่อได้</li>
+<li><strong>ยกระดับ Trace Grader</strong><br>เพิ่มการตรวจว่าทุกข้ออ้างใน <code>final_claim</code> ชี้กลับไปยัง <code>tool_end</code> ใน ledger ได้ (Claim-Evidence Map)<br><em>เสร็จเมื่อ:</em> มี test ที่คำตอบแต่งข้อมูลเองแล้ว grader ได้ FAIL</li>
+<li><strong>เพิ่ม test จากเหตุการณ์จริง</strong><br>ทุกครั้งที่เจอ trace ที่ผิด เขียนเป็น test ด้วย <code>ScriptedModel</code> (ระนาบ 7)<br><em>เสร็จเมื่อ:</em> ชุดทดสอบโตขึ้นตามปัญหาที่เจอ และรันทุกครั้งก่อนปล่อยเวอร์ชัน</li>
+<li><strong>รับรองกฎบัตร</strong><br>ทบทวน <a href="/docs/lab-rules">กฎ R และ C</a> ปรับถ้อยคำ แล้วเปลี่ยนป้ายเป็น “รับรองแล้ว”</li>
+<li><strong>ต่อ CI</strong><br>ให้ GitHub Actions รัน <code>pytest</code> ใน <code>assets/lab/</code> ทุก PR คู่กับ test ของเว็บที่มีอยู่แล้ว</li>
+</ol>
+<div class="callout"><p>ไม่ต้องทำครบทุกขั้นพร้อมกัน ขั้นที่ 1–2 อย่างเดียวก็ได้ระบบที่ทำงานกับข้อมูลจริงและมีระบบอนุมัติ 2 ชั้นแล้ว</p></div>

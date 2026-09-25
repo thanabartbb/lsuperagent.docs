@@ -48,7 +48,8 @@ export const NAV = [
       { slug: 'lab-overview', title: 'ภาพรวม AGENTS-SDK-LAB', icon: 'home' },
       { slug: 'lab-contract', title: 'ข้อตกลงสถาปัตยกรรม', icon: 'key' },
       { slug: 'lab-rules', title: 'กฎ 2 ชุด (R และ C)', icon: 'scale' },
-      { slug: 'lab-planes', title: '8 ระนาบ (ภาพรวม)', icon: 'layers' }
+      { slug: 'lab-planes', title: '8 ระนาบ (ภาพรวม)', icon: 'layers' },
+      { slug: 'lab-roadmap', title: 'เส้นทางสู่ production', icon: 'rocket' }
     ]
   },
   {

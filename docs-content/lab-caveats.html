@@ -1,11 +1,11 @@
 <h1>ข้อควรระวัง</h1>
-<p class="lead">สิ่งที่ต้องรู้ก่อนนำไปใช้จริง</p>
+<p class="lead">สิ่งที่ควรรู้ระหว่างต่อยอด รู้ไว้ก่อนจะไม่เจอปัญหาเดียวกับที่เราเจอตอนตรวจ</p>
 <ol>
 <li><strong>เวอร์ชัน:</strong> ทุกอย่างตรวจกับ <code>openai-agents==0.22.3</code> SDK เปลี่ยนเร็ว ให้ pin เวอร์ชันและรันชุดทดสอบทุกครั้งที่อัปเกรด</li>
 <li><strong><code>previous_response_id</code> ไม่ลดต้นทุนโทเคน:</strong> ลดแค่ payload ที่ส่ง เซิร์ฟเวอร์ยังประมวลผลบริบทสะสม ต้องมีเกณฑ์ compaction</li>
 <li><strong>Tool search และ PTC:</strong> ใช้ได้เฉพาะ Responses model ที่รองรับ ถ้าใช้โมเดลอื่นให้กลับไปใช้ function tool ธรรมดา</li>
 <li><strong>Output guardrail:</strong> ใช้กับ <code>conversation_id</code>/<code>previous_response_id</code> ไม่ได้</li>
 <li><strong>Compaction:</strong> <code>OpenAIResponsesCompactionSession</code> ครอบ <code>OpenAIConversationsSession</code> ไม่ได้</li>
-<li><strong>เครื่องมือจำลอง:</strong> <code>read_system_status</code> และ <code>restart_production_service</code> เป็น <code>[SIMULATED]</code> ห้ามนำไปอ้างว่าทำงานกับระบบจริง</li>
-<li><strong>กฎ 10 ข้อ:</strong> ทั้งชุด R และ C เป็นการสกัดขึ้นใหม่ ต้องให้เจ้าของระบบรับรองก่อน</li>
+<li><strong>จุดเชื่อมต่อระบบจริง:</strong> <code>read_system_status</code> และ <code>restart_production_service</code> ยังเป็นตัวแทน (<code>[SIMULATED]</code>) ให้แทนที่ด้วยการเรียกระบบของคุณตาม <a href="/docs/lab-roadmap">เส้นทางสู่ production</a> ขั้นที่ 1</li>
+<li><strong>กฎ 10 ข้อ:</strong> ชุด R และ C เป็นร่างแรก ปรับแล้วรับรองเป็นกฎบัตรของคุณ</li>
 </ol>

@@ -2,8 +2,8 @@
 
 AI Framework: **LSUPERAGENT Public Workspace Operating Instructions**
 
-Last updated: **2026-09-25T09:05:45+07:00 Asia/Bangkok**
-Last update task: **Make /home the default post-login destination across email and OAuth.**
+Last updated: **2026-09-25T09:15:53+07:00 Asia/Bangkok**
+Last update task: **Add a public /loading intro page while preserving the authenticated /home entry.**
 
 This file is the first file every AI agent must read before modifying this repository. It defines the repo memory boundary, write protocol, data contract discipline, and negative constraints.
 
@@ -47,7 +47,7 @@ forbidden_without_approval:
   - unrelated markdown template overwrite
 ```
 
-Public route policy: `/` opens `/login` without a valid signed session and `/home` with one; successful login defaults to `/home`, while explicit links to `/chat` still work. `/home`, `/chat`, `/tools`, `/api/chat`, and `/api/image` require that session. Public auth pages `/login`, `/signup`, and `/forgot-password` expose email/password and the existing Google/GitHub OAuth routes. Email auth uses the Firebase Identity Toolkit integration; GitHub login uses `read:user user:email` only and does not grant repository write access. `chat.html` uses `/api/auth/session` and `/api/chat`. Sessions are six-hour signed cookies; historical session storage is not installed. No guest path is allowed.
+Public route policy: `/loading` is a public informational page linked from the brand on `/login` and `/home`; its primary action uses `/` to select the existing login or home route. `/` opens `/login` without a valid signed session and `/home` with one; successful login defaults to `/home`, while explicit links to `/chat` still work. `/home`, `/chat`, `/tools`, `/api/chat`, and `/api/image` require that session. Public auth pages `/login`, `/signup`, and `/forgot-password` expose email/password and the existing Google/GitHub OAuth routes. Email auth uses the Firebase Identity Toolkit integration; GitHub login uses `read:user user:email` only and does not grant repository write access. `chat.html` uses `/api/auth/session` and `/api/chat`. Sessions are six-hour signed cookies; historical session storage is not installed. No guest path is allowed.
 
 ## Feature Goal Template
 

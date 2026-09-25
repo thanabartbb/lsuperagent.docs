@@ -189,6 +189,16 @@ test('authenticated entry and OAuth login default to home while direct chat stay
   assert.equal(chat.status, 200);
 });
 
+test('public intro page is readable without login and keeps workspace guarded', async () => {
+  const response = await worker.fetch(new Request('https://agents-sdk.space/loading'), {
+    ASSETS: { fetch: async () => new Response('<!doctype html><title>LSUPERAGENT</title>', { headers: { 'content-type': 'text/html' } }) },
+  });
+  assert.equal(response.status, 200);
+  const home = await worker.fetch(new Request('https://agents-sdk.space/home'), {});
+  assert.equal(home.status, 302);
+  assert.equal(new URL(home.headers.get('location'), 'https://agents-sdk.space').pathname, '/login');
+});
+
 test('AI APIs reject requests without a signed user session', async () => {
   const response = await worker.fetch(new Request('https://agents-sdk.space/api/chat', { method: 'POST' }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
   assert.equal(response.status, 401);

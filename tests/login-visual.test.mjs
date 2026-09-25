@@ -48,6 +48,18 @@ test('authenticated home is guarded by the worker and links to chat', async () =
   assert.match(home, /\/api\/auth\/session/);
 });
 
+test('brand names on login and home open the public intro page with usable actions', async () => {
+  const login = await read('login.html');
+  const home = await read('home.html');
+  const intro = await read('loading.html');
+  assert.match(login, /<h1 class="brand"><a href="\/loading"/);
+  assert.match(home, /class="brand-link" href="\/loading"/);
+  assert.match(intro, /href="\/">เริ่มใช้งานทันที<\/a>/);
+  assert.match(intro, /href="\/chat">เปิดแชท<\/a>/);
+  assert.match(intro, /src="\/logo\.svg"/);
+  assert.doesNotMatch(intro, /href="\/(?:news|community)(?:\?|\")/);
+});
+
 test('firebase auth client uses platform email login and reset endpoints', async () => {
   const source = await read('firebase-auth.js');
   assert.match(source, /\/api\/auth\/platform\/login/);

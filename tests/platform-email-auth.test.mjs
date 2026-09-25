@@ -42,5 +42,5 @@ test('signup page includes platform email registration form', async () => {
   const html = await read('signup.html');
   assert.match(html, /data-email-register/);
   assert.match(html, /name=["']password_confirm["']/);
-  assert.match(html, /\/auth\/github\?return_to=\/chat/);
+  assert.match(html, /\/auth\/github\?return_to=\/home/);
 });

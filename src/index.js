@@ -189,9 +189,9 @@ function clearAuthHeaders(extra = {}) {
 }
 
 function safeReturnTo(value) {
-  if (!value || typeof value !== 'string') return '/chat';
-  if (!value.startsWith('/') || value.startsWith('//')) return '/chat';
-  if (/\r|\n/.test(value)) return '/chat';
+  if (!value || typeof value !== 'string') return '/home';
+  if (!value.startsWith('/') || value.startsWith('//')) return '/home';
+  if (/\r|\n/.test(value)) return '/home';
   return value.slice(0, 180);
 }
 
@@ -314,7 +314,7 @@ async function handleAuthStart(provider, request, env) {
   if (!providerStatus || !providerStatus.ready) return redirectTo(`/login?auth_error=${provider}_not_configured`);
   const origin = publicOrigin(url, env);
   const redirectUri = `${origin}/auth/${provider}/callback`;
-  const returnTo = safeReturnTo(url.searchParams.get('return_to') || '/chat');
+  const returnTo = safeReturnTo(url.searchParams.get('return_to') || '/home');
   const state = await createSignedToken({ provider, return_to: returnTo, nonce: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) }, env, 'oauth_state', AUTH_STATE_TTL_SECONDS);
   const authUrl = provider === 'github' ? new URL('https://github.com/login/oauth/authorize') : new URL('https://accounts.google.com/o/oauth2/v2/auth');
   if (provider === 'github') {
@@ -376,7 +376,7 @@ async function handleAuthCallback(provider, request, env) {
   headers.append('set-cookie', clearCookie(AUTH_STATE_COOKIE));
   headers.append('set-cookie', setCookie(AUTH_COOKIE, session, AUTH_SESSION_TTL_SECONDS));
   headers.set('x-lsuperagen-auth', provider + '-callback-v1');
-  return redirectTo(safeReturnTo(payload.return_to || '/chat'), 302, headers);
+  return redirectTo(safeReturnTo(payload.return_to || '/home'), 302, headers);
 }
 
 async function handleAuthSession(request, env) {
@@ -669,10 +669,10 @@ export default {
     const pathname = url.pathname.replace(/\/+$/, '') || '/';
 
     if (pathname === '/' || pathname === '/index.html') {
-      return redirectTo(await currentSession(request, env) ? '/chat' : '/login', 302);
+      return redirectTo(await currentSession(request, env) ? '/home' : '/login', 302);
     }
     const legacyPublic = new Set(['/examples','/examples.html','/getting-started','/getting-started.html','/api','/api.html','/guides','/guides.html','/changelog','/changelog.html','/workspace','/workspace.html','/provider-connect','/provider-connect.html','/secret-handoff','/secret-handoff.html','/endpoints','/endpoints.html','/system-registry','/system-registry.html']);
-    if (legacyPublic.has(pathname)) return redirectTo(await currentSession(request, env) ? '/chat' : '/login', 302);
+    if (legacyPublic.has(pathname)) return redirectTo(await currentSession(request, env) ? '/home' : '/login', 302);
     if (pathname === '/admin' || pathname === '/admin.html') return redirectTo('/dev', 302, { 'x-lsuperagen-admin-gate': 'redirect-to-dev-v1' });
     if (ALIASES[pathname]) return redirectTo(new URL(ALIASES[pathname], url).toString(), 301);
 
@@ -709,7 +709,7 @@ export default {
     if (workspacePaths.has(pathname) && !await currentSession(request, env)) {
       return redirectTo(`/login?return_to=${encodeURIComponent(workspacePaths.get(pathname))}`, 302);
     }
-    if ((pathname === '/login' || pathname === '/login.html') && await currentSession(request, env)) return redirectTo('/chat', 302);
+    if ((pathname === '/login' || pathname === '/login.html') && await currentSession(request, env)) return redirectTo('/home', 302);
 
     const response = await fetchAsset(request, env, pathname);
     if (!(response.headers.get('content-type') || '').includes('text/html')) return response;

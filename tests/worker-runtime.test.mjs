@@ -168,6 +168,27 @@ test('workspace requires a valid user session', async () => {
   assert.equal(location.searchParams.get('return_to'), '/chat');
 });
 
+test('authenticated entry and OAuth login default to home while direct chat stays available', async () => {
+  const cookie = await sessionCookie();
+  const env = { AUTH_SESSION_SECRET: SESSION_SECRET, GITHUB_CLIENT_ID: 'test-client', GITHUB_CLIENT_SECRET: 'test-secret' };
+  for (const path of ['/', '/login']) {
+    const response = await worker.fetch(new Request(`https://agents-sdk.space${path}`, { headers: { cookie } }), env);
+    assert.equal(response.status, 302);
+    assert.equal(response.headers.get('location'), '/home');
+  }
+  const oauth = await worker.fetch(new Request('https://agents-sdk.space/auth/github'), env);
+  assert.equal(oauth.status, 302);
+  const state = new URL(oauth.headers.get('location')).searchParams.get('state');
+  assert.ok(state);
+  const encodedPayload = state.split('.')[0].replace(/-/g, '+').replace(/_/g, '/');
+  assert.equal(JSON.parse(atob(encodedPayload)).return_to, '/home');
+
+  const chat = await worker.fetch(new Request('https://agents-sdk.space/chat', { headers: { cookie } }), {
+    ...env, ASSETS: { fetch: async () => new Response('<!doctype html><title>Chat</title>', { headers: { 'content-type': 'text/html' } }) },
+  });
+  assert.equal(chat.status, 200);
+});
+
 test('AI APIs reject requests without a signed user session', async () => {
   const response = await worker.fetch(new Request('https://agents-sdk.space/api/chat', { method: 'POST' }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
   assert.equal(response.status, 401);

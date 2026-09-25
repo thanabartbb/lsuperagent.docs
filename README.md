@@ -2,8 +2,8 @@
 
 AI Framework: **LSUPERAGENT public AI workspace**
 
-Last updated: **2026-09-25T07:02:38+07:00 Asia/Bangkok**
-Last update task: **Expose existing email registration/login/reset and GitHub OAuth, and add an authenticated home page.**
+Last updated: **2026-09-25T09:05:45+07:00 Asia/Bangkok**
+Last update task: **Route completed email, Google, and GitHub sign-in to authenticated /home by default.**
 
 This repository powers the public LSUPERAGENT AI Workspace. The login UI presents email/password, Google OAuth, and GitHub OAuth. The chat UI uses the existing signed session and server-side `/api/chat` route. Email/password depends on Firebase Web configuration and the Email/Password provider being enabled. GitHub OAuth depends on the existing Worker client ID/secret. Each login issues a six-hour signed cookie; historical session storage and server-side session revocation are not implemented.
 
@@ -34,7 +34,7 @@ Agents working in this repository must treat this stack as pinned unless the own
 
 Build a public AI Workspace so authenticated users can safely use real AI capabilities without an anonymous access path, with `/login` as the public entry surface.
 
-The public auth pages are `login.html`, `signup.html`, and `forgot-password.html`. Authenticated `/home` links to `/chat` and `/tools`. `assets/chat.js` checks `/api/auth/session` and sends conversation to `POST /api/chat`. Google and GitHub callbacks remain `/auth/google/callback` and `/auth/github/callback`. GitHub login uses `read:user user:email` only; it does not authorize repository writes or save a GitHub access token.
+The public auth pages are `login.html`, `signup.html`, and `forgot-password.html`. Successful sign-in and the authenticated root default to `/home`; direct links to `/chat` remain available. Authenticated `/home` links to `/chat` and `/tools`. `assets/chat.js` checks `/api/auth/session` and sends conversation to `POST /api/chat`. Google and GitHub callbacks remain `/auth/google/callback` and `/auth/github/callback`. GitHub login uses `read:user user:email` only; it does not authorize repository writes or save a GitHub access token.
 
 ### 3. Data Contract
 
@@ -51,7 +51,7 @@ Every feature or page must declare its data contract before implementation.
 | `evidence` | string | commit SHA, file path, route, or observed result | Must not be invented. |
 | `secret_values_exposed` | boolean | API response/docs statement | Must be `false` for any public or docs-only surface. |
 | `authenticated` | boolean | signed session cookie verification | Must be `true` before `/chat`, `/tools`, `/api/chat`, or `/api/image` are available. |
-| `return_to` | relative path | login query/state | Must remain an internal, safe path and defaults to `/chat`. |
+| `return_to` | relative path | login query/state | Must remain an internal, safe path and defaults to `/home`; explicit `/chat` is preserved. |
 
 Mock fixtures are allowed only when named as fixtures. Placeholder content must not be presented as live functionality.
 

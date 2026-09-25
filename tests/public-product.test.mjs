@@ -69,7 +69,7 @@ test('login is the sole public entry and starts Google OAuth without guest bypas
   const source = await read('src/index.js');
   assert.match(source, /pathname\s*===\s*['"]\/['"][\s\S]{0,360}\/login/);
   const login = visibleHtml(await read('login.html'));
-  assert.match(login, /href="\/auth\/google\?return_to=\/chat"/);
+  assert.match(login, /href="\/auth\/google\?return_to=\/home"/);
   assert.equal(/Guest|ทดลองแชท/i.test(login), false, 'login must not offer an unauthenticated bypass');
 });
 

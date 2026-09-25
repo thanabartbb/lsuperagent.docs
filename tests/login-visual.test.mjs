@@ -24,8 +24,8 @@ test('login offers email, Google, GitHub, reset and signup without guest access'
 
   assert.match(text, /LSUPERAGENT/);
   assert.match(text, /เข้าสู่ระบบด้วย Google/);
-  assert.match(html, /href=["']\/auth\/google\?return_to=\/chat["']/i);
-  assert.match(html, /href=["']\/auth\/github\?return_to=\/chat["']/i);
+  assert.match(html, /href=["']\/auth\/google\?return_to=\/home["']/i);
+  assert.match(html, /href=["']\/auth\/github\?return_to=\/home["']/i);
   assert.match(html, /data-email-login/);
   assert.match(html, /href=["']\/forgot-password["']/);
   assert.match(html, /href=["']\/signup["']/);

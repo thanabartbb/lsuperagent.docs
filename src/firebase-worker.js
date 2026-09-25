@@ -22,8 +22,8 @@ function json(data, status = 200, headers = {}) {
 }
 
 function safeReturnTo(value) {
-  if (!value || typeof value !== 'string') return '/chat';
-  if (!value.startsWith('/') || value.startsWith('//') || /[\r\n]/.test(value)) return '/chat';
+  if (!value || typeof value !== 'string') return '/home';
+  if (!value.startsWith('/') || value.startsWith('//') || /[\r\n]/.test(value)) return '/home';
   return value.slice(0, 180);
 }
 
@@ -109,7 +109,7 @@ async function handleFirebaseSession(request, env) {
   if (!idToken) return json({ ok: false, error: 'firebase_id_token_missing' }, 400);
 
   try {
-    return await sessionResponseFromIdToken(idToken, env, '/chat');
+    return await sessionResponseFromIdToken(idToken, env, '/home');
   } catch (error) {
     return json({
       ok: false,
@@ -155,7 +155,7 @@ async function handlePlatformEmailRegister(request, env) {
   const body = await readJsonBody(request);
   const email = body?.email;
   const password = body?.password;
-  const returnTo = safeReturnTo(body?.return_to || '/chat');
+  const returnTo = safeReturnTo(body?.return_to || '/home');
   try {
     const result = await platformEmailSignUp(env, email, password);
     const idToken = result?.idToken;

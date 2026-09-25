@@ -1,8 +1,8 @@
 const RETURN_TO_KEY = 'lsuperagen.firebase.return_to';
 
 function safeReturnTo(value) {
-  if (!value || typeof value !== 'string') return '/chat';
-  if (!value.startsWith('/') || value.startsWith('//') || /[\r\n]/.test(value)) return '/chat';
+  if (!value || typeof value !== 'string') return '/home';
+  if (!value.startsWith('/') || value.startsWith('//') || /[\r\n]/.test(value)) return '/home';
   return value.slice(0, 180);
 }
 
@@ -217,7 +217,7 @@ async function main() {
     link.href = target.pathname + target.search;
   }
   for (const link of document.querySelectorAll('a[href="/signup"], a[href="/login"]')) {
-    if (queryReturnTo !== '/chat') link.href += '?return_to=' + encodeURIComponent(queryReturnTo);
+    if (queryReturnTo !== '/home') link.href += '?return_to=' + encodeURIComponent(queryReturnTo);
   }
   const loginForm = document.querySelector('[data-email-login]');
   const registerForm = document.querySelector('[data-email-register]');

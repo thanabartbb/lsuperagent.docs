@@ -1,0 +1,26 @@
+<h1>AGENTS-SDK-LAB</h1>
+<p class="lead">สถาปัตยกรรมอ้างอิง (reference architecture) สำหรับระบบ multi-agent ที่อิงหลักฐานและเช่าสิทธิ์เครื่องมือแบบชั่วคราว สร้างบน OpenAI Agents SDK (Python) + Responses API + MCP หมวดนี้รวมสองฉบับร่างเข้าด้วยกัน แก้จุดที่ขัดกันด้วยการตรวจกับโค้ดจริง และแตกเป็นหน้าเล็ก ๆ ให้เรียนทีละเรื่อง</p>
+<div class="callout warn"><p><strong>สถานะ:</strong> สถาปัตยกรรมอ้างอิงและโค้ดเพื่อการเรียนรู้ ไม่ใช่ระบบ production สำเร็จรูป เครื่องมือในตัวอย่างเป็น <code>[SIMULATED]</code> คืนข้อความตายตัวและไม่เปลี่ยนระบบจริง</p></div>
+<h2>ปัญหาที่ต้องการแก้</h2>
+<table><thead><tr><th>ปัญหา</th><th>คำอธิบาย</th><th>ผลกระทบ</th></tr></thead><tbody>
+<tr><td><strong>Context Explosion</strong></td><td>ใส่สคีมาเครื่องมือจำนวนมากลงพรอมต์ทุกรอบ</td><td>ต้นทุนโทเคนสูง โมเดลเลือกเครื่องมือผิด</td></tr>
+<tr><td><strong>Side-effect Indeterminism</strong></td><td>ผลกระทบต่อระบบภายนอกคาดเดาและควบคุมไม่ได้</td><td>ความเสี่ยงด้านความปลอดภัย สถานะเปลี่ยนโดยไม่ตั้งใจ</td></tr>
+<tr><td><strong>Traceability Deficit</strong></td><td>สืบย้อนไม่ได้ว่าข้อสรุปมาจากหลักฐานใด</td><td>ตรวจความถูกต้องไม่ได้ ขาดความน่าเชื่อถือ</td></tr>
+</tbody></table>
+<h2>ปรัชญา 4 มิติ</h2>
+<ol>
+<li><strong>Capability-minimal</strong> — ให้สิทธิ์เครื่องมือเท่าที่ภารกิจย่อยต้องใช้</li>
+<li><strong>Evidence-carrying</strong> — ผลลัพธ์ผูกกับหลักฐานที่ตรวจย้อนได้</li>
+<li><strong>Approval-aware</strong> — การกระทำที่มีผลข้างเคียงต้องผ่านเส้นทางอนุมัติ</li>
+<li><strong>Eval-driven</strong> — ปรับปรุงระบบผ่านการประเมินเชิงปริมาณ ไม่ใช่ความรู้สึก</li>
+</ol>
+<h2>ต่างจาก Global God-Agent อย่างไร</h2>
+<p>เฟรมเวิร์กทั่วไปมักมีเอเจนต์ตัวเดียวถือเครื่องมือและสถานะทั้งหมดตลอดอายุการทำงาน AGENTS-SDK-LAB ปฏิเสธแบบนั้น: เครื่องมือถูก <em>เช่า</em> ตามระดับความเสี่ยงของแต่ละขั้น และสถานะมีเจ้าของรายเดียว</p>
+<h2>เส้นทางการเรียน</h2>
+<div class="cards">
+<a class="card" href="/docs/lab-contract"><strong>1. ข้อตกลงสถาปัตยกรรม →</strong><span>4 ข้อที่ห้ามประนีประนอม</span></a>
+<a class="card" href="/docs/lab-planes"><strong>2. 8 ระนาบ →</strong><span>ภาพรวมแล้วลงลึกทีละระนาบ</span></a>
+<a class="card" href="/docs/lab-quickstart"><strong>3. ลงมือทำ →</strong><span>ติดตั้งและรันแบบออฟไลน์ได้ทันที</span></a>
+<a class="card" href="/docs/lab-conflicts"><strong>4. ข้อขัดแย้งและข้อยุติ →</strong><span>จุดที่สองฉบับร่างไม่ตรงกัน และคำตอบที่ตรวจแล้ว</span></a>
+</div>
+<div class="callout"><p>ทุกข้อที่ติดป้าย <strong>ยืนยันแล้ว</strong> ตรวจกับแพ็กเกจจริง <code>openai-agents==0.22.3</code> (Python) และเอกสารทางการ ณ 25 ก.ย. 2026 ดูวิธีตรวจที่ <a href="/docs/lab-conflicts">ข้อขัดแย้งและข้อยุติ</a></p></div>

@@ -92,3 +92,9 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 }
 .nav-exit{padding-top:18px;border-top:1px solid var(--line)}
 .nav-exit ul{border-left:0;margin-left:0;padding-left:0}
+.tag{display:inline-block;font:700 .7rem var(--mono);border-radius:999px;padding:2px 8px;margin:0 2px;vertical-align:middle;border:1px solid var(--line2);white-space:nowrap}
+.tag.ok{color:#34d399;border-color:rgba(52,211,153,.45)}
+.tag.warn{color:#f59e0b;border-color:rgba(245,158,11,.45)}
+.tag.no{color:#ff7d86;border-color:rgba(255,125,134,.45)}
+.content :not(pre)>code{overflow-wrap:anywhere}
+.content{overflow-wrap:break-word}

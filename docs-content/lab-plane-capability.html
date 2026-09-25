@@ -1,0 +1,36 @@
+<h1>ระนาบ 4 · Capability Fabric</h1>
+<p class="lead">จัดสรร ค้นหา และปล่อยเช่าเครื่องมือเฉพาะกิจ แทนการยัดทุกเครื่องมือลงพรอมต์</p>
+<h2>กลไกใน SDK</h2>
+<table><thead><tr><th>กลไก</th><th>ใช้ทำอะไร</th><th>สถานะ</th></tr></thead><tbody>
+<tr><td><code>ToolSearchTool()</code></td><td>ให้โมเดลโหลดเครื่องมือที่ถูกเลื่อนไว้ (deferred), namespace หรือ hosted MCP ตามต้องการ</td><td><span class="tag ok">ยืนยันแล้ว</span></td></tr>
+<tr><td><code>@function_tool(defer_loading=True)</code></td><td>ไม่ส่งสคีมาเครื่องมือจนกว่าจะถูกค้นเจอ</td><td><span class="tag ok">ยืนยันแล้ว</span></td></tr>
+<tr><td><code>tool_namespace(name=, description=, tools=[...])</code></td><td>จัดกลุ่มเครื่องมือให้ค้นเป็นกลุ่ม</td><td><span class="tag ok">ยืนยันแล้ว</span></td></tr>
+<tr><td><code>ProgrammaticToolCallingTool()</code></td><td>ให้โมเดลเขียน JavaScript ประสานหลายเครื่องมือ ได้ <strong>ไม่เกิน 1 ตัว</strong>ต่อเอเจนต์</td><td><span class="tag ok">ยืนยันแล้ว</span></td></tr>
+<tr><td><code>HostedMCPTool</code> / <code>agents.mcp.MCPServerStdio</code></td><td>MCP แบบโฮสต์ (เซิร์ฟเวอร์ OpenAI เรียก) / แบบโลคัล (แอปคุณเรียก)</td><td><span class="tag ok">ยืนยันแล้ว</span></td></tr>
+</tbody></table>
+<div class="callout"><p>Tool search และ Programmatic Tool Calling ใช้ได้เฉพาะ <strong>OpenAI Responses models</strong> ที่รองรับ (ตามเอกสารทางการ) ส่วนตัวเลข “gpt-5.4 ขึ้นไป” มาจากแหล่งภายนอก (LiteLLM) <span class="tag no">ยังไม่ยืนยัน</span> ให้เช็กหน้ารุ่นโมเดลก่อนใช้ <code>ToolSearchTool()</code> ที่ไม่มีอะไรให้ค้น (ไม่มี deferred tool/namespace) จะถูกปฏิเสธ</p></div>
+<h2>Lease Broker ตามระดับ Action Ladder</h2>
+<pre data-title="lab_harness.py · Plane 4" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 4: capability leasing
+@function_tool
+def read_system_status(service_name: str) -&gt; str:
+    &quot;&quot;&quot;Read a service&#x27;s status (OBSERVE). SIMULATED: returns fixed text.&quot;&quot;&quot;
+    return f&quot;[SIMULATED] service &#x27;{service_name}&#x27; is healthy&quot;
+
+
+@function_tool(needs_approval=True)
+def restart_production_service(service_name: str) -&gt; str:
+    &quot;&quot;&quot;Restart a production service (EXECUTE). SIMULATED: nothing is restarted.&quot;&quot;&quot;
+    return f&quot;[SIMULATED] restart of &#x27;{service_name}&#x27; accepted&quot;
+
+
+class CapabilityLeaseBroker:
+    &quot;&quot;&quot;Lease only the tools allowed at the plan&#x27;s Action Ladder level (R1, R9).&quot;&quot;&quot;
+
+    @staticmethod
+    def get_tools_for_level(level: ActionLadderLevel) -&gt; list[Any]:
+        if level in (ActionLadderLevel.OBSERVE, ActionLadderLevel.DRAFT):
+            return [read_system_status]
+        if level in (ActionLadderLevel.PREPARE, ActionLadderLevel.EXECUTE):
+            return [restart_production_service]
+        return []  # unknown level: lease nothing (fail-closed, R7)</code></pre>
+<p>ระดับที่ไม่รู้จักได้รายการว่าง (fail-closed) และถ้าโมเดลพยายามเรียกเครื่องมือที่ไม่ได้เช่า SDK จะโยน <code>ModelBehaviorError</code> — ทดสอบแล้วใน <a href="/docs/lab-testing">ทดสอบแบบออฟไลน์</a></p>

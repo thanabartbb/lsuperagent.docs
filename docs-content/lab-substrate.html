@@ -1,0 +1,15 @@
+<h1>OpenAI Substrate Mapping</h1>
+<p class="lead">แนวคิดของ AGENTS-SDK-LAB แต่ละข้อ ใช้อะไรใน OpenAI Agents SDK 0.22.3</p>
+<table><thead><tr><th>แนวคิด</th><th>ใน SDK</th><th>สถานะ</th></tr></thead><tbody>
+<tr><td>Root Orchestrator</td><td><code>Agent</code>, <code>Runner.run</code></td><td><span class="tag ok">ยืนยันแล้ว</span></td></tr>
+<tr><td>State ownership</td><td><code>session=</code>, <code>conversation_id=</code>, <code>previous_response_id=</code> ของ <code>Runner.run</code></td><td><span class="tag ok">ยืนยันแล้ว</span></td></tr>
+<tr><td>Capability leasing</td><td><code>ToolSearchTool</code>, <code>defer_loading</code>, <code>tool_namespace</code>, <code>ProgrammaticToolCallingTool</code></td><td><span class="tag ok">ยืนยันแล้ว</span></td></tr>
+<tr><td>Tool ecosystem</td><td><code>HostedMCPTool</code>, <code>agents.mcp.MCPServerStdio/Sse/StreamableHttp</code></td><td><span class="tag ok">ยืนยันแล้ว</span></td></tr>
+<tr><td>Sandbox</td><td><code>ShellTool</code>, <code>ApplyPatchTool</code>, <code>agents.sandbox.SandboxAgent</code></td><td><span class="tag ok">ยืนยันแล้ว</span></td></tr>
+<tr><td>Context management</td><td><code>OpenAIResponsesCompactionSession</code> (เรียก <code>responses.compact</code>)</td><td><span class="tag ok">ยืนยันแล้ว</span></td></tr>
+<tr><td>Evidence &amp; observability</td><td><code>RunHooks</code>, <code>AgentHooks</code>, tracing ในตัว</td><td><span class="tag ok">ยืนยันแล้ว</span></td></tr>
+<tr><td>Approvals / HITL</td><td><code>needs_approval=True</code>, <code>result.interruptions</code>, <code>RunState.approve/reject</code></td><td><span class="tag ok">ยืนยันแล้ว</span></td></tr>
+<tr><td>Guardrails</td><td><code>@input_guardrail</code>, <code>@output_guardrail</code></td><td><span class="tag ok">ยืนยันแล้ว</span></td></tr>
+<tr><td>Creative Friction Council</td><td>ประกอบเองจาก agents + handoffs / <code>as_tool</code></td><td><span class="tag warn">ยืนยันบางส่วน</span> เป็น pattern ไม่มีคลาสสำเร็จรูป</td></tr>
+<tr><td>OpenTelemetry export</td><td>tracing processor ของ SDK</td><td><span class="tag no">ยังไม่ยืนยัน</span> ยังไม่ได้ทดสอบการส่งออก</td></tr>
+</tbody></table>

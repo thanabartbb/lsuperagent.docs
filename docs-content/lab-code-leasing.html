@@ -1,0 +1,42 @@
+<h1>Capability Leasing</h1>
+<p class="lead">เช่าเครื่องมือตามระดับ Action Ladder เท่านั้น</p>
+<pre data-title="lab_harness.py · leasing" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 4: capability leasing
+@function_tool
+def read_system_status(service_name: str) -&gt; str:
+    &quot;&quot;&quot;Read a service&#x27;s status (OBSERVE). SIMULATED: returns fixed text.&quot;&quot;&quot;
+    return f&quot;[SIMULATED] service &#x27;{service_name}&#x27; is healthy&quot;
+
+
+@function_tool(needs_approval=True)
+def restart_production_service(service_name: str) -&gt; str:
+    &quot;&quot;&quot;Restart a production service (EXECUTE). SIMULATED: nothing is restarted.&quot;&quot;&quot;
+    return f&quot;[SIMULATED] restart of &#x27;{service_name}&#x27; accepted&quot;
+
+
+class CapabilityLeaseBroker:
+    &quot;&quot;&quot;Lease only the tools allowed at the plan&#x27;s Action Ladder level (R1, R9).&quot;&quot;&quot;
+
+    @staticmethod
+    def get_tools_for_level(level: ActionLadderLevel) -&gt; list[Any]:
+        if level in (ActionLadderLevel.OBSERVE, ActionLadderLevel.DRAFT):
+            return [read_system_status]
+        if level in (ActionLadderLevel.PREPARE, ActionLadderLevel.EXECUTE):
+            return [restart_production_service]
+        return []  # unknown level: lease nothing (fail-closed, R7)</code></pre>
+<h2>สิ่งที่ควรสังเกต</h2>
+<ul>
+<li><code>restart_production_service</code> ตั้ง <code>needs_approval=True</code> — SDK จะหยุดรอการอนุมัติก่อนรันเครื่องมือทุกครั้ง</li>
+<li>ระดับที่ไม่รู้จัก → <code>[]</code> (fail-closed)</li>
+<li>เครื่องมือทั้งสองเป็น <code>[SIMULATED]</code> เปลี่ยนเป็นการเรียกระบบจริงเมื่อพร้อม</li>
+</ul>
+<h2>ต่อยอดด้วย tool search</h2>
+<pre data-title="tool search (แนวทาง)"><code>from agents import Agent, ToolSearchTool, function_tool, tool_namespace
+
+@function_tool(defer_loading=True)
+def read_logs(service_name: str) -&gt; str:
+    &quot;&quot;&quot;Read recent logs for a service.&quot;&quot;&quot;
+    ...
+
+ops_tools = tool_namespace(name=&quot;ops&quot;, description=&quot;Operations read tools&quot;, tools=[read_logs])
+agent = Agent(name=&quot;Ops&quot;, tools=[*ops_tools, ToolSearchTool()])  # Responses models only</code></pre>
+<p>ตัวอย่างนี้ใช้ API ที่มีจริงใน 0.22.3 แต่ต้องใช้กับ Responses model ที่รองรับ tool search จึงไม่ได้รวมในชุดทดสอบออฟไลน์</p>

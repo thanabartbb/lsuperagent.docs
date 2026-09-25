@@ -78,3 +78,18 @@ test('docs shell loads its script and styles from the same origin only', async (
   assert.match(shell, /href="\/assets\/docs\.css"/);
   assert.equal(/https?:\/\/(?!github\.com)/.test(shell.replace(/<a [^>]*>/g, '')), false, 'external resource in docs shell');
 });
+
+test('lab code blocks are cut verbatim from the tested files in assets/lab', async () => {
+  const decode = (s) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&');
+  const files = (await readdir(new URL('../docs-content/', import.meta.url))).filter((f) => f.startsWith('lab-'));
+  let checked = 0;
+  for (const file of files) {
+    const html = await read(`docs-content/${file}`);
+    for (const [, source, body] of html.matchAll(/<pre data-title="[^"]*" data-source="([^"]+)"><code>([\s\S]*?)<\/code><\/pre>/g)) {
+      const original = await read(`assets/lab/${source}`);
+      assert.ok(original.includes(decode(body)), `${file}: block drifted from assets/lab/${source}`);
+      checked += 1;
+    }
+  }
+  assert.ok(checked >= 10, `expected at least 10 sourced code blocks, found ${checked}`);
+});

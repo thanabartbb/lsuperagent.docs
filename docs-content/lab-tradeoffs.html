@@ -1,0 +1,10 @@
+<h1>Trade-offs</h1>
+<p class="lead">ข้อแลกเปลี่ยนเชิงวิศวกรรมที่ต้องบริหาร</p>
+<table><thead><tr><th>ข้อแลกเปลี่ยน</th><th>ปัญหา</th><th>วิธีคุม</th></tr></thead><tbody>
+<tr><td>Latency/ต้นทุน vs Friction</td><td>สภาเต็มรูปแบบเพิ่มการเรียก LLM ราว 4 เท่า</td><td>เรียกสภาเฉพาะ HIGH / PREPARE+EXECUTE (R10)</td></tr>
+<tr><td>Stateful chaining vs ต้นทุน</td><td><code>previous_response_id</code> ไม่ลดโทเคนฝั่งเซิร์ฟเวอร์</td><td>ตั้งเกณฑ์ compaction ชัดเจน</td></tr>
+<tr><td>Behavioral drift</td><td>แก้พรอมต์แล้วพฤติกรรมเพี้ยนโดยไม่รู้ตัว</td><td>แปลงปัญหาเป็น test case + regression gate ก่อน promote (R8)</td></tr>
+<tr><td>ความซับซ้อนของ harness</td><td>แยก harness กับ sandbox ปลอดภัยขึ้นแต่ debug ยากขึ้น</td><td>ใช้ Evidence Spine + Trace Grader เป็นเครื่องมือ debug หลัก</td></tr>
+<tr><td>Approval 2 ชั้น vs ความเร็ว</td><td>ถามคนสองครั้งต่องานเสี่ยง</td><td>ใช้เฉพาะ PREPARE/EXECUTE งาน OBSERVE/DRAFT ไม่ถาม</td></tr>
+<tr><td>Output guardrail vs สถานะฝั่งเซิร์ฟเวอร์</td><td>ใช้ร่วมกันไม่ได้</td><td>ถ้าต้องตรวจหลักฐานที่ output ให้ใช้ SDK Session</td></tr>
+</tbody></table>

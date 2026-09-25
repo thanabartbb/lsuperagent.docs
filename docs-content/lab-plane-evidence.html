@@ -1,0 +1,32 @@
+<h1>ระนาบ 6 · Evidence Spine</h1>
+<p class="lead">ทุกข้ออ้างในคำตอบสุดท้ายต้องชี้กลับไปยัง Source ID, Tool Call ID, Artifact Path และ Trace Span ID ได้ (R5)</p>
+<h2>ส่วนประกอบ</h2>
+<ul>
+<li><strong>Ledger</strong> — บันทึกเหตุการณ์ด้วย <code>RunHooks</code> / <code>AgentHooks</code> <span class="tag ok">ยืนยันแล้ว</span></li>
+<li><strong>Claim-Evidence Map</strong> — จับคู่ข้ออ้างกับรายการใน ledger</li>
+<li><strong>Output Guardrail</strong> — ถ้าข้ออ้างขาดหลักฐาน ปฏิเสธการส่งมอบแล้วส่งกลับไปหาหลักฐานเพิ่ม</li>
+<li><strong>Trace Grader + Evals</strong> — ให้คะแนน trace และใช้เป็น regression gate</li>
+</ul>
+<div class="callout warn"><p>output guardrail ใช้กับ <code>conversation_id</code>/<code>previous_response_id</code> ไม่ได้ ดู <a href="/docs/lab-plane-state">ระนาบ 2</a></p></div>
+<h2>RunHooks ledger</h2>
+<pre data-title="lab_harness.py · Plane 6" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 6: evidence spine
+class EvidenceSpineHooks(RunHooks):
+    &quot;&quot;&quot;Records every lifecycle event; signatures match agents.RunHooks in 0.22.3.&quot;&quot;&quot;
+
+    def __init__(self) -&gt; None:
+        self.evidence_ledger: list[dict[str, Any]] = []
+
+    async def on_agent_start(self, context: AgentHookContext, agent: Agent) -&gt; None:
+        self.evidence_ledger.append({&quot;event&quot;: &quot;agent_start&quot;, &quot;agent&quot;: agent.name})
+
+    async def on_tool_start(self, context: RunContextWrapper, agent: Agent, tool: Any) -&gt; None:
+        self.evidence_ledger.append({&quot;event&quot;: &quot;tool_start&quot;, &quot;agent&quot;: agent.name, &quot;tool&quot;: tool.name})
+
+    async def on_tool_end(self, context: RunContextWrapper, agent: Agent, tool: Any, result: object) -&gt; None:
+        self.evidence_ledger.append(
+            {&quot;event&quot;: &quot;tool_end&quot;, &quot;agent&quot;: agent.name, &quot;tool&quot;: tool.name, &quot;output_evidence&quot;: str(result)}
+        )
+
+    async def on_agent_end(self, context: AgentHookContext, agent: Agent, output: Any) -&gt; None:
+        self.evidence_ledger.append({&quot;event&quot;: &quot;agent_end&quot;, &quot;agent&quot;: agent.name, &quot;final_claim&quot;: str(output)})</code></pre>
+<p>signature ของทุก hook ตรงกับ <code>agents.RunHooks</code> ในเวอร์ชัน 0.22.3 <span class="tag ok">ยืนยันแล้ว</span> ถ้าใช้เวอร์ชันอื่น ให้เช็กด้วย <code>inspect.signature(agents.RunHooks.on_tool_end)</code></p>

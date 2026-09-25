@@ -40,6 +40,56 @@ export const NAV = [
       { slug: 'troubleshooting', title: 'การแก้ไขปัญหา', icon: 'wrench' },
       { slug: 'changelog', title: 'Changelog', icon: 'clock' }
     ]
+  },
+  {
+    title: 'Agents SDK Lab',
+    icon: 'flask',
+    pages: [
+      { slug: 'lab-overview', title: 'ภาพรวม AGENTS-SDK-LAB', icon: 'home' },
+      { slug: 'lab-contract', title: 'ข้อตกลงสถาปัตยกรรม', icon: 'key' },
+      { slug: 'lab-rules', title: 'กฎ 2 ชุด (R และ C)', icon: 'scale' },
+      { slug: 'lab-planes', title: '8 ระนาบ (ภาพรวม)', icon: 'layers' }
+    ]
+  },
+  {
+    title: 'Lab · 8 ระนาบ',
+    icon: 'layers',
+    pages: [
+      { slug: 'lab-plane-channel', title: '1 · Human / Channel', icon: 'user' },
+      { slug: 'lab-plane-state', title: '2 · State Ownership', icon: 'tree' },
+      { slug: 'lab-plane-friction', title: '3 · Creative Friction', icon: 'brain' },
+      { slug: 'lab-plane-capability', title: '4 · Capability Fabric', icon: 'key' },
+      { slug: 'lab-plane-execution', title: '5 · Execution', icon: 'zap' },
+      { slug: 'lab-plane-evidence', title: '6 · Evidence Spine', icon: 'eye' },
+      { slug: 'lab-plane-shadow', title: '7 · Shadow Reflection', icon: 'refresh' },
+      { slug: 'lab-plane-trust', title: '8 · Trust / Security', icon: 'shield' }
+    ]
+  },
+  {
+    title: 'Lab · ลงมือทำ',
+    icon: 'rocket',
+    pages: [
+      { slug: 'lab-quickstart', title: 'ติดตั้งและรัน', icon: 'download' },
+      { slug: 'lab-code-contracts', title: 'Contracts (Pydantic)', icon: 'pencil' },
+      { slug: 'lab-code-hooks', title: 'Evidence hooks', icon: 'eye' },
+      { slug: 'lab-code-leasing', title: 'Capability leasing', icon: 'key' },
+      { slug: 'lab-code-approval', title: 'Approval 2 ชั้น', icon: 'shield' },
+      { slug: 'lab-code-harness', title: 'Harness และ trace grader', icon: 'settings' },
+      { slug: 'lab-action-ladder', title: 'Action Ladder', icon: 'layers' },
+      { slug: 'lab-state-modes', title: 'State 3 โหมด + compaction', icon: 'tree' },
+      { slug: 'lab-testing', title: 'ทดสอบแบบออฟไลน์', icon: 'flask' }
+    ]
+  },
+  {
+    title: 'Lab · อ้างอิง',
+    icon: 'book',
+    pages: [
+      { slug: 'lab-substrate', title: 'OpenAI substrate mapping', icon: 'server' },
+      { slug: 'lab-conflicts', title: 'ข้อขัดแย้งและข้อยุติ', icon: 'scale' },
+      { slug: 'lab-caveats', title: 'ข้อควรระวัง', icon: 'alert' },
+      { slug: 'lab-tradeoffs', title: 'Trade-offs', icon: 'wrench' },
+      { slug: 'lab-references', title: 'แหล่งอ้างอิงและเครดิต', icon: 'book' }
+    ]
   }
 ];
 
@@ -64,7 +114,11 @@ export const ICONS = {
   tree: '<path d="M4 4h6v5H4zM14 15h6v5h-6zM14 4h6v5h-6zM7 9v8.5h7M7 6.5h7"/>',
   pencil: '<path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>',
   wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/>',
-  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  flask: '<path d="M9 3h6M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3M7 15h10"/>',
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',
+  scale: '<path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z"/>'
 };
 
 export function icon(name) {

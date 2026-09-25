@@ -2,10 +2,12 @@
 
 AI Framework: **LSUPERAGENT public AI workspace**
 
-Last updated: **2026-09-25T10:38:47+07:00 Asia/Bangkok**
-Last update task: **Clarify storage policy: D1 may be used for the one-owner continuity pilot.**
+Last updated: **2026-09-25T10:51:46+07:00 Asia/Bangkok**
+Last update task: **Wire the Code card to the chat Code tool and label the current limits honestly.**
 
 The proposed one-owner session continuity system is specified in [`docs/session-continuity-pilot.md`](docs/session-continuity-pilot.md). It is design-only; no database or resumable chat runtime has been created.
+
+Feature goal: Build a Code chat entry so the signed-in owner can ask for code and receive a code-oriented AI response, with no claim that the page edits GitHub files. `/tools` links to `/chat?mode=code`; `assets/chat.js` sends `mode: "code"` and `tool: "code"` to `/api/chat`. The result is text in the chat. It is not a repository editor or a verified live-model end-to-end run. The current rate guard allows 10 requests in 10 minutes per IP and tool in a Worker isolate's memory; it is neither a durable per-user quota nor a spend cap. Chat turns remain in browser page memory and disappear on reload.
 
 This repository powers the public LSUPERAGENT AI Workspace. The login UI presents email/password, Google OAuth, and GitHub OAuth. The chat UI uses the existing signed session and server-side `/api/chat` route. Email/password depends on Firebase Web configuration and the Email/Password provider being enabled. GitHub OAuth depends on the existing Worker client ID/secret. Each login issues a six-hour signed cookie; historical session storage and server-side session revocation are not implemented.
 
@@ -55,6 +57,8 @@ Every feature or page must declare its data contract before implementation.
 | `authenticated` | boolean | signed session cookie verification | Must be `true` before `/chat`, `/tools`, `/api/chat`, or `/api/image` are available. |
 | `intro_links` | static URLs | `loading.html` | Brand route `/loading`, session-aware CTA `/`, guarded `/chat`, and external news sources. |
 | `return_to` | relative path | login query/state | Must remain an internal, safe path and defaults to `/home`; explicit `/chat` is preserved. |
+| `mode` | enum `chat`, `code` | `/chat` query and `assets/chat.js` request | Code entry sends `tool: "code"` to the Worker. |
+| `quota_remaining` | number or unavailable | `/api/chat` rate headers | Shows only the current isolate's temporary rate count after a successful response. |
 
 Mock fixtures are allowed only when named as fixtures. Placeholder content must not be presented as live functionality.
 

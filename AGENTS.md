@@ -2,8 +2,8 @@
 
 AI Framework: **LSUPERAGENT Public Workspace Operating Instructions**
 
-Last updated: **2026-09-25T10:38:47+07:00 Asia/Bangkok**
-Last update task: **Clarify D1 is allowed for the requested one-owner continuity pilot, subject to a data model and tests.**
+Last updated: **2026-09-25T10:51:46+07:00 Asia/Bangkok**
+Last update task: **Connect the Code card to `/api/chat` Code mode and document its temporary rate guard.**
 
 This file is the first file every AI agent must read before modifying this repository. It defines the repo memory boundary, write protocol, data contract discipline, and negative constraints.
 
@@ -50,6 +50,8 @@ forbidden_without_approval:
 Storage policy clarified by the owner on 2026-09-25: "not yet installed" does **not** mean "prohibited." The one-owner session-continuity request authorizes choosing a small, suitable persistent store such as one D1 database. Before provisioning or wiring it, write the schema and migration, ownership rules, cost estimate, rollback path, and meaningful recovery tests. Do not ask for another generic D1 permission gate for this already authorized pilot. The current proposal in `docs/session-continuity-pilot.md` remains design-only until the resource, runtime, and end-to-end behavior are verified.
 
 Public route policy: `/loading` is a public informational page linked from the brand on `/login` and `/home`; its primary action uses `/` to select the existing login or home route. `/` opens `/login` without a valid signed session and `/home` with one; successful login defaults to `/home`, while explicit links to `/chat` still work. `/home`, `/chat`, `/tools`, `/api/chat`, and `/api/image` require that session. Public auth pages `/login`, `/signup`, and `/forgot-password` expose email/password and the existing Google/GitHub OAuth routes. Email auth uses the Firebase Identity Toolkit integration; GitHub login uses `read:user user:email` only and does not grant repository write access. `chat.html` uses `/api/auth/session` and `/api/chat`. Sessions are six-hour signed cookies; historical session storage is not installed. No guest path is allowed.
+
+Code entry contract: `/tools` Code links to `/chat?mode=code`; `assets/chat.js` sends `mode: "code"`, `tool: "code"` and recent turns to `/api/chat`. The Worker asks OpenAI for a code-oriented text response; it cannot edit repository files. `mode` is `chat` or `code` from the page query, source `assets/chat.js`, required in the request; `quota_remaining` is an optional number from response headers, source `src/index.js`, and represents only an in-memory IP/tool rate guard of 10 requests per 10 minutes per isolate. It is not a per-user or monetary budget. Chat history is not persistent. Verification of a real paid model response still requires an authenticated live test. No secret values are exposed by this page contract.
 
 ## Feature Goal Template
 

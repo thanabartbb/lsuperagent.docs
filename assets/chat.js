@@ -1,4 +1,4 @@
-// Chat UI from BASE-CLAUDE, adapted to the existing signed Google OAuth session.
+// Chat UI from BASE-CLAUDE, adapted to the existing signed session.
 (function () {
   const $ = (id) => document.getElementById(id);
   const chat = $('chat');
@@ -6,6 +6,13 @@
   const send = $('send');
   const model = $('provider');
   const quota = $('quota');
+  const mode = new URLSearchParams(location.search).get('mode') === 'code' ? 'code' : 'chat';
+  const modeLabel = $('mode-label');
+  if (modeLabel) modeLabel.textContent = mode === 'code' ? 'โหมดโค้ด' : 'แชท';
+  if (mode === 'code') {
+    $('empty').textContent = 'ส่งโจทย์หรือวางโค้ดเพื่อให้ AI ช่วยเขียน ตรวจ และอธิบาย';
+    $('hint').textContent = 'AI ตอบเป็นโค้ดในแชท ยังไม่แก้ไฟล์ใน GitHub · ประวัติแชทยังไม่บันทึกถาวร · อย่าใส่รหัสผ่านหรือ API key';
+  }
   const turns = [];
   const MAX_TURNS = 20;
 
@@ -35,7 +42,7 @@
 
   $('clear').addEventListener('click', () => {
     turns.length = 0;
-    chat.innerHTML = '<div class="empty" id="empty">เริ่มแชทใหม่ได้เลย</div>';
+    chat.innerHTML = '<div class="empty" id="empty">' + (mode === 'code' ? 'เริ่มโจทย์โค้ดใหม่ได้เลย' : 'เริ่มแชทใหม่ได้เลย') + '</div>';
   });
 
   input.addEventListener('input', () => {
@@ -70,7 +77,7 @@
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ message: text, messages: turns }),
+        body: JSON.stringify({ message: text, messages: turns, mode, ...(mode === 'code' ? { tool: 'code' } : {}) }),
       });
       const result = await response.json().catch(() => ({}));
       wait.remove();

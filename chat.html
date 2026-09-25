@@ -92,6 +92,7 @@
       max-width: 100%;
     }
     .bar .quota { color: var(--muted); font-size: 13px; margin-left: auto; }
+    .bar .mode-label { color: var(--muted); font-size: 13px; }
     .btn-ghost {
       height: 38px;
       padding: 0 14px;
@@ -182,6 +183,7 @@
 
   <div class="bar">
     <select id="provider" aria-label="Model" disabled><option>กำลังโหลดโมเดล…</option></select>
+    <span id="mode-label" class="mode-label">แชท</span>
     <span class="quota" id="quota"></span>
     <button type="button" class="btn-ghost" id="clear">New chat</button>
   </div>
@@ -191,10 +193,10 @@
   </div>
 
   <form class="composer" id="composer">
-    <textarea id="input" rows="1" maxlength="4000" placeholder="พิมพ์ข้อความ…" disabled></textarea>
+    <textarea id="input" rows="1" maxlength="30000" placeholder="พิมพ์ข้อความ…" disabled></textarea>
     <button type="submit" class="send" id="send" disabled>ส่ง</button>
   </form>
-  <p class="hint">ประวัติแชทอยู่ในหน้านี้เท่านั้น ปิดหน้าแล้วหาย · อย่าใส่รหัสผ่านหรือ API key</p>
+  <p class="hint" id="hint">ประวัติแชทอยู่ในหน้านี้เท่านั้น ปิดหน้าแล้วหาย · อย่าใส่รหัสผ่านหรือ API key</p>
 
   <script src="/assets/chat.js"></script>
 </body>

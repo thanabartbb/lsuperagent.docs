@@ -135,7 +135,12 @@ test('image route uses current GPT Image models and falls back after model_not_f
 });
 
 test('large code input accepts substantially more than the old 4k limit', async () => {
-  await withFetchStub(async () => jsonResponse({ output_text: 'ok' }), async () => {
+  await withFetchStub(async (_url, init) => {
+    const payload = JSON.parse(init.body);
+    assert.match(payload.instructions, /Tool context: Code/);
+    assert.equal(payload.max_output_tokens, 8000);
+    return jsonResponse({ output_text: 'ok' });
+  }, async () => {
     const message = 'x'.repeat(30001);
     const response = await worker.fetch(await request('/api/chat', { message, mode: 'code', tool: 'code' }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
     assert.equal(response.status, 200);

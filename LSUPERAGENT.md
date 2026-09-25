@@ -65,6 +65,8 @@ src/firebase-worker.js
         ├─ /api/image  POST               login required → OpenAI Images API
         ├─ /docs, /docs/:page             login required → docs-shell.html (Docus-style docs: sidebar, search, TOC)
         ├─ /guide  (/sdk → /guide)        login required → lsupergen-sdk guide with live "run" checks
+        ├─ /news                          login required → news.html (live AI news tabs, assets/news.js)
+        ├─ /api/feed GET                  login required → src/feeds.js (OpenAI RSS, Claude Code releases, HN, GitHub)
         ├─ /api/sdk/keys POST             login required, same-origin → stateless signed API key (lsg_…, 30 days)
         ├─ /v1/health GET                 public status for the lsupergen-sdk API (CORS *)
         ├─ /v1/me GET, /v1/chat POST, /v1/image POST   Bearer lsg_ key → same handlers as /api/chat, /api/image
@@ -131,6 +133,7 @@ Other vars:
   GOOGLE_CLIENT_ID, GITHUB_CLIENT_ID
   OPENAI_MODEL             preferred chat model
   OWNER_GOOGLE_EMAIL, OWNER_GOOGLE_SUB, ADMIN_ALLOWED_LOGINS   owner/dev gate
+  GITHUB_TOKEN             optional secret, read-only public token; raises GitHub rate limit for the /news Community tab
   PUBLIC_SITE_URL
 ```
 
@@ -182,6 +185,8 @@ docs-content/*.html      one file per docs page (add file + one line in docs-nav
 guide.html               lsupergen-sdk guide (login required); assets/guide.js runs live checks
 vendor/lsupergen-sdk/    vendored npm build served same-origin (CSP allows 'self' scripts only)
 tools.html               tools catalog (login required)
+news.html                live AI news (login required); assets/news.js renders /api/feed
+src/feeds.js             news sources + parsers (ported from thanabartbb/main web/src/feeds.js)
 dev.html / dev-code-drop.html   owner-only dev surfaces
 admin.html               legacy, redirected to /dev
 tests/*.test.mjs         node --test suite

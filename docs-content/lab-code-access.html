@@ -1,0 +1,40 @@
+<h1>Scoped Tool Access</h1>
+<p class="lead">ให้ agent ใช้ได้เฉพาะเครื่องมือตามระดับ Action Ladder ของแผน</p>
+<pre data-title="lab_harness.py" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 4: scoped tool access
+@function_tool
+def read_system_status(service_name: str) -&gt; str:
+    &quot;&quot;&quot;Read a service&#x27;s status (OBSERVE). Example: call your status API here.&quot;&quot;&quot;
+    return f&quot;service &#x27;{service_name}&#x27; is healthy&quot;
+
+
+@function_tool(needs_approval=True)
+def restart_production_service(service_name: str) -&gt; str:
+    &quot;&quot;&quot;Restart a production service (EXECUTE). Example: call your deploy API here.&quot;&quot;&quot;
+    return f&quot;restart of &#x27;{service_name}&#x27; requested&quot;
+
+
+class ToolAccessBroker:
+    &quot;&quot;&quot;Grant only the tools allowed at the plan&#x27;s Action Ladder level (R1, R9).&quot;&quot;&quot;
+
+    @staticmethod
+    def get_tools_for_level(level: ActionLadderLevel) -&gt; list[Any]:
+        if level in (ActionLadderLevel.OBSERVE, ActionLadderLevel.DRAFT):
+            return [read_system_status]
+        if level in (ActionLadderLevel.PREPARE, ActionLadderLevel.EXECUTE):
+            return [restart_production_service]
+        return []  # unknown level: grant nothing (fail-closed, R7)</code></pre>
+<ul>
+<li><code>restart_production_service</code> ตั้ง <code>needs_approval=True</code> SDK จะหยุดรออนุมัติก่อนเรียกทุกครั้ง</li>
+<li>ระดับที่ไม่รู้จักได้รายการว่าง</li>
+<li>เครื่องมือทั้งสองเป็นตัวอย่าง แทนที่ตัวฟังก์ชันด้วยการเรียกระบบของคุณ</li>
+</ul>
+<h2>เพิ่ม tool search</h2>
+<pre data-title="tool search"><code>from agents import Agent, ToolSearchTool, function_tool, tool_namespace
+
+@function_tool(defer_loading=True)
+def read_logs(service_name: str) -&gt; str:
+    &quot;&quot;&quot;Read recent logs for a service.&quot;&quot;&quot;
+    ...
+
+ops_tools = tool_namespace(name=&quot;ops&quot;, description=&quot;Operations read tools&quot;, tools=[read_logs])
+agent = Agent(name=&quot;Ops&quot;, tools=[*ops_tools, ToolSearchTool()])</code></pre>

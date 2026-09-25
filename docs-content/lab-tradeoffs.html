@@ -1,10 +1,9 @@
 <h1>Trade-offs</h1>
-<p class="lead">ข้อแลกเปลี่ยนเชิงวิศวกรรมที่ต้องบริหาร</p>
-<table><thead><tr><th>ข้อแลกเปลี่ยน</th><th>ปัญหา</th><th>วิธีคุม</th></tr></thead><tbody>
-<tr><td>Latency/ต้นทุน vs Friction</td><td>สภาเต็มรูปแบบเพิ่มการเรียก LLM ราว 4 เท่า</td><td>เรียกสภาเฉพาะ HIGH / PREPARE+EXECUTE (R10)</td></tr>
-<tr><td>Stateful chaining vs ต้นทุน</td><td><code>previous_response_id</code> ไม่ลดโทเคนฝั่งเซิร์ฟเวอร์</td><td>ตั้งเกณฑ์ compaction ชัดเจน</td></tr>
-<tr><td>Behavioral drift</td><td>แก้พรอมต์แล้วพฤติกรรมเพี้ยนโดยไม่รู้ตัว</td><td>แปลงปัญหาเป็น test case + regression gate ก่อน promote (R8)</td></tr>
-<tr><td>ความซับซ้อนของ harness</td><td>แยก harness กับ sandbox ปลอดภัยขึ้นแต่ debug ยากขึ้น</td><td>ใช้ Evidence Spine + Trace Grader เป็นเครื่องมือ debug หลัก</td></tr>
-<tr><td>Approval 2 ชั้น vs ความเร็ว</td><td>ถามคนสองครั้งต่องานเสี่ยง</td><td>ใช้เฉพาะ PREPARE/EXECUTE งาน OBSERVE/DRAFT ไม่ถาม</td></tr>
-<tr><td>Output guardrail vs สถานะฝั่งเซิร์ฟเวอร์</td><td>ใช้ร่วมกันไม่ได้</td><td>ถ้าต้องตรวจหลักฐานที่ output ให้ใช้ SDK Session</td></tr>
+<table><thead><tr><th>ข้อแลกเปลี่ยน</th><th>ผล</th><th>วิธีคุม</th></tr></thead><tbody>
+<tr><td>ความเร็ว vs Creative Friction</td><td>การประชุมเต็มรูปแบบเรียกโมเดลเพิ่มราว 4 เท่า</td><td>ประชุมเฉพาะงานความเสี่ยงสูง</td></tr>
+<tr><td>Response chaining vs ต้นทุน</td><td>โทเคนฝั่งเซิร์ฟเวอร์ไม่ลด</td><td>ตั้งเกณฑ์ compaction</td></tr>
+<tr><td>Behavioral drift</td><td>แก้พรอมต์แล้วพฤติกรรมเปลี่ยนโดยไม่รู้ตัว</td><td>test case + regression gate ก่อนปล่อย</td></tr>
+<tr><td>ความซับซ้อนของ harness</td><td>แยก sandbox แล้ว debug ยากขึ้น</td><td>ใช้ Evidence Spine และ Trace Grader</td></tr>
+<tr><td>อนุมัติ 2 ชั้น vs ความเร็ว</td><td>ถามคนสองครั้งต่องานเสี่ยง</td><td>ใช้เฉพาะ PREPARE/EXECUTE</td></tr>
+<tr><td>Output guardrail vs สถานะฝั่งเซิร์ฟเวอร์</td><td>ใช้ร่วมกันไม่ได้</td><td>ใช้ SDK Session</td></tr>
 </tbody></table>

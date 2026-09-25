@@ -1,23 +1,22 @@
 <h1>Harness และ Trace Grader</h1>
-<p class="lead">ประกอบทุกระนาบเข้าด้วยกันใน <code>MinimalAgentHarness.execute_slice()</code></p>
-<h2>ลำดับใน execute_slice</h2>
+<p class="lead"><code>MinimalAgentHarness.execute_slice()</code> ประกอบทุกระนาบเข้าด้วยกัน</p>
 <ol class="steps">
-<li>ล้าง ledger แล้ว <strong>acquire</strong> เจ้าของสถานะ (ระนาบ 2)</li>
-<li><strong>action_classifier</strong> สร้าง PlanContract (ระนาบ 5)</li>
-<li><strong>Plan gate</strong> ถ้าต้องอนุมัติแต่ไม่ได้รับ → ABORTED</li>
-<li>มอบสิทธิ์เครื่องมือตามระดับ (ระนาบ 4) แล้ว <code>Runner.run</code> พร้อม hooks (ระนาบ 6)</li>
-<li>ถ้ามี <code>interruptions</code> → <strong>Tool gate</strong> แล้วรันต่อจาก RunState</li>
-<li><strong>trace_grader</strong> ให้คะแนน แล้ว <strong>release</strong> เจ้าของสถานะเสมอ (finally)</li>
+<li>ล้าง ledger แล้วรับสิทธิ์เป็นเจ้าของสถานะ (ระนาบ 2)</li>
+<li><code>action_classifier</code> สร้าง PlanContract (ระนาบ 5)</li>
+<li>Plan gate: ไม่อนุมัติ → ABORTED</li>
+<li>เลือกชุดเครื่องมือตามระดับ (ระนาบ 4) แล้ว <code>Runner.run</code> พร้อม hooks (ระนาบ 6)</li>
+<li>มี <code>interruptions</code> → tool gate แล้วรันต่อจาก RunState</li>
+<li><code>trace_grader</code> ให้คะแนน แล้วคืนสิทธิ์เจ้าของสถานะเสมอ</li>
 </ol>
 <h2>Trace Grader</h2>
-<p>PASS เมื่อ tool_start เท่ากับ tool_end และมี agent_end (มีข้อสรุป) เป็นเกณฑ์ขั้นต่ำ ในระบบจริงควรเพิ่มการตรวจ Claim-Evidence Map</p>
+<p>PASS เมื่อจำนวน tool_start เท่ากับ tool_end และมี agent_end</p>
 <h2>ไฟล์เต็ม</h2>
 <pre data-title="lab_harness.py" data-source="lab_harness.py"><code>&quot;&quot;&quot;AGENTS-SDK-LAB minimal vertical slice (verified against openai-agents 0.22.3).
 
 Run offline (no API key, deterministic ScriptedModel):   python lab_harness.py --offline
 Run against OpenAI (needs OPENAI_API_KEY):                python lab_harness.py
 
-The two tools are SIMULATED: they return fixed text and change nothing.
+The two example tools return fixed text. Replace their bodies with calls to your own systems.
 &quot;&quot;&quot;
 from __future__ import annotations
 
@@ -108,21 +107,21 @@ class EvidenceSpineHooks(RunHooks):
         self.evidence_ledger.append({&quot;event&quot;: &quot;agent_end&quot;, &quot;agent&quot;: agent.name, &quot;final_claim&quot;: str(output)})
 
 
-# ---------------------------------------------------------------- Plane 4: capability leasing
+# ---------------------------------------------------------------- Plane 4: scoped tool access
 @function_tool
 def read_system_status(service_name: str) -&gt; str:
-    &quot;&quot;&quot;Read a service&#x27;s status (OBSERVE). SIMULATED: returns fixed text.&quot;&quot;&quot;
-    return f&quot;[SIMULATED] service &#x27;{service_name}&#x27; is healthy&quot;
+    &quot;&quot;&quot;Read a service&#x27;s status (OBSERVE). Example: call your status API here.&quot;&quot;&quot;
+    return f&quot;service &#x27;{service_name}&#x27; is healthy&quot;
 
 
 @function_tool(needs_approval=True)
 def restart_production_service(service_name: str) -&gt; str:
-    &quot;&quot;&quot;Restart a production service (EXECUTE). SIMULATED: nothing is restarted.&quot;&quot;&quot;
-    return f&quot;[SIMULATED] restart of &#x27;{service_name}&#x27; accepted&quot;
+    &quot;&quot;&quot;Restart a production service (EXECUTE). Example: call your deploy API here.&quot;&quot;&quot;
+    return f&quot;restart of &#x27;{service_name}&#x27; requested&quot;
 
 
-class CapabilityLeaseBroker:
-    &quot;&quot;&quot;Lease only the tools allowed at the plan&#x27;s Action Ladder level (R1, R9).&quot;&quot;&quot;
+class ToolAccessBroker:
+    &quot;&quot;&quot;Grant only the tools allowed at the plan&#x27;s Action Ladder level (R1, R9).&quot;&quot;&quot;
 
     @staticmethod
     def get_tools_for_level(level: ActionLadderLevel) -&gt; list[Any]:
@@ -130,7 +129,7 @@ class CapabilityLeaseBroker:
             return [read_system_status]
         if level in (ActionLadderLevel.PREPARE, ActionLadderLevel.EXECUTE):
             return [restart_production_service]
-        return []  # unknown level: lease nothing (fail-closed, R7)
+        return []  # unknown level: grant nothing (fail-closed, R7)
 
 
 # ---------------------------------------------------------------- Plane 5 + 6: harness
@@ -167,13 +166,13 @@ class MinimalAgentHarness:
         owner = self.state_gate.acquire(f&quot;run-{intent.goal[:12]}&quot;, &quot;SDK_SESSION&quot;)
         try:
             plan = self.action_classifier(intent)
-            # Gate 1 (plan level, R3): refuse before any tool is leased.
+            # Gate 1 (plan level, R3): refuse before any tool access is granted.
             if plan.requires_approval and not self.approve(plan):
                 return {&quot;status&quot;: &quot;ABORTED&quot;, &quot;level&quot;: plan.action_type.value, &quot;gate&quot;: &quot;plan&quot;}
             worker = Agent(
                 name=&quot;SpecialistWorker&quot;,
-                instructions=&quot;Use only the leased tools. Base the answer on tool output.&quot;,
-                tools=CapabilityLeaseBroker.get_tools_for_level(plan.action_type),
+                instructions=&quot;Use only the tools you were given. Base the answer on tool output.&quot;,
+                tools=ToolAccessBroker.get_tools_for_level(plan.action_type),
                 **({&quot;model&quot;: self.model} if self.model is not None else {}),
             )
             task = f&quot;Run {plan.target_tool} with {plan.parameters}&quot;
@@ -190,7 +189,7 @@ class MinimalAgentHarness:
 
 
 def offline_model(level: str) -&gt; Any:
-    &quot;&quot;&quot;Deterministic model script: call the leased tool once, then answer.&quot;&quot;&quot;
+    &quot;&quot;&quot;Deterministic model script: call the granted tool once, then answer.&quot;&quot;&quot;
     from agents.testing import ScriptedModel, assistant_message, function_call
 
     tool = &quot;restart_production_service&quot; if level == &quot;EXECUTE&quot; else &quot;read_system_status&quot;

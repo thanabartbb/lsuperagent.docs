@@ -1,6 +1,6 @@
 <h1>Evidence Hooks</h1>
-<p class="lead">ต่อ ledger เข้ากับวงจรชีวิตของ Runner ด้วย <code>RunHooks</code></p>
-<pre data-title="lab_harness.py · evidence spine" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 6: evidence spine
+<p class="lead">บันทึก ledger ตลอดการทำงานของ Runner ด้วย <code>RunHooks</code></p>
+<pre data-title="lab_harness.py" data-source="lab_harness.py"><code># ---------------------------------------------------------------- Plane 6: evidence spine
 class EvidenceSpineHooks(RunHooks):
     &quot;&quot;&quot;Records every lifecycle event; signatures match agents.RunHooks in 0.22.3.&quot;&quot;&quot;
 
@@ -20,6 +20,6 @@ class EvidenceSpineHooks(RunHooks):
 
     async def on_agent_end(self, context: AgentHookContext, agent: Agent, output: Any) -&gt; None:
         self.evidence_ledger.append({&quot;event&quot;: &quot;agent_end&quot;, &quot;agent&quot;: agent.name, &quot;final_claim&quot;: str(output)})</code></pre>
-<h2>ledger ที่ได้จริง (งาน OBSERVE)</h2>
-<pre data-title="ledger"><code>agent_start → tool_start(read_system_status) → tool_end(output_evidence=&#x27;[SIMULATED] ...&#x27;) → agent_end</code></pre>
-<p>hook อื่นที่มีใน 0.22.3: <code>on_llm_start</code>, <code>on_llm_end</code>, <code>on_handoff</code> ใช้บันทึก prompt/response และการส่งงานต่อระหว่างเอเจนต์ได้</p>
+<h2>ตัวอย่าง ledger (งาน OBSERVE)</h2>
+<pre data-title="ledger"><code>agent_start → tool_start(read_system_status) → tool_end(output_evidence=&quot;service &#x27;payment-gateway&#x27; is healthy&quot;) → agent_end</code></pre>
+<p>hook อื่นที่ใช้ได้: <code>on_llm_start</code>, <code>on_llm_end</code>, <code>on_handoff</code></p>

@@ -3,7 +3,7 @@
 Run offline (no API key, deterministic ScriptedModel):   python lab_harness.py --offline
 Run against OpenAI (needs OPENAI_API_KEY):                python lab_harness.py
 
-The two tools are SIMULATED: they return fixed text and change nothing.
+The two example tools return fixed text. Replace their bodies with calls to your own systems.
 """
 from __future__ import annotations
 
@@ -94,21 +94,21 @@ class EvidenceSpineHooks(RunHooks):
         self.evidence_ledger.append({"event": "agent_end", "agent": agent.name, "final_claim": str(output)})
 
 
-# ---------------------------------------------------------------- Plane 4: capability leasing
+# ---------------------------------------------------------------- Plane 4: scoped tool access
 @function_tool
 def read_system_status(service_name: str) -> str:
-    """Read a service's status (OBSERVE). SIMULATED: returns fixed text."""
-    return f"[SIMULATED] service '{service_name}' is healthy"
+    """Read a service's status (OBSERVE). Example: call your status API here."""
+    return f"service '{service_name}' is healthy"
 
 
 @function_tool(needs_approval=True)
 def restart_production_service(service_name: str) -> str:
-    """Restart a production service (EXECUTE). SIMULATED: nothing is restarted."""
-    return f"[SIMULATED] restart of '{service_name}' accepted"
+    """Restart a production service (EXECUTE). Example: call your deploy API here."""
+    return f"restart of '{service_name}' requested"
 
 
-class CapabilityLeaseBroker:
-    """Lease only the tools allowed at the plan's Action Ladder level (R1, R9)."""
+class ToolAccessBroker:
+    """Grant only the tools allowed at the plan's Action Ladder level (R1, R9)."""
 
     @staticmethod
     def get_tools_for_level(level: ActionLadderLevel) -> list[Any]:
@@ -116,7 +116,7 @@ class CapabilityLeaseBroker:
             return [read_system_status]
         if level in (ActionLadderLevel.PREPARE, ActionLadderLevel.EXECUTE):
             return [restart_production_service]
-        return []  # unknown level: lease nothing (fail-closed, R7)
+        return []  # unknown level: grant nothing (fail-closed, R7)
 
 
 # ---------------------------------------------------------------- Plane 5 + 6: harness
@@ -153,13 +153,13 @@ class MinimalAgentHarness:
         owner = self.state_gate.acquire(f"run-{intent.goal[:12]}", "SDK_SESSION")
         try:
             plan = self.action_classifier(intent)
-            # Gate 1 (plan level, R3): refuse before any tool is leased.
+            # Gate 1 (plan level, R3): refuse before any tool access is granted.
             if plan.requires_approval and not self.approve(plan):
                 return {"status": "ABORTED", "level": plan.action_type.value, "gate": "plan"}
             worker = Agent(
                 name="SpecialistWorker",
-                instructions="Use only the leased tools. Base the answer on tool output.",
-                tools=CapabilityLeaseBroker.get_tools_for_level(plan.action_type),
+                instructions="Use only the tools you were given. Base the answer on tool output.",
+                tools=ToolAccessBroker.get_tools_for_level(plan.action_type),
                 **({"model": self.model} if self.model is not None else {}),
             )
             task = f"Run {plan.target_tool} with {plan.parameters}"
@@ -176,7 +176,7 @@ class MinimalAgentHarness:
 
 
 def offline_model(level: str) -> Any:
-    """Deterministic model script: call the leased tool once, then answer."""
+    """Deterministic model script: call the granted tool once, then answer."""
     from agents.testing import ScriptedModel, assistant_message, function_call
 
     tool = "restart_production_service" if level == "EXECUTE" else "read_system_status"

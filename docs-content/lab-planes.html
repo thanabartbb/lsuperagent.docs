@@ -1,18 +1,18 @@
-<h1>8 ระนาบของสถาปัตยกรรม</h1>
-<p class="lead">ทุกระนาบสื่อสารกันผ่าน data contract ที่ชัดเจน ระนาบ 8 (Trust/Security) วิ่งขนานกับทุกระนาบ</p>
+<h1>8 ระนาบ</h1>
+<p class="lead">แต่ละระนาบรับผิดชอบคนละเรื่อง และส่งข้อมูลต่อกันผ่าน data contract ระนาบ 8 ทำงานคู่กับทุกระนาบ</p>
 <pre data-title="ภาพรวม"><code>คำขอผู้ใช้
   │
   ▼
 ① Human / Channel        Input Guardrail → Clarification Gate → Intent Envelope
   │
   ▼
-② State Ownership        State Gate → Session → Compaction Gate
+② State Ownership        State Gate → Session → Compaction
   │
   ▼
 ③ Creative Friction      Explorer ↔ Breaker ↔ Constraint Broker ↔ Evidence Skeptic → Judge → Plan Contract
-  │                      (เฉพาะงานเสี่ยงสูง — R10)
+  │                      (งานความเสี่ยงสูง)
   ▼
-④ Capability Fabric      Lease Broker → ToolSearchTool / defer_loading / MCP
+④ Scoped Tool Access     Tool Access Broker → ToolSearchTool / defer_loading / MCP
   │
   ▼
 ⑤ Execution              Action Classifier → Approval Gate → Read-only lane | Side-effect lane
@@ -23,15 +23,14 @@
   ▼
 ⑦ Shadow Reflection      (ออฟไลน์) Failure Clusterer → Shadow Agent → Eval Gate → vN+1
 
-⑧ Trust / Security  ═══  ขนานกับทุกระนาบ: Zero Trust, Least Privilege, Secret Isolation, Allowlist, Fail-Closed</code></pre>
-<h2>ตารางสรุป</h2>
-<table><thead><tr><th>#</th><th>ระนาบ</th><th>Input หลัก</th><th>Output หลัก</th></tr></thead><tbody>
-<tr><td>1</td><td><a href="/docs/lab-plane-channel">Human / Channel</a></td><td>คำขอภาษาธรรมชาติ / API payload</td><td>Intent Envelope</td></tr>
-<tr><td>2</td><td><a href="/docs/lab-plane-state">Control / State Ownership</a></td><td>Intent Envelope</td><td>บริบทพร้อมใช้ + งบโทเคน</td></tr>
+⑧ Trust / Security  ═══  ทุกระนาบ: Zero Trust, Least Privilege, Secret Isolation, Allowlist, Fail-Closed</code></pre>
+<table><thead><tr><th>#</th><th>ระนาบ</th><th>รับเข้า</th><th>ส่งออก</th></tr></thead><tbody>
+<tr><td>1</td><td><a href="/docs/lab-plane-channel">Human / Channel</a></td><td>คำขอภาษาธรรมชาติ / API</td><td>Intent Envelope</td></tr>
+<tr><td>2</td><td><a href="/docs/lab-plane-state">State Ownership</a></td><td>Intent Envelope</td><td>บริบทพร้อมใช้ + งบโทเคน</td></tr>
 <tr><td>3</td><td><a href="/docs/lab-plane-friction">Creative Friction</a></td><td>บริบทพร้อมใช้</td><td>Plan Contract</td></tr>
-<tr><td>4</td><td><a href="/docs/lab-plane-capability">Capability Fabric</a></td><td>ข้อกำหนดเครื่องมือใน Plan Contract</td><td>Leased Capability</td></tr>
-<tr><td>5</td><td><a href="/docs/lab-plane-execution">Execution / Side-Effect</a></td><td>แผนที่จัดระดับความเสี่ยงแล้ว</td><td>Artifacts + ผลลัพธ์</td></tr>
-<tr><td>6</td><td><a href="/docs/lab-plane-evidence">Evidence Spine</a></td><td>Traces &amp; spans</td><td>Claim-Evidence Map + คะแนน</td></tr>
-<tr><td>7</td><td><a href="/docs/lab-plane-shadow">Shadow Reflection</a></td><td>Trace ที่ตัดเกรดแล้ว</td><td>Change Proposal vN+1</td></tr>
-<tr><td>8</td><td><a href="/docs/lab-plane-trust">Trust / Security</a></td><td>input/output ที่ยังไม่กรอง</td><td>นโยบาย + สถานะ compliance</td></tr>
+<tr><td>4</td><td><a href="/docs/lab-plane-capability">Scoped Tool Access</a></td><td>Plan Contract</td><td>ชุดเครื่องมือที่ใช้ได้ในงานนี้</td></tr>
+<tr><td>5</td><td><a href="/docs/lab-plane-execution">Execution</a></td><td>แผนที่จัดระดับแล้ว</td><td>ผลลัพธ์ + artifacts</td></tr>
+<tr><td>6</td><td><a href="/docs/lab-plane-evidence">Evidence Spine</a></td><td>traces &amp; spans</td><td>Claim-Evidence Map + คะแนน</td></tr>
+<tr><td>7</td><td><a href="/docs/lab-plane-shadow">Shadow Reflection</a></td><td>trace ที่ให้คะแนนแล้ว</td><td>ข้อเสนอเวอร์ชัน vN+1</td></tr>
+<tr><td>8</td><td><a href="/docs/lab-plane-trust">Trust / Security</a></td><td>input/output ที่ยังไม่กรอง</td><td>ข้อมูลที่ผ่านการตรวจ</td></tr>
 </tbody></table>

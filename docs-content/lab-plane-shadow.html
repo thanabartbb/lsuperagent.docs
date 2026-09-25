@@ -1,12 +1,10 @@
 <h1>ระนาบ 7 · Shadow Reflection</h1>
-<p class="lead">ระบบปรับปรุงตัวเองได้ แต่ <strong>ไม่ใช่ใน production</strong> (R4) การเรียนรู้เกิดในสภาพแวดล้อมคู่ขนานแบบออฟไลน์</p>
-<h2>ลำดับ</h2>
+<p class="lead">ระบบเรียนรู้จากความผิดพลาดแบบออฟไลน์ แล้วปล่อยเวอร์ชันใหม่หลังผ่านการประเมิน</p>
 <ol class="steps">
-<li><strong>Failure Clusterer</strong> จัดกลุ่ม trace ที่ได้คะแนนต่ำ</li>
-<li><strong>Shadow Reflection Agent</strong> วิเคราะห์สาเหตุ เสนอ Change Proposal (พรอมต์/ทักษะ/นโยบายเครื่องมือ)</li>
-<li><strong>Offline Eval Run</strong> พิสูจน์ว่าไม่เกิด regression</li>
-<li><strong>Promotion Gate</strong> ผ่านแล้วจึงเป็น production harness vN+1</li>
-<li>เก็บ <strong>Rollback Point</strong> และประวัติเวอร์ชันเสมอ</li>
+<li><strong>Failure Clusterer</strong> จัดกลุ่ม trace ที่คะแนนต่ำ</li>
+<li><strong>Shadow Reflection Agent</strong> วิเคราะห์สาเหตุ เสนอการแก้พรอมต์ ทักษะ หรือนโยบาย</li>
+<li><strong>Offline Eval Run</strong> ยืนยันว่าไม่เกิด regression</li>
+<li><strong>Promotion Gate</strong> ผ่านแล้วเป็นเวอร์ชัน vN+1</li>
+<li>เก็บ <strong>rollback point</strong> ทุกครั้ง</li>
 </ol>
-<div class="callout"><p>ปัญหาที่พบต้องถูกแปลงเป็น automated test case ก่อน promote ห้าม promote เพราะ “ดูเหมือนจะดีขึ้น” (R8)</p></div>
-<p>ในโค้ดตัวอย่าง <code>ScriptedModel</code> ของ <code>agents.testing</code> ใช้สร้าง regression test แบบไม่ต้องเรียก API ได้ ดู <a href="/docs/lab-testing">ทดสอบแบบออฟไลน์</a></p>
+<p>ปัญหาที่พบแต่ละครั้งเขียนเป็น test ด้วย <code>ScriptedModel</code> ได้ ดู <a href="/docs/lab-testing">ทดสอบแบบออฟไลน์</a></p>

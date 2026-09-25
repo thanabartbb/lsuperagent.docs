@@ -1,9 +1,9 @@
 <h1>ระนาบ 8 · Trust / Security</h1>
-<p class="lead">แนวป้องกันเชิงลึกที่วิ่งขนานกับทุกระนาบ</p>
-<table><thead><tr><th>หลักการ</th><th>ความหมาย</th><th>ตัวอย่างในโค้ด</th></tr></thead><tbody>
-<tr><td>Zero Trust</td><td>input ทุกชนิด รวมถึง output จากเครื่องมือ ไม่น่าไว้ใจ</td><td>Pydantic schema validation ก่อนเข้าโมเดล</td></tr>
-<tr><td>Least Privilege</td><td>ให้สิทธิ์ขั้นต่ำ</td><td><code>CapabilityLeaseBroker</code></td></tr>
-<tr><td>Secret Isolation</td><td>แยกความลับออกจากโค้ดและพรอมต์</td><td>อ่าน <code>OPENAI_API_KEY</code> จาก environment เท่านั้น</td></tr>
-<tr><td>Network Allowlist</td><td>จำกัดปลายทางที่ออกได้</td><td>ตั้งที่ sandbox / infrastructure</td></tr>
-<tr><td>Fail-Closed</td><td>ผิดพลาดเมื่อไหร่ หยุดทันที</td><td>ระดับที่ไม่รู้จัก → ไม่มอบสิทธิ์เครื่องมือใดเลย; ไม่มีการอนุมัติ → <code>PermissionError</code></td></tr>
+<p class="lead">การป้องกันที่ทำงานคู่กับทุกระนาบ</p>
+<table><thead><tr><th>หลักการ</th><th>ความหมาย</th><th>ในโค้ดตัวอย่าง</th></tr></thead><tbody>
+<tr><td>Zero Trust</td><td>ไม่เชื่อ input ใด ๆ รวมถึง output ของเครื่องมือ</td><td>Pydantic validation</td></tr>
+<tr><td>Least Privilege</td><td>ให้สิทธิ์ขั้นต่ำ</td><td><code>ToolAccessBroker</code></td></tr>
+<tr><td>Secret Isolation</td><td>แยกความลับออกจากโค้ดและพรอมต์</td><td>อ่าน <code>OPENAI_API_KEY</code> จาก environment</td></tr>
+<tr><td>Network Allowlist</td><td>จำกัดปลายทางที่เชื่อมต่อได้</td><td>ตั้งที่ sandbox / infrastructure</td></tr>
+<tr><td>Fail-Closed</td><td>ผิดพลาดแล้วหยุดทันที</td><td>ระดับที่ไม่รู้จักได้เครื่องมือว่าง; ไม่มีการอนุมัติ → <code>PermissionError</code></td></tr>
 </tbody></table>

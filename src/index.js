@@ -779,6 +779,13 @@ export default {
     }
     if ((pathname === '/login' || pathname === '/login.html') && await currentSession(request, env)) return redirectTo('/home', 302);
 
+    if (pathname === '/docs-shell' || pathname === '/docs-shell.html' || pathname.startsWith('/docs-content/')) {
+      if (!await currentSession(request, env)) {
+        return pathname.startsWith('/docs-content/')
+          ? json({ ok: false, error: 'authentication_required', message: 'กรุณาเข้าสู่ระบบก่อนอ่านเอกสาร' }, 401)
+          : redirectTo('/login?return_to=%2Fdocs', 302);
+      }
+    }
     const docsPage = pathname === '/docs' ? 'introduction' : (/^\/docs\/([a-z0-9-]+)$/.exec(pathname) || [])[1];
     if (docsPage) {
       if (!await currentSession(request, env)) return redirectTo(`/login?return_to=${encodeURIComponent('/docs/' + docsPage)}`, 302);

@@ -30,5 +30,5 @@ export default {
   fetch: (...args) => fetch(...args), // จำเป็นใน 0.1.0
 });</code></pre>
 <div class="callout warn">
-  <p><strong>lsupergen-sdk 0.1.0:</strong> ในเบราว์เซอร์, Workers และ Deno ต้องส่ง <code>fetch: (...args) =&gt; fetch(...args)</code> ไม่งั้นทุกคำขอจะเป็น <code>ConnectionError</code> (Illegal invocation) แก้แล้วในเวอร์ชัน 0.1.1 (เมื่อ publish ขึ้น npm)</p>
+  <p><strong>lsupergen-sdk 0.1.0:</strong> ในเบราว์เซอร์, Workers และ Deno ต้องส่ง <code>fetch: (...args) =&gt; fetch(...args)</code> ไม่งั้นทุกคำขอจะเป็น <code>ConnectionError</code> (Illegal invocation) เวอร์ชัน 0.1.1 ที่แก้บั๊กนี้ยังไม่ publish ขึ้น npm ระหว่างนี้ให้ใช้วิธีข้างบน</p>
 </div>

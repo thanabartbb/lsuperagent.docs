@@ -8,7 +8,15 @@
 <p>ไม่ retry เมื่อได้ <code>400</code>, <code>401</code>, <code>404</code> ฯลฯ เพราะส่งซ้ำก็ได้ผลเดิม</p>
 <h2>ระยะรอ</h2>
 <p>ถ้าเซิร์ฟเวอร์ส่ง <code>Retry-After</code> (0–60 วินาที) SDK จะรอตามนั้น ไม่งั้นใช้ exponential backoff: 0.5s, 1s, 2s … สูงสุด 8s พร้อม jitter</p>
-<div class="callout"><p>API ของเว็บนี้จำกัด 10 คำขอ / 10 นาที ต่อเครื่องมือ เมื่อเกินจะได้ <code>429</code> พร้อม <code>Retry-After</code></p></div>
+<div class="callout warn"><p>API ของเว็บนี้จำกัด 10 คำขอ / 10 นาที ต่อเครื่องมือ เมื่อเกินจะได้ <code>429</code> พร้อม <code>Retry-After</code> ที่อาจยาวถึง 600 วินาที ซึ่งเกิน 60 วินาทีที่ SDK ยอมรอ SDK จึง retry เร็ว ๆ แล้วได้ <code>429</code> ซ้ำ ให้จับ <code>APIError</code> แล้วรอตาม header เอง</p></div>
+<pre data-title="rate-limit.mjs"><code>try {
+  await client.post('/chat', { body: { message: 'hi' }, maxRetries: 0 });
+} catch (err) {
+  if (err instanceof APIError &amp;&amp; err.status === 429) {
+    const waitSeconds = Number(err.headers.get('retry-after') ?? 60);
+    console.log(`รออีก ${waitSeconds} วินาทีก่อนส่งใหม่`);
+  }
+}</code></pre>
 <h2>ปรับค่า</h2>
 <pre data-title="retries.mjs"><code>// ทั้ง client
 const client = new Lsupergen({ baseURL: '{{BASE}}', maxRetries: 4, timeout: 30_000 });

@@ -297,7 +297,7 @@ curl -sS {{BASE}}/chat \
       <tbody>
         <tr><td><code>400 / 413</code></td><td>ข้อมูลไม่ถูกต้อง หรือยาวเกินกำหนด (<code>validation_error</code>)</td></tr>
         <tr><td><code>401</code></td><td>ไม่มี key, key ผิด หรือหมดอายุ (<code>invalid_api_key</code>)</td></tr>
-        <tr><td><code>429</code></td><td>เกินโควตา 10 คำขอ / 10 นาที ต่อเครื่องมือ SDK จะ retry ตาม <code>Retry-After</code> ให้เอง</td></tr>
+        <tr><td><code>429</code></td><td>เกินโควตา 10 คำขอ / 10 นาที ต่อเครื่องมือ <code>Retry-After</code> อาจยาวถึง 600 วินาที ซึ่ง SDK ไม่รอให้ (รอเฉพาะ ≤ 60 วินาที) ต้องรอเองก่อนส่งใหม่</td></tr>
         <tr><td><code>502 / 503</code></td><td>บริการ AI ขัดข้อง หรือยังไม่ได้ตั้งค่า (<code>service_unavailable</code>)</td></tr>
       </tbody>
     </table></div>

@@ -20,7 +20,14 @@ function renderSidebar(current) {
     <section class="nav-group">
       <h2>${icon(group.icon)}${group.title}</h2>
       <ul>${group.pages.map((page) => `<li><a href="/docs/${page.slug}" data-slug="${page.slug}"${page.slug === current ? ' aria-current="page"' : ''}>${icon(page.icon)}${page.title}</a></li>`).join('')}</ul>
-    </section>`).join('');
+    </section>`).join('') + `
+    <section class="nav-group nav-exit" aria-label="ออกจากเอกสาร">
+      <ul>
+        <li><a href="/home">${icon('home')}กลับหน้าแรก</a></li>
+        <li><a href="/guide">${icon('zap')}Playground</a></li>
+        <li><a href="/auth/logout">${icon('user')}ออกจากระบบ</a></li>
+      </ul>
+    </section>`;
 }
 
 function setMenu(open) {
@@ -32,6 +39,10 @@ function setMenu(open) {
 async function fetchPage(slug) {
   if (cache.has(slug)) return cache.get(slug);
   const request = fetch(`/docs-content/${slug}`, { cache: 'no-cache' }).then((response) => {
+    if (response.status === 401) {
+      location.assign(`/login?return_to=${encodeURIComponent(location.pathname)}`);
+      throw new Error('authentication_required');
+    }
     if (!response.ok) throw new Error(String(response.status));
     return response.text();
   });
@@ -86,7 +97,10 @@ function renderPager(slug) {
   content.append(nav);
 }
 
+let navigation = 0;
+
 async function show(slug, { push = false, hash = '' } = {}) {
+  const current = ++navigation;
   const page = PAGES.find((p) => p.slug === slug);
   if (push) history.pushState({}, '', `/docs/${slug}${hash}`);
   renderSidebar(slug);
@@ -97,10 +111,14 @@ async function show(slug, { push = false, hash = '' } = {}) {
     toc.innerHTML = '';
     return;
   }
+  let html = null;
   try {
-    const html = await fetchPage(slug);
+    html = await fetchPage(slug);
+  } catch (_) {}
+  if (current !== navigation) return; // a newer navigation started while this page was loading
+  if (html !== null) {
     content.innerHTML = `<div class="crumb">${page.group}</div>${html}`;
-  } catch (_) {
+  } else {
     content.innerHTML = '<h1>โหลดเอกสารไม่สำเร็จ</h1><p class="lead">กรุณาลองโหลดหน้าใหม่อีกครั้ง</p>';
   }
   document.title = `${page.title} · LSUPERAGENT Docs`;
@@ -134,8 +152,10 @@ menuToggle.addEventListener('click', () => setMenu(!document.body.classList.cont
 const searchEl = $('#search');
 const searchInput = $('#search-input');
 const results = $('#search-results');
+const background = [document.querySelector('.topbar'), document.querySelector('.layout')];
 let index = null;
 let selected = 0;
+let opener = null;
 
 async function buildIndex() {
   if (index) return index;
@@ -175,6 +195,9 @@ async function runSearch() {
 }
 
 function openSearch() {
+  if (!searchEl.hidden) return;
+  opener = document.activeElement;
+  background.forEach((el) => { el.inert = true; });
   searchEl.hidden = false;
   searchInput.value = '';
   searchInput.focus();
@@ -182,7 +205,20 @@ function openSearch() {
 }
 
 function closeSearch() {
+  if (searchEl.hidden) return;
   searchEl.hidden = true;
+  background.forEach((el) => { el.inert = false; });
+  if (opener && document.contains(opener)) opener.focus();
+  opener = null;
+}
+
+// Keep Tab inside the dialog (the background is also inert).
+function trapFocus(event) {
+  const focusable = [searchInput, ...results.querySelectorAll('a')];
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
 }
 
 function moveSelection(step) {
@@ -199,7 +235,8 @@ searchEl.addEventListener('click', (event) => { if (event.target === searchEl) c
 document.addEventListener('keydown', (event) => {
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); openSearch(); return; }
   if (searchEl.hidden) { if (event.key === 'Escape') setMenu(false); return; }
-  if (event.key === 'Escape') closeSearch();
+  if (event.key === 'Tab') trapFocus(event);
+  else if (event.key === 'Escape') closeSearch();
   else if (event.key === 'ArrowDown') { event.preventDefault(); moveSelection(1); }
   else if (event.key === 'ArrowUp') { event.preventDefault(); moveSelection(-1); }
   else if (event.key === 'Enter') { event.preventDefault(); results.querySelectorAll('a')[selected]?.click(); }

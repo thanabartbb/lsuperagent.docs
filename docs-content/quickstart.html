@@ -25,6 +25,9 @@ try {
   else throw err;
 }</code></pre></li>
   <li><strong>รัน</strong>
-<pre data-title="terminal"><code>node --env-file=.env index.mjs</code></pre></li>
+<pre data-title="Node.js 20.6 ขึ้นไป"><code>node --env-file=.env index.mjs</code></pre>
+<pre data-title="Node.js 18 (ยังไม่มี --env-file)"><code>export LSUPERGEN_API_KEY=lsg_your_key_here
+export LSUPERGEN_BASE_URL={{BASE}}
+node index.mjs</code></pre></li>
 </ol>
 <div class="callout"><p>ได้ <code>401 invalid_api_key</code>? ดู <a href="/docs/troubleshooting">การแก้ไขปัญหา</a></p></div>

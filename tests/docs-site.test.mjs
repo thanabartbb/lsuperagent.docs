@@ -46,6 +46,20 @@ test('docs are login-gated and /docs opens the introduction', async () => {
   assert.equal(root.headers.get('location'), '/docs/introduction');
 });
 
+test('docs payload routes are gated too, not only the visible /docs URLs', async () => {
+  const env = { AUTH_SESSION_SECRET: SESSION_SECRET, ASSETS: { fetch: async () => new Response('<h1>secret-ish</h1>', { headers: { 'content-type': 'text/html' } }) } };
+  const content = await worker.fetch(new Request(`${ORIGIN}/docs-content/introduction`), env);
+  assert.equal(content.status, 401);
+  assert.equal((await content.json()).error, 'authentication_required');
+  for (const path of ['/docs-shell', '/docs-shell.html']) {
+    const shell = await worker.fetch(new Request(`${ORIGIN}${path}`), env);
+    assert.equal(shell.status, 302, path);
+    assert.equal(shell.headers.get('location'), '/login?return_to=%2Fdocs');
+  }
+  const signedIn = await worker.fetch(new Request(`${ORIGIN}/docs-content/introduction`, { headers: { cookie: await sessionCookie() } }), env);
+  assert.equal(signedIn.status, 200);
+});
+
 test('signed-in /docs/:page serves the shared docs shell', async () => {
   const requested = [];
   const env = {

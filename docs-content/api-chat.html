@@ -5,7 +5,7 @@
   <thead><tr><th>ฟิลด์</th><th>ชนิด</th><th>คำอธิบาย</th></tr></thead>
   <tbody>
     <tr><td><code>message</code></td><td>string</td><td>ข้อความเดียว (ยาวได้ถึง 120,000 ตัวอักษร)</td></tr>
-    <tr><td><code>messages</code></td><td>array</td><td>บทสนทนา 1–20 turn สลับ <code>user</code>/<code>assistant</code> เริ่มและจบด้วย <code>user</code> (แต่ละ turn ≤ 12,000 ตัวอักษร)</td></tr>
+    <tr><td><code>messages</code></td><td>array</td><td>บทสนทนา 1–20 turn สลับ <code>user</code>/<code>assistant</code> เริ่มและจบด้วย <code>user</code> (แต่ละ turn ≤ 12,000 ตัวอักษร และรวมทุก turn ≤ 120,000 ตัวอักษร)</td></tr>
     <tr><td><code>tool</code></td><td>string</td><td><code>writer</code>, <code>research</code> (ค้นเว็บ), <code>url</code> (อ่านลิงก์), <code>code</code></td></tr>
     <tr><td><code>mode</code></td><td>string</td><td>ป้ายกำกับโหมด (ไม่บังคับ)</td></tr>
   </tbody>
@@ -34,6 +34,7 @@ for (const s of reply.sources) console.log(s.title, s.url);</code></pre>
 <table><tbody>
   <tr><td><code>400</code> / <code>413</code></td><td><code>validation_error</code> — ข้อความว่าง ยาวเกิน หรือ <code>messages</code>/<code>tool</code> ไม่ถูกต้อง</td></tr>
   <tr><td><code>401</code></td><td><code>invalid_api_key</code></td></tr>
-  <tr><td><code>429</code></td><td><code>rate_limited</code> — 10 คำขอ / 10 นาที ต่อ IP และเครื่องมือ นับในหน่วยความจำของ Worker แต่ละ isolate (ไม่ใช่โควตาต่อ API key หรือโควตารวม คนที่ใช้ IP เดียวกันจะนับรวมกัน)</td></tr>
+  <tr><td><code>429</code> (<code>status: "rate_limited"</code>)</td><td>ขีดจำกัดของเว็บนี้ มี header <code>Retry-After</code> — 10 คำขอ / 10 นาที ต่อ IP และเครื่องมือ นับในหน่วยความจำของ Worker แต่ละ isolate (ไม่ใช่โควตาต่อ API key หรือโควตารวม คนที่ใช้ IP เดียวกันจะนับรวมกัน)</td></tr>
+  <tr><td><code>429</code> (<code>status: "service_error"</code>)</td><td>ผู้ให้บริการ AI ต้นทางใช้งานหนาแน่น <strong>ไม่มี</strong> <code>Retry-After</code> ให้รอสักครู่แล้วลองใหม่ แยกกรณีด้วย <code>err.body.status</code></td></tr>
   <tr><td><code>502</code> / <code>503</code></td><td><code>service_error</code> / <code>service_unavailable</code></td></tr>
 </tbody></table>

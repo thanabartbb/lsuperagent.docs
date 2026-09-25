@@ -1,11 +1,12 @@
 <h1>การจัดการข้อผิดพลาด</h1>
-<p class="lead">ทุก error ของ SDK สืบทอดจาก <code>LsupergenError</code></p>
+<p class="lead">error ที่ SDK สร้างเองสืบทอดจาก <code>LsupergenError</code> ยกเว้นการยกเลิกด้วย <code>AbortController</code> ของคุณ ซึ่ง SDK โยน <code>AbortError</code> ของ runtime ออกมาตรง ๆ</p>
 <table>
   <thead><tr><th>คลาส</th><th>เกิดเมื่อ</th><th>ข้อมูล</th></tr></thead>
   <tbody>
     <tr><td><code>APIError</code></td><td>เซิร์ฟเวอร์ตอบ non-2xx</td><td><code>status</code>, <code>body</code>, <code>headers</code></td></tr>
     <tr><td><code>TimeoutError</code></td><td>เกิน <code>timeout</code></td><td><code>message</code></td></tr>
     <tr><td><code>ConnectionError</code></td><td>เครือข่ายล้มเหลว</td><td><code>cause</code> คือ error ต้นทาง</td></tr>
+    <tr><td><code>AbortError</code> (native, <strong>ไม่ใช่</strong> <code>LsupergenError</code>)</td><td>คุณยกเลิกด้วย <code>signal</code> ระหว่างที่คำขอกำลังส่ง</td><td>ตรวจด้วย <code>err.name === 'AbortError'</code></td></tr>
     <tr><td><code>LsupergenError</code></td><td>ตั้งค่าผิด เช่น ไม่มี apiKey</td><td><code>message</code></td></tr>
   </tbody>
 </table>

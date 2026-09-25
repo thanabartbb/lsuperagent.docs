@@ -131,6 +131,7 @@ test('v1 API answers CORS preflight and rejects wrong methods and unknown paths'
   const preflight = await worker.fetch(new Request(`${ORIGIN}/v1/chat`, { method: 'OPTIONS' }), env);
   assert.equal(preflight.status, 204);
   assert.match(preflight.headers.get('access-control-allow-headers'), /authorization/);
+  assert.match(preflight.headers.get('access-control-expose-headers'), /retry-after/);
   const { api_key } = await createKey(env);
   await assert.rejects(sdkClient(api_key, env).post('/me'), (err) => err instanceof APIError && err.status === 405);
   await assert.rejects(sdkClient(api_key, env).get('/nope'), (err) => err instanceof APIError && err.status === 404);

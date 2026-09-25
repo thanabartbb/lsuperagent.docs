@@ -622,6 +622,7 @@ const SDK_CORS_HEADERS = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET, POST, OPTIONS',
   'access-control-allow-headers': 'authorization, content-type, accept',
+  'access-control-expose-headers': 'retry-after, x-lsuperagen-rate-limit, x-lsuperagen-rate-remaining, x-lsuperagen-rate-reset',
   'access-control-max-age': '600'
 };
 

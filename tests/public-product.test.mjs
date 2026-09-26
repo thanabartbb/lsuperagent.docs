@@ -34,11 +34,24 @@ test('public chat uses the supplied playground with a signed-session API client'
   assert.match(client, /\/auth\/logout/);
 });
 
-test('public product uses the locked black white blue token contract', async () => {
-  const css = await read('app.css');
-  assert.match(css, /--bg:\s*#000(?:000)?\b/i);
-  assert.match(css, /--text:\s*#fff(?:fff)?\b/i);
-  assert.match(css, /--accent:\s*#0fa3d9\b/i);
+test('standalone pages use the reference palette across the site', async () => {
+  const { readdir } = await import('node:fs/promises');
+  const theme = await read('assets/theme.css');
+  assert.match(theme, /--bg: #090a12 !important/);
+  assert.match(theme, /--accent: #e9a077 !important/);
+  for (const name of await readdir(new URL('..', import.meta.url))) {
+    if (!name.endsWith('.html')) continue;
+    assert.match(await read(name), /\/assets\/theme\.css\?v=1/, `${name} has no shared palette`);
+  }
+  assert.match(await read('dev/control-plane/index.html'), /\/assets\/theme\.css\?v=1/);
+});
+
+test('published npmjs.sdk-space is identified separately from the API client', async () => {
+  const landing = await read('loading.html');
+  assert.match(landing, /npmjs\.sdk-space/);
+  assert.match(landing, /Published on npm as 1\.0\.1/);
+  assert.match(landing, /exports npmjsSdkSpace\(\)/);
+  assert.match(landing, /lsupergen-sdk/);
 });
 
 test('worker enables real web research and URL reading with returned sources', async () => {

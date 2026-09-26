@@ -5,16 +5,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root{
---carbon-950:#060606;--carbon-900:#0a0a0b;--carbon-850:#0d0e10;--carbon-800:#121316;--carbon-750:#16181d;--carbon-700:#1d1f24;
---graphite-600:#24272d;--graphite-500:#2c3037;--line-800:#1c1e22;--line-700:#26292f;--line-600:#33373f;
+--carbon-950:#090a12;--carbon-900:#0d0e18;--carbon-850:#10111c;--carbon-800:#151521;--carbon-750:#191925;--carbon-700:#201c2b;
+--graphite-600:#292534;--graphite-500:#383141;--line-800:#302c3b;--line-700:#474050;--line-600:#5b5162;
 --steel-300:#c8ccd2;--steel-400:#a2a7b0;--steel-500:#7c828c;--steel-600:#5a5f68;
 /* semantic */
 --canvas:var(--carbon-950);--surface:var(--carbon-850);--surface-elevated:var(--carbon-800);--surface-inset:var(--carbon-900);
---surface-active:rgba(99,179,255,.06);
+--surface-active:rgba(233,160,119,.06);
 --fg-primary:#f5f7f9;--fg-secondary:var(--steel-400);--fg-muted:var(--steel-500);
 --border-subtle:var(--line-800);--border-default:var(--line-700);--border-strong:var(--line-600);
---accent:#63b3ff;--accent-strong:#8ec6ff;--accent-muted:rgba(99,179,255,.14);
---focus:#63b3ff;--error:#ff6b6b;--success:#57d39a;
+--accent:#e9a077;--accent-strong:#f4bc91;--accent-muted:rgba(233,160,119,.14);
+--focus:#e9a077;--error:#ff6b6b;--success:#57d39a;
 --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;--space-20:80px;
 --radius-sm:6px;--radius-md:10px;--radius-lg:14px;--radius-pill:999px;
 --font-display:"Inter","Noto Sans Thai",system-ui,sans-serif;--font-body:"Inter","Noto Sans Thai",system-ui,sans-serif;--font-mono:"IBM Plex Mono",ui-monospace,monospace;--font-thai:"Noto Sans Thai","Inter",system-ui,sans-serif;
@@ -32,8 +32,8 @@ h1,h2,h3,h4{margin:0}
 :focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:6px}
 .skip{position:absolute;left:-9999px;top:8px;background:#fff;color:#000;padding:8px 14px;border-radius:8px;z-index:999}
 .skip:focus{left:8px}
-.blueprint-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(140,150,165,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(140,150,165,.08) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 30%,transparent 100%)}
-body.dense .blueprint-bg{background-size:80px 80px;background-image:linear-gradient(rgba(140,150,165,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(140,150,165,.045) 1px,transparent 1px)}
+.blueprint-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(154,123,160,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(154,123,160,.08) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 30%,transparent 100%)}
+body.dense .blueprint-bg{background-size:80px 80px;background-image:linear-gradient(rgba(154,123,160,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(154,123,160,.045) 1px,transparent 1px)}
 .wrap{position:relative;z-index:1;max-width:var(--content-max);margin:0 auto;padding-inline:var(--gutter)}
 .mono{font-family:var(--font-mono)}
 /* header */
@@ -57,7 +57,7 @@ body.dense .blueprint-bg{background-size:80px 80px;background-image:linear-gradi
 /* buttons */
 .btn{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 22px;border-radius:var(--radius-pill);font-weight:600;font-size:.98rem;border:1px solid transparent;transition:transform var(--dur-fast) var(--ease),background var(--dur-base),border-color var(--dur-base),box-shadow var(--dur-base)}
 .btn:active{transform:translateY(1px)}
-.btn-primary{background:#fff;color:#0a0a0b}
+.btn-primary{background:#fff;color:#0d0e18}
 .btn-primary:hover{background:#e9ebee}
 .btn-primary:focus-visible{box-shadow:0 0 0 3px var(--accent-muted)}
 .btn-secondary{background:transparent;color:var(--fg-primary);border-color:var(--border-strong)}
@@ -180,7 +180,7 @@ td .yes{color:var(--accent-strong)}td .no{color:var(--fg-muted)}
 .form-msg.show{display:flex}
 .form-msg.info{color:var(--accent-strong);border-color:var(--accent-muted);background:var(--accent-muted)}
 .form-msg.err{color:var(--error);border-color:rgba(255,107,107,.3);background:rgba(255,107,107,.08)}
-.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.25);border-top-color:#0a0a0b;border-radius:50%;animation:spin .7s linear infinite}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.25);border-top-color:#0d0e18;border-radius:50%;animation:spin .7s linear infinite}
 .signup-line{text-align:center;margin-top:var(--space-8);color:var(--fg-secondary);font-size:.9rem}
 @keyframes spin{to{transform:rotate(360deg)}}
 /* footer */
@@ -242,7 +242,7 @@ td .yes{color:var(--accent-strong)}td .no{color:var(--fg-muted)}
 /* code / frame */
 .frame-box{background:var(--surface-inset);border:1px solid var(--border-default);border-left:2px solid var(--accent-muted);border-radius:10px;overflow:auto;margin:var(--space-4) 0}
 .frame-box pre{margin:0;padding:16px 18px;font-family:"IBM Plex Mono",monospace;font-size:.82rem;line-height:1.7;color:#dfe3e8;white-space:pre}
-.kw{color:#8ec6ff}.sv{color:#a9d5a0}.cm{color:#5a5f68}.hx{color:#f0a050}.ok{color:#57d39a}.er{color:#ff6b6b}
+.kw{color:#f4bc91}.sv{color:#a9d5a0}.cm{color:#5a5f68}.hx{color:#f0a050}.ok{color:#57d39a}.er{color:#ff6b6b}
 
 /* packet builder */
 .pb-grid{display:grid;grid-template-columns:1fr;gap:var(--space-4)}
@@ -251,10 +251,10 @@ td .yes{color:var(--accent-strong)}td .no{color:var(--fg-muted)}
 .pb-field label{font-size:.8rem;color:var(--fg-secondary);font-weight:500}
 .pb-select,.pb-input{height:42px;padding:0 12px;background:var(--surface-inset);border:1px solid var(--border-default);border-radius:8px;color:var(--fg-primary);font-family:"IBM Plex Mono",monospace;font-size:.88rem;appearance:none;-webkit-appearance:none;outline:none;transition:border-color 150ms,box-shadow 150ms;width:100%}
 .pb-select:focus,.pb-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-muted)}
-.pb-select option{background:#121316}
+.pb-select option{background:#151521}
 .crc-display{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surface-inset);border:1px solid var(--border-default);border-radius:8px;font-family:"IBM Plex Mono",monospace;font-size:.88rem}
 .crc-val{color:var(--accent-strong);font-weight:600}
-.pb-build-btn{height:44px;padding:0 24px;background:#fff;color:#0a0a0b;border:none;border-radius:999px;font-weight:600;font-size:.92rem;cursor:pointer;transition:background 150ms,transform 100ms}
+.pb-build-btn{height:44px;padding:0 24px;background:#fff;color:#0d0e18;border:none;border-radius:999px;font-weight:600;font-size:.92rem;cursor:pointer;transition:background 150ms,transform 100ms}
 .pb-build-btn:hover{background:#e9ebee}
 .pb-build-btn:active{transform:translateY(1px)}
 
@@ -266,13 +266,13 @@ td .yes{color:var(--accent-strong)}td .no{color:var(--fg-muted)}
 .sniff-table tr:last-child td{border-bottom:0}
 .sniff-table tr:hover td{background:var(--surface-active)}
 .cmd-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:.72rem;font-weight:600}
-.cmd-ping{color:#8ec6ff;background:rgba(99,179,255,.1);border:1px solid rgba(99,179,255,.2)}
+.cmd-ping{color:#f4bc91;background:rgba(233,160,119,.1);border:1px solid rgba(233,160,119,.2)}
 .cmd-auth{color:#57d39a;background:rgba(87,211,154,.1);border:1px solid rgba(87,211,154,.2)}
 .cmd-flow{color:#f5a623;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.2)}
 .cmd-tx{color:#a9d5a0;background:rgba(169,213,160,.1);border:1px solid rgba(169,213,160,.2)}
 .ev-badge{font-size:.68rem;padding:2px 8px;border-radius:6px}
 .ev-obs{color:#57d39a;background:rgba(87,211,154,.1);border:1px solid rgba(87,211,154,.2)}
-.ev-val{color:#8ec6ff;background:rgba(99,179,255,.1);border:1px solid rgba(99,179,255,.2)}
+.ev-val{color:#f4bc91;background:rgba(233,160,119,.1);border:1px solid rgba(233,160,119,.2)}
 .ev-inf{color:#f5a623;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.2)}
 
 /* CLI */
@@ -280,10 +280,10 @@ td .yes{color:var(--accent-strong)}td .no{color:var(--fg-muted)}
 .cli-title-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border-subtle)}
 .cli-dot{width:12px;height:12px;border-radius:50%}
 .cli-screen{padding:20px;font-family:"IBM Plex Mono",monospace;font-size:.84rem;line-height:1.8;color:#dfe3e8;min-height:240px;max-height:420px;overflow-y:auto}
-.cli-screen .pr{color:#57d39a}.cli-screen .cmd{color:#8ec6ff}.cli-screen .out{color:#a2a7b0}.cli-screen .flag{color:#f0a050}.cli-screen .err{color:#ff6b6b}
+.cli-screen .pr{color:#57d39a}.cli-screen .cmd{color:#f4bc91}.cli-screen .out{color:#a2a7b0}.cli-screen .flag{color:#f0a050}.cli-screen .err{color:#ff6b6b}
 .cli-cmd-grid{display:flex;flex-direction:column;gap:var(--space-3);margin-top:var(--space-6)}
 .cli-cmd-card{background:var(--surface);border:1px solid var(--border-subtle);border-radius:10px;padding:var(--space-4) var(--space-5)}
-.cli-cmd-card .cmd-line{font-family:"IBM Plex Mono",monospace;font-size:.88rem;color:#8ec6ff;margin-bottom:6px}
+.cli-cmd-card .cmd-line{font-family:"IBM Plex Mono",monospace;font-size:.88rem;color:#f4bc91;margin-bottom:6px}
 .cli-cmd-card p{font-size:.86rem;color:var(--fg-secondary);margin:0}
 .cli-cmd-card .flags{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
 .cli-flag{font-family:"IBM Plex Mono",monospace;font-size:.72rem;padding:2px 9px;border:1px solid var(--border-default);border-radius:6px;color:#f0a050}
@@ -310,9 +310,9 @@ td .yes{color:var(--accent-strong)}td .no{color:var(--fg-muted)}
 .tbl th{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-muted);background:var(--surface);padding:10px 14px;border-bottom:1px solid var(--border-subtle);white-space:nowrap}
 .tbl td{padding:10px 14px;border-bottom:1px solid var(--border-subtle);color:var(--fg-secondary);vertical-align:top}
 .tbl tr:last-child td{border-bottom:0}
-.tbl code{font-family:"IBM Plex Mono",monospace;font-size:.82em;background:var(--surface-inset);border:1px solid var(--border-default);border-radius:5px;padding:1px 6px;color:#8ec6ff}
+.tbl code{font-family:"IBM Plex Mono",monospace;font-size:.82em;background:var(--surface-inset);border:1px solid var(--border-default);border-radius:5px;padding:1px 6px;color:#f4bc91}
 </style><link rel="stylesheet" href="/assets/layout.css?v=1">
-</head>
+<link rel="stylesheet" href="/assets/theme.css?v=1"></head>
 <body class="sdk-layout sdk-standard"><a class="skip" href="#main">ข้ามไปเนื้อหาหลัก</a>
 <div class="blueprint-bg" aria-hidden="true"></div><svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
 <linearGradient id="chrome" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6f8fa"/><stop offset=".22" stop-color="#c3c8cf"/><stop offset=".45" stop-color="#6b7078"/><stop offset=".6" stop-color="#3a3d43"/><stop offset=".78" stop-color="#9aa0a8"/><stop offset="1" stop-color="#d7dbe0"/></linearGradient>
@@ -374,7 +374,7 @@ PREVIEW BUILD — NOT PRODUCTION
 <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:var(--space-6);padding:12px 16px;background:var(--surface-inset);border:1px solid var(--border-subtle);border-radius:10px;align-items:center" role="note" aria-label="Evidence Classification Legend">
 <span style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--fg-muted);margin-right:4px;letter-spacing:.06em">EVIDENCE:</span>
 <span style="font-size:.72rem;padding:2px 9px;border-radius:6px;background:rgba(87,211,154,.1);border:1px solid rgba(87,211,154,.25);color:#57d39a;font-family:monospace">[OBS] Observed — ตรวจพบจาก Runtime / Log จริง</span>
-<span style="font-size:.72rem;padding:2px 9px;border-radius:6px;background:rgba(99,179,255,.1);border:1px solid rgba(99,179,255,.25);color:#8ec6ff;font-family:monospace">[VAL] Validated — ผ่านการยืนยันเชิงประจักษ์</span>
+<span style="font-size:.72rem;padding:2px 9px;border-radius:6px;background:rgba(233,160,119,.1);border:1px solid rgba(233,160,119,.25);color:#f4bc91;font-family:monospace">[VAL] Validated — ผ่านการยืนยันเชิงประจักษ์</span>
 <span style="font-size:.72rem;padding:2px 9px;border-radius:6px;background:rgba(200,204,210,.08);border:1px solid rgba(200,204,210,.15);color:#c8ccd2;font-family:monospace">[DEC] Declared — ประกาศไว้ใน Schema/Config</span>
 <span style="font-size:.72rem;padding:2px 9px;border-radius:6px;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.25);color:#f5a623;font-family:monospace">[INF] Inferred — อนุมาน รอ Trace ยืนยัน</span>
 </div>
@@ -413,7 +413,7 @@ PREVIEW BUILD — NOT PRODUCTION
 <div class="wrap sdk-frame">
 <p class="ws-slabel">PACKET BUILDER</p>
 <p style="color:var(--fg-secondary);font-size:.9rem;margin-bottom:var(--space-3)">ประกอบ POTOCALL Frame สด — CRC-16 Modbus คำนวณอัตโนมัติ</p>
-<div role="note" style="display:flex;gap:10px;padding:10px 14px;background:rgba(99,179,255,.06);border:1px solid rgba(99,179,255,.2);border-radius:8px;margin-bottom:var(--space-6);font-size:.82rem;color:#8ec6ff" class="thai">
+<div role="note" style="display:flex;gap:10px;padding:10px 14px;background:rgba(233,160,119,.06);border:1px solid rgba(233,160,119,.2);border-radius:8px;margin-bottom:var(--space-6);font-size:.82rem;color:#f4bc91" class="thai">
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="flex:0 0 auto;margin-top:2px"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
 <span><strong>Reference Implementation:</strong> Frame ที่ build ได้ถูกต้องตามสูตร CRC-16 Modbus (Polynomial 0xA001) แต่ยังไม่ผ่านการทดสอบกับ certified hardware ผลลัพธ์ควรตรวจสอบกับ §9.1 ก่อนใช้งานจริง</span>
 </div>
@@ -472,7 +472,7 @@ PREVIEW BUILD — NOT PRODUCTION
 </div></div><div id="p-cli" class="ws-panel">
 <div class="wrap sdk-frame">
 <p class="ws-slabel">CLI REFERENCE</p>
-<div role="note" style="display:flex;gap:10px;padding:10px 14px;background:rgba(99,179,255,.06);border:1px solid rgba(99,179,255,.2);border-radius:8px;margin-bottom:var(--space-6);font-size:.82rem;color:#8ec6ff" class="thai">
+<div role="note" style="display:flex;gap:10px;padding:10px 14px;background:rgba(233,160,119,.06);border:1px solid rgba(233,160,119,.2);border-radius:8px;margin-bottom:var(--space-6);font-size:.82rem;color:#f4bc91" class="thai">
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="flex:0 0 auto;margin-top:2px"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
 <span><strong>Preview CLI:</strong> คำสั่งที่แสดงเป็น reference specification ตามสถาปัตยกรรมที่วางแผนไว้ package <code style="font-family:monospace;font-size:.82em;background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px">@lsuperagen/cli</code> ยังไม่ได้ publish บน npm registry — ห้ามใช้งานใน production</span>
 </div>
@@ -636,7 +636,7 @@ PREVIEW BUILD — NOT PRODUCTION
 <h3>Epistemic Evidence Types <span class="mono-tag">§3</span></h3>
 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-3)">
 <div style="background:var(--surface);border:1px solid rgba(87,211,154,.25);border-radius:10px;padding:var(--space-4)"><div style="font-family:monospace;font-size:.78rem;color:#57d39a;margin-bottom:6px">[OBS] OBSERVED</div><p class="thai" style="font-size:.84rem;color:var(--fg-secondary);margin:0">ตรวจพบจาก Runtime / Network Log โดยตรง</p></div>
-<div style="background:var(--surface);border:1px solid rgba(99,179,255,.25);border-radius:10px;padding:var(--space-4)"><div style="font-family:monospace;font-size:.78rem;color:#8ec6ff;margin-bottom:6px">[VAL] VALIDATED</div><p class="thai" style="font-size:.84rem;color:var(--fg-secondary);margin:0">ผ่านการตรวจยืนยันเชิงประจักษ์แล้ว</p></div>
+<div style="background:var(--surface);border:1px solid rgba(233,160,119,.25);border-radius:10px;padding:var(--space-4)"><div style="font-family:monospace;font-size:.78rem;color:#f4bc91;margin-bottom:6px">[VAL] VALIDATED</div><p class="thai" style="font-size:.84rem;color:var(--fg-secondary);margin:0">ผ่านการตรวจยืนยันเชิงประจักษ์แล้ว</p></div>
 <div style="background:var(--surface);border:1px solid rgba(200,204,210,.15);border-radius:10px;padding:var(--space-4)"><div style="font-family:monospace;font-size:.78rem;color:#c8ccd2;margin-bottom:6px">[DEC] DECLARED</div><p class="thai" style="font-size:.84rem;color:var(--fg-secondary);margin:0">ประกาศไว้ใน Schema / Config / Code</p></div>
 <div style="background:var(--surface);border:1px solid rgba(245,166,35,.25);border-radius:10px;padding:var(--space-4)"><div style="font-family:monospace;font-size:.78rem;color:#f5a623;margin-bottom:6px">[INF] INFERRED</div><p class="thai" style="font-size:.84rem;color:var(--fg-secondary);margin:0">อนุมานตามบริบท — แสดงเส้นประ รอ Trace จริง</p></div>
 </div>

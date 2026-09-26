@@ -47,8 +47,8 @@ body.sdk-layout { margin: 0; padding: 0; width: 100%; max-width: none; min-heigh
 .sdk-header-row > nav > * { flex-shrink: 0; }
 .sdk-header-row :is(.hsrch, .header-search) { min-width: 120px; flex: 0 1 200px; }
 .sdk-brand { color: inherit; text-decoration: none; }
-.sdk-brand span { color: var(--accent, #3b82f6); }
-.sdk-brand:focus-visible { outline: 2px solid var(--accent, #3b82f6); outline-offset: 4px; }
+.sdk-brand span { color: var(--accent, #e9a077); }
+.sdk-brand:focus-visible { outline: 2px solid var(--accent, #e9a077); outline-offset: 4px; }
 .sdk-layout.sdk-simple { display: block; }
 .sdk-layout .sdk-page-content { padding-top: var(--sdk-page-gap); padding-bottom: 64px; }
 .sdk-simple .sdk-page-content > h1:first-child { margin-top: 0; }

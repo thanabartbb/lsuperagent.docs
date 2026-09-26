@@ -12,14 +12,14 @@
     :root {
       color-scheme: dark;
       --bg: #000;
-      --surface: #0a0a0a;
+      --surface: #10111c;
       --surface-2: #111;
       --line: #1f1f1f;
       --line-2: #2e2e2e;
       --text: #ededed;
       --muted: #a1a1a1;
       --dim: #6b6b6b;
-      --accent: #3b82f6;
+      --accent: #e9a077;
       --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
       --max: 1080px;
     }
@@ -68,7 +68,7 @@
     }
     .hero::after {
       content: ""; position: absolute; left: 50%; top: -120px; width: 520px; height: 340px; transform: translateX(-50%);
-      background: radial-gradient(closest-side, rgba(59, 130, 246, .18), transparent);
+      background: radial-gradient(closest-side, rgba(233, 160, 119, .18), transparent);
       pointer-events: none;
     }
     .hero .wrap { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 56px; padding-bottom: 60px; }
@@ -96,7 +96,7 @@
 
     /* Feature grid */
     .features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-    .feature { position: relative; min-width: 0; display: flex; flex-direction: column; gap: 8px; min-height: 128px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: linear-gradient(180deg, var(--surface) 0%, #050505 100%); transition: border-color .2s ease, background-color .2s ease; }
+    .feature { position: relative; min-width: 0; display: flex; flex-direction: column; gap: 8px; min-height: 128px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: linear-gradient(180deg, var(--surface) 0%, #0b0b14 100%); transition: border-color .2s ease, background-color .2s ease; }
     a.feature:hover { border-color: #3a3a3a; }
     .feature.wide { grid-column: span 2; }
     .feature .icon { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line-2); display: grid; place-items: center; background: #000; color: var(--text); }
@@ -105,13 +105,13 @@
     .feature p { font-size: 13px; line-height: 1.55; color: var(--muted); }
     .feature .go { position: absolute; top: 14px; right: 14px; color: var(--dim); font-size: 15px; transition: transform .2s ease, color .2s ease; }
     a.feature:hover .go { color: var(--text); transform: translate(2px, -2px); }
-    .feature.highlight { background: radial-gradient(120% 120% at 100% 0%, rgba(59, 130, 246, .16), transparent 55%), var(--surface); border-color: #263244; }
+    .feature.highlight { background: radial-gradient(120% 120% at 100% 0%, rgba(233, 160, 119, .16), transparent 55%), var(--surface); border-color: #263244; }
     .feature.highlight h3 { font-size: 17px; }
 
     /* Stack diagram */
     .stack { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 40px; }
     .stack-core { display: flex; justify-content: center; margin-bottom: -28px; position: relative; z-index: 1; }
-    .chip { font: 600 12px var(--mono); letter-spacing: .04em; border: 1px solid var(--line-2); border-radius: 9px; background: var(--surface-2); padding: 9px 14px; box-shadow: 0 0 0 6px #000, 0 0 40px rgba(59, 130, 246, .18); }
+    .chip { font: 600 12px var(--mono); letter-spacing: .04em; border: 1px solid var(--line-2); border-radius: 9px; background: var(--surface-2); padding: 9px 14px; box-shadow: 0 0 0 6px #000, 0 0 40px rgba(233, 160, 119, .18); }
     .chip span { color: var(--accent); }
     .rail { height: 28px; width: 1px; margin: 0 auto; background: linear-gradient(var(--line-2), transparent); }
     .stack .feature { min-height: 0; }
@@ -171,7 +171,7 @@
     @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
   </style>
 <link rel="stylesheet" href="/assets/layout.css?v=1">
-</head>
+<link rel="stylesheet" href="/assets/theme.css?v=1"></head>
 <body class="sdk-layout sdk-standard">
   <header class="topbar sdk-site-header">
     <div class="wrap sdk-frame sdk-header-row">
@@ -188,7 +188,7 @@
     <section class="hero">
       <div class="wrap sdk-frame">
         <div class="logo-container"><img src="/logo.svg" width="72" height="72" alt="LSUPERAGENT SDK logo"></div>
-        <p class="eyebrow">AI Workspace · lsupergen-sdk</p>
+        <p class="eyebrow">AI Workspace · npmjs.sdk-space · lsupergen-sdk</p>
         <h2>Build with AI.<br><em>Start from one phone.</em></h2>
         <p class="en-text">Chat, create, research, and connect your code with the SDK.</p>
         <div class="buttons-wrapper">
@@ -247,6 +247,11 @@
             <span class="go" aria-hidden="true">↗</span>
             <h3>lsupergen-sdk</h3>
             <p>Use the npm package with this site's <code>/v1</code> API. Create a key and try the SDK in the playground.</p>
+          </a>
+          <a class="feature wide-sm" href="https://www.npmjs.com/package/npmjs.sdk-space" rel="noopener noreferrer">
+            <span class="go" aria-hidden="true">↗</span>
+            <h3>npmjs.sdk-space</h3>
+            <p>Published on npm as 1.0.1. The current CommonJS package exports npmjsSdkSpace(), a version-string function. View the published package ↗</p>
           </a>
           <a class="feature wide-sm" href="/docs">
             <span class="go" aria-hidden="true">↗</span>
@@ -365,6 +370,7 @@ const reply = await client.post('/chat', { body: { message: 'Hello' } });</code>
         <a href="/docs">Docs</a>
         <a href="/guide">SDK</a>
         <a href="https://www.npmjs.com/package/lsupergen-sdk">lsupergen-sdk on npm ↗</a>
+        <a href="https://www.npmjs.com/package/npmjs.sdk-space">npmjs.sdk-space on npm ↗</a>
       </nav>
       <p class="creator">Created by a real user, building an AI system from a single mobile phone.</p>
     </div>

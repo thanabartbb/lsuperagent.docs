@@ -1,10 +1,10 @@
 /* IDE-style code window (see assets/code-window.js). */
 .cw {
   --cw-bg: #010103; --cw-bar: #050608; --cw-line: #1a1c24; --cw-dim: #5a627a; --cw-text: #e6e6e6;
-  --cw-accent: var(--accent, #3b82f6);
+  --cw-accent: var(--accent, #e9a077);
   margin: 16px 0; border: 1px solid var(--cw-line); border-radius: 14px; overflow: hidden;
   background: var(--cw-bg);
-  box-shadow: 0 18px 44px -18px rgba(0, 0, 0, .9), 0 0 28px rgba(59, 130, 246, .05);
+  box-shadow: 0 18px 44px -18px rgba(0, 0, 0, .9), 0 0 28px rgba(233, 160, 119, .05);
 }
 .cw-bar { display: flex; align-items: flex-end; gap: 12px; height: 40px; padding: 0 10px 0 14px; background: var(--cw-bar); border-bottom: 1px solid var(--cw-line); }
 .cw-dots { display: flex; gap: 6px; align-self: center; flex: none; }
@@ -14,7 +14,7 @@
 .cw-tab {
   display: inline-flex; align-items: center; gap: 7px; min-width: 0; max-width: 60%;
   height: 32px; padding: 0 12px; border: 1px solid var(--cw-line); border-bottom: 0; border-top: 2px solid var(--cw-accent);
-  border-radius: 8px 8px 0 0; background: #0a0c12; box-shadow: 0 -6px 16px -8px rgba(59, 130, 246, .45);
+  border-radius: 8px 8px 0 0; background: #0a0c12; box-shadow: 0 -6px 16px -8px rgba(233, 160, 119, .45);
   font: 500 12px var(--mono, monospace); color: #e5e5e5;
 }
 .cw-logo { width: 14px; height: 14px; flex: none; }
@@ -48,7 +48,7 @@
 .tk-keyword, .tk-def { color: #ff4d79; }
 .tk-string { color: #2ee6a8; }
 .tk-func { color: #c084fc; }
-.tk-type, .tk-property { color: #38bdf8; }
+.tk-type, .tk-property { color: #b7c3dc; }
 .tk-constant, .tk-number { color: #fbbf24; }
 .tk-comment { color: var(--cw-dim); font-style: italic; }
 .tk-decorator { color: #f472b6; }

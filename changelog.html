@@ -5,15 +5,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root{
---c950:#060606;--c900:#0a0a0b;--c850:#0d0e10;--c800:#121316;--c750:#16181d;--c700:#1d1f24;
---g600:#24272d;--g500:#2c3037;
---l800:#1c1e22;--l700:#26292f;--l600:#33373f;
+--c950:#090a12;--c900:#0d0e18;--c850:#10111c;--c800:#151521;--c750:#191925;--c700:#201c2b;
+--g600:#292534;--g500:#383141;
+--l800:#302c3b;--l700:#474050;--l600:#5b5162;
 --s300:#c8ccd2;--s400:#a2a7b0;--s500:#7c828c;--s600:#5a5f68;
---canvas:var(--c950);--surface:var(--c850);--surf-el:var(--c800);--surf-in:var(--c900);--surf-act:rgba(99,179,255,.06);
+--canvas:var(--c950);--surface:var(--c850);--surf-el:var(--c800);--surf-in:var(--c900);--surf-act:rgba(233,160,119,.06);
 --fg:#f5f7f9;--fg2:var(--s400);--fg3:var(--s500);
 --bd:var(--l800);--bd2:var(--l700);--bd3:var(--l600);
---acc:#63b3ff;--acc2:#8ec6ff;--accm:rgba(99,179,255,.14);
---focus:#63b3ff;--err:#ff6b6b;--ok:#57d39a;
+--acc:#e9a077;--acc2:#f4bc91;--accm:rgba(233,160,119,.14);
+--focus:#e9a077;--err:#ff6b6b;--ok:#57d39a;
 --sp1:4px;--sp2:8px;--sp3:12px;--sp4:16px;--sp5:20px;--sp6:24px;--sp8:32px;--sp10:40px;--sp12:48px;--sp16:64px;
 --r1:6px;--r2:10px;--r3:14px;--rpill:999px;
 --fd:"Inter","Noto Sans Thai",system-ui,sans-serif;
@@ -37,9 +37,9 @@ ul{margin:0;padding:0;list-style:none}
 
 /* blueprint grid */
 .bp{position:fixed;inset:0;z-index:0;pointer-events:none;
-background-image:linear-gradient(rgba(140,150,165,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(140,150,165,.07) 1px,transparent 1px);
+background-image:linear-gradient(rgba(154,123,160,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(154,123,160,.07) 1px,transparent 1px);
 background-size:56px 56px;mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 30%,transparent 100%)}
-body.dense .bp{background-size:80px 80px;background-image:linear-gradient(rgba(140,150,165,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(140,150,165,.04) 1px,transparent 1px)}
+body.dense .bp{background-size:80px 80px;background-image:linear-gradient(rgba(154,123,160,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(154,123,160,.04) 1px,transparent 1px)}
 .wrap{position:relative;z-index:1;max-width:var(--cmax);margin:0 auto;padding-inline:var(--gut)}
 
 /* ---- HEADER ---- */
@@ -64,7 +64,7 @@ body.dense .bp{background-size:80px 80px;background-image:linear-gradient(rgba(1
 /* ---- BUTTONS ---- */
 .btn{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 22px;border-radius:var(--rpill);font-weight:600;font-size:.98rem;border:1px solid transparent;transition:transform var(--df) var(--ease),background var(--db),border-color var(--db),box-shadow var(--db)}
 .btn:active{transform:translateY(1px)}
-.btn-p{background:#fff;color:#0a0a0b}.btn-p:hover{background:#e9ebee}
+.btn-p{background:#fff;color:#0d0e18}.btn-p:hover{background:#e9ebee}
 .btn-p:focus-visible{box-shadow:0 0 0 3px var(--accm)}
 .btn-s{background:transparent;color:var(--fg);border-color:var(--bd3)}.btn-s:hover{background:var(--surf-el);border-color:var(--s600)}
 .btn-w{width:100%;justify-content:center}
@@ -214,7 +214,7 @@ tr:last-child td{border-bottom:0}
 .fmsg.show{display:flex}
 .fmsg.info{color:var(--acc2);border-color:var(--accm);background:var(--accm)}
 .fmsg.err{color:var(--err);border-color:rgba(255,107,107,.3);background:rgba(255,107,107,.08)}
-.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#0a0a0b;border-radius:50%;animation:spin .7s linear infinite}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#0d0e18;border-radius:50%;animation:spin .7s linear infinite}
 .sline{text-align:center;margin-top:var(--sp8);color:var(--fg2);font-size:.9rem}
 @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -266,7 +266,7 @@ a.guide-card:hover .ic-box{border-color:var(--accm);color:var(--acc2)}
 .ftag{font-family:var(--fm);font-size:.66rem;letter-spacing:.2em;color:var(--fg3);text-align:right;line-height:1.7;border-inline-start:1px solid var(--bd3);padding-inline-start:16px}
 @media(prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation-duration:.01ms!important}}
 </style><link rel="stylesheet" href="/assets/layout.css?v=1">
-</head>
+<link rel="stylesheet" href="/assets/theme.css?v=1"></head>
 <body class="sdk-layout sdk-standard"><a class="skip" href="#main">ข้ามไปเนื้อหาหลัก</a>
 <div class="bp" aria-hidden="true"></div><svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
 <linearGradient id="chrome" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6f8fa"/><stop offset=".22" stop-color="#c3c8cf"/><stop offset=".45" stop-color="#6b7078"/><stop offset=".6" stop-color="#3a3d43"/><stop offset=".78" stop-color="#9aa0a8"/><stop offset="1" stop-color="#d7dbe0"/></linearGradient>

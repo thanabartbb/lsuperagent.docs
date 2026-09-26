@@ -2,8 +2,8 @@
 
 AI Framework: **LSUPERAGENT Public Workspace Operating Instructions**
 
-Last updated: **2026-09-25T21:49:15+07:00 Asia/Bangkok**
-Last update task: **Add the login-gated `/docs` documentation site and record the `/guide`, `/api/sdk/keys` and `/v1` SDK API routes in the contract.**
+Last updated: **2026-09-26T21:26:00+07:00 Asia/Bangkok**
+Last update task: **Apply the site-wide reference palette and record the independently published npmjs.sdk-space package accurately.**
 
 This file is the first file every AI agent must read before modifying this repository. It defines the repo memory boundary, write protocol, data contract discipline, and negative constraints.
 
@@ -54,6 +54,8 @@ Public route policy: `/loading` is a public informational page linked from the b
 Code entry contract: `/tools` Code links to `/chat?mode=code`; `assets/chat.js` sends `mode: "code"`, `tool: "code"` and recent turns to `/api/chat`. The Worker asks OpenAI for a code-oriented text response; it cannot edit repository files. `mode` is `chat` or `code` from the page query, source `assets/chat.js`, required in the request; `quota_remaining` is an optional number from response headers, source `src/index.js`, and represents only an in-memory IP/tool rate guard of 10 requests per 10 minutes per isolate. It is not a per-user or monetary budget. Chat history is not persistent. Verification of a real paid model response still requires an authenticated live test. No secret values are exposed by this page contract.
 
 SDK and docs contract: `/docs/:page` serves `docs-shell.html`, which loads `/docs-content/<slug>` (login required; 401 JSON without a session) using the sidebar list in `assets/docs-nav.js`; adding a page means a new `docs-content/<slug>.html` plus one entry there, and `tests/docs-site.test.mjs` checks both stay in sync. `/guide` is the `lsupergen-sdk` playground (`guide.html`, `assets/guide.js`, vendored npm build under `vendor/lsupergen-sdk/0.1.0/`, sha256 pinned in `tests/sdk-guide.test.mjs`). `POST /api/sdk/keys` (same-origin, signed session) returns a stateless `lsg_` key: an HMAC token signed with `AUTH_SESSION_SECRET`, typ `sdk_key`, 30-day expiry, no storage, not individually revocable. `GET /v1/health` is public; `GET /v1/me`, `POST /v1/chat`, and `POST /v1/image` require `Authorization: Bearer lsg_…` and reuse the `/api/chat` and `/api/image` handlers, including the 10 requests / 10 minutes in-memory rate guard. `/sdk` redirects to `/guide`.
+
+Package boundary: `npmjs.sdk-space@1.0.1` is a separate npm package that currently exports only `npmjsSdkSpace()` as a version-string function. `/guide` remains the `lsupergen-sdk` API client. Do not describe these as interchangeable.
 
 ## Feature Goal Template
 

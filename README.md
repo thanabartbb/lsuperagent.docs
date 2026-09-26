@@ -2,14 +2,16 @@
 
 AI Framework: **LSUPERAGENT public AI workspace**
 
-Last updated: **2026-09-26T13:58:17+07:00 Asia/Bangkok**
-Last update task: **Combine the English SDK landing copy and navigation with shared page widths, gutters and header geometry.**
+Last updated: **2026-09-26T21:26:00+07:00 Asia/Bangkok**
+Last update task: **Apply the copper/violet reference palette across pages and identify the separate npmjs.sdk-space package by its published contents.**
 
 The proposed one-owner session continuity system is specified in [`docs/session-continuity-pilot.md`](docs/session-continuity-pilot.md). It is design-only; no database or resumable chat runtime has been created.
 
 Feature goal: Build a Code chat entry so the signed-in owner can ask for code and receive a code-oriented AI response, with no claim that the page edits GitHub files. `/tools` links to `/chat?mode=code`; `assets/chat.js` sends `mode: "code"` and `tool: "code"` to `/api/chat`. The result is text in the chat. It is not a repository editor or a verified live-model end-to-end run. The current rate guard allows 10 requests in 10 minutes per IP and tool in a Worker isolate's memory; it is neither a durable per-user quota nor a spend cap. Chat turns remain in browser page memory and disappear on reload.
 
 This repository powers the public LSUPERAGENT AI Workspace. The login UI presents email/password, Google OAuth, and GitHub OAuth. The chat UI uses the existing signed session and server-side `/api/chat` route. Email/password depends on Firebase Web configuration and the Email/Password provider being enabled. GitHub OAuth depends on the existing Worker client ID/secret. Each login issues a six-hour signed cookie; historical session storage and server-side session revocation are not implemented.
+
+Published package note: `npmjs.sdk-space@1.0.1` (npm registry, checked 2026-09-26) is a separate CommonJS package from `lsupergen-sdk`. Its tarball exports `npmjsSdkSpace()` and returns the string `npmjs.sdk-space v1.0.0`; it is not the `/v1` API client used in `/guide`.
 
 ## AI Framework Contract
 

@@ -1,0 +1,68 @@
+/* Reference palette: ink, warm copper edge, and a restrained violet rim. */
+:root {
+  color-scheme: dark;
+  --bg: #090a12 !important;
+  --surface: #10111c !important;
+  --surface-2: #171725 !important;
+  --surface2: #171725 !important;
+  --line: #302c3b !important;
+  --line-2: #474050 !important;
+  --line2: #474050 !important;
+  --text: #f2edf1 !important;
+  --fg: #f2edf1 !important;
+  --muted: #ada4b2 !important;
+  --fg2: #ada4b2 !important;
+  --accent: #e9a077 !important;
+  --acc: #e9a077 !important;
+  --acc2: #f4bc91 !important;
+  --focus: #e9a077 !important;
+  --accent-soft: rgba(233,160,119,.14) !important;
+  --accm: rgba(233,160,119,.14) !important;
+  --canvas: #090a12 !important; --surface-elevated: #151521 !important; --surface-inset: #0d0e18 !important;
+  --carbon-950: #090a12 !important; --carbon-900: #0d0e18 !important; --carbon-850: #10111c !important;
+  --carbon-800: #151521 !important; --carbon-750: #191925 !important; --carbon-700: #201c2b !important;
+  --graphite-600: #292534 !important; --graphite-500: #383141 !important;
+  --line-800: #302c3b !important; --line-700: #474050 !important; --line-600: #5b5162 !important;
+  --fg-primary: #f2edf1 !important; --fg-secondary: #ada4b2 !important; --fg-muted: #8f8494 !important;
+  --accent-strong: #f4bc91 !important; --accent-muted: rgba(233,160,119,.14) !important;
+  --border-subtle: #302c3b !important; --border-default: #474050 !important; --border-strong: #5b5162 !important;
+  --c950: #090a12 !important; --c900: #0d0e18 !important;
+  --c850: #10111c !important; --c800: #151521 !important;
+  --c750: #191925 !important; --c700: #201c2b !important;
+  --g600: #292534 !important; --g500: #383141 !important;
+  --l800: #302c3b !important; --l700: #474050 !important;
+  --l600: #5b5162 !important;
+}
+html, body { background-color: #090a12 !important; }
+body { color: #f2edf1; }
+:is(.topbar, .sdk-site-header, .shell-header, .app-header, .site-header, .header, .sidebar, .toc, .mode-panel, .shell-mobile-panel) {
+  background-color: #10101b !important;
+  border-color: #302c3b !important;
+}
+:is(.card, .feature, .tool-card, .panel, .step, .composer, .message-body, .fact, .pill, .search-box, .code, .terminal, .window, .login, .view) {
+  border-color: #383241;
+}
+:is(.card, .feature, .tool-card, .panel, .step, .composer, .message-body, .search-box, .terminal, .window) {
+  background-color: #11121d;
+}
+:is(.card, .feature, .tool-card, .panel, .step, .terminal, .window):hover { border-color: #b47a67; }
+:is(a, button, input, textarea, select):focus-visible { outline-color: #e9a077 !important; }
+::selection { background: #a86157; color: #fff; }
+:where(input, textarea, select) { color-scheme: dark; }
+:where(pre, .code pre, .content pre) { background-color: #0c0c16; }
+:where(.btn-primary, button.primary, button.run, .send-button, .primary) { border-color: #e9a077; }
+/* Keep the reference's glow at the edges and away from body copy. */
+:is(.sdk-site-header, .topbar) { box-shadow: inset 0 1px 0 rgba(233,160,119,.18), 0 5px 24px rgba(100,54,118,.10); }
+.cw {
+  --cw-bg: #0b0b14; --cw-bar: #13121e; --cw-line: #433849;
+  --cw-dim: #837888; --cw-text: #e7dee5; --cw-accent: #e9a077;
+  box-shadow: 0 18px 44px -18px rgba(0,0,0,.88), 0 0 25px rgba(139,85,151,.17), inset 0 1px 0 rgba(233,160,119,.23);
+}
+.cw-tab { background: #191724; box-shadow: 0 -6px 16px -8px rgba(233,160,119,.65); }
+.cw-gutter { border-right-color: #292433; color: #746b7d; }
+.cw-status { background: #100f18; }
+.tk-keyword, .tk-def { color: #e9a077; }
+.tk-string { color: #a7c894; }
+.tk-func { color: #c6a1df; }
+.tk-type, .tk-property, .tk-flag { color: #b7c3dc; }
+.tk-constant, .tk-number, .tk-variable { color: #eec67b; }

@@ -1,6 +1,7 @@
 // Docs runtime: renders the sidebar from docs-nav.js, loads /docs-content/<slug>.html into the page,
-// and builds the "on this page" list, prev/next links, copy buttons and search.
+// and builds the "on this page" list, prev/next links, IDE-style code windows (code-window.js) and search.
 import { NAV, icon } from '/assets/docs-nav.js';
+import { enhanceCodeBlocks } from '/assets/code-window.js';
 
 const PAGES = NAV.flatMap((group) => group.pages.map((page) => ({ ...page, group: group.title })));
 const $ = (selector) => document.querySelector(selector);
@@ -72,25 +73,10 @@ function enhance() {
   toc.innerHTML = headings.length
     ? `<h2>ในหน้านี้</h2>${headings.map((h) => `<a href="#${h.id}" class="${h.tagName === 'H3' ? 'sub' : ''}">${h.textContent}</a>`).join('')}`
     : '';
-  for (const pre of content.querySelectorAll('pre')) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'copy';
-    button.textContent = 'คัดลอก';
-    button.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(pre.querySelector('code')?.textContent ?? pre.textContent);
-        button.textContent = 'คัดลอกแล้ว';
-      } catch (_) {
-        button.textContent = 'คัดลอกไม่ได้';
-      }
-      setTimeout(() => { button.textContent = 'คัดลอก'; }, 1400);
-    });
-    pre.append(button);
-  }
   const base = `${location.origin}/v1`;
   content.querySelectorAll('[data-base]').forEach((el) => { el.textContent = base; });
   content.querySelectorAll('pre code').forEach((el) => { el.textContent = el.textContent.replaceAll('{{BASE}}', base); });
+  enhanceCodeBlocks(content, 'pre');
 }
 
 function renderPager(slug) {

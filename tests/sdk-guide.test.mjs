@@ -148,6 +148,26 @@ test('guide page is login-gated and /sdk points to it', async () => {
   assert.match(html, /\/assets\/guide\.js/);
   const script = String(await read('assets/guide.js'));
   assert.match(script, /\/vendor\/lsupergen-sdk\/0\.1\.0\/index\.js/);
-  assert.match(script, /\/api\/sdk\/keys/);
+  assert.doesNotMatch(script, /\/api\/sdk\/keys/, 'the Playground only accepts a pasted key; keys are created on /keys');
+  assert.doesNotMatch(html, /toggle-key|>แสดง key</, 'the Playground must not reveal the key');
+  assert.match(html, /href="\/keys"/);
   assert.equal(/localStorage|sessionStorage/.test(script), false, 'API key must stay in memory only');
+});
+
+test('/keys is login-gated, creates keys same-origin and never renders the full key', async () => {
+  const env = { AUTH_SESSION_SECRET: SESSION_SECRET };
+  const page = await worker.fetch(new Request(`${ORIGIN}/keys`), env);
+  assert.equal(page.status, 302);
+  assert.equal(page.headers.get('location'), '/login?return_to=%2Fkeys');
+  const html = String(await read('keys.html'));
+  const script = String(await read('assets/keys.js'));
+  assert.match(html, /\/assets\/keys\.js/);
+  assert.match(script, /\/api\/sdk\/keys/);
+  assert.equal(/localStorage|sessionStorage|innerHTML/.test(script), false);
+  assert.doesNotMatch(script, /textContent = secret|value = secret/, 'the key must only reach the clipboard');
+  const { maskKey } = await import('../assets/keys.js');
+  const { api_key } = await createKey(env);
+  const masked = maskKey(api_key);
+  assert.ok(masked.startsWith('lsg_') && masked.endsWith(api_key.slice(-4)));
+  assert.ok(masked.length < 24 && !masked.includes(api_key.slice(4, 20)));
 });

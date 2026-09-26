@@ -59,6 +59,8 @@ table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.88rem}
 th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 th{color:var(--muted);font-weight:600}
 .table-wrap{overflow-x:auto}
+.ghost-link{display:inline-flex;border:1px solid var(--line2);border-radius:9px;padding:9px 14px;font-weight:600;color:var(--text)}
+.ghost-link:hover{border-color:var(--accent)}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
 .tab{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:6px 11px;font:600 .82rem inherit;cursor:pointer}
 .tab[aria-selected="true"]{color:var(--text);border-color:var(--accent)}
@@ -72,7 +74,7 @@ footer{margin-top:44px;color:var(--muted);font-size:.84rem;border-top:1px solid 
 <main>
   <header>
     <a class="brand-link" href="/home" aria-label="กลับหน้าแรก"><strong><img src="/logo.svg" alt="">LSUPERAGENT <b>SDK</b></strong></a>
-    <nav aria-label="เมนูหลัก"><a href="/home">หน้าแรก</a><a href="/chat">แชท</a><a href="/docs">เอกสาร</a><a href="/guide" aria-current="page">Playground</a><a href="/auth/logout">ออกจากระบบ</a></nav>
+    <nav aria-label="เมนูหลัก"><a href="/home">หน้าแรก</a><a href="/chat">แชท</a><a href="/docs">เอกสาร</a><a href="/guide" aria-current="page">Playground</a><a href="/keys">API keys</a><a href="/auth/logout">ออกจากระบบ</a></nav>
   </header>
 
   <h1>คู่มือ lsupergen-sdk</h1>
@@ -86,7 +88,7 @@ footer{margin-top:44px;color:var(--muted);font-size:.84rem;border-top:1px solid 
 
   <ol class="toc">
     <li><a href="#install">1. ติดตั้งแพ็กเกจ</a></li>
-    <li><a href="#key">2. สร้าง API key</a></li>
+    <li><a href="#key">2. ใส่ API key</a></li>
     <li><a href="#config">3. ตั้งค่า client</a></li>
     <li><a href="#health">4. ตรวจสถานะ API</a></li>
     <li><a href="#me">5. ยืนยันตัวตนด้วย key</a></li>
@@ -111,14 +113,13 @@ bun add lsupergen-sdk</pre></div>
   </section>
 
   <section class="step" id="key">
-    <div class="step-head"><div><div class="step-num">STEP 2</div><h2>สร้าง API key</h2></div><span class="badge" data-badge="key">พร้อมรัน</span></div>
-    <p>API key ผูกกับบัญชีที่เข้าสู่ระบบอยู่ มีอายุ 30 วัน และแสดงเพียงครั้งเดียว หน้านี้เก็บ key ไว้ในหน่วยความจำของแท็บนี้เท่านั้น (ไม่บันทึกลงเบราว์เซอร์)</p>
-    <div class="actions"><button class="primary" data-run="key">สร้าง API key ใหม่</button></div>
-    <label for="api-key">API key ที่ใช้ในขั้นถัดไป (สร้างใหม่ หรือวาง key เดิมที่ยังไม่หมดอายุ)</label>
-    <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="lsg_…">
-    <div class="actions"><button class="ghost" id="toggle-key" type="button">แสดง key</button><button class="ghost" id="copy-key" type="button">คัดลอก key</button></div>
+    <div class="step-head"><div><div class="step-num">STEP 2</div><h2>ใส่ API key</h2></div><span class="badge" id="key-state">ยังไม่มี key</span></div>
+    <p>สร้าง key ที่หน้า <a href="/keys"><b>API keys</b></a> คัดลอกมา แล้ววางในช่องนี้ หน้านี้เก็บ key ไว้ในหน่วยความจำของแท็บนี้เท่านั้น (ไม่บันทึกลงเบราว์เซอร์) และไม่แสดง key บนหน้าจอ</p>
+    <div class="actions"><a class="ghost-link" href="/keys">สร้าง key ที่หน้า API keys →</a></div>
+    <label for="api-key">วาง API key ของคุณ (ขึ้นต้นด้วย <code>lsg_</code>)</label>
+    <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="lsg_••••••••">
+    <div class="actions"><button class="ghost" id="clear-key" type="button">ล้าง key</button></div>
     <p class="note warn">อย่า commit key ลง Git และอย่าฝัง key ในโค้ดฝั่งเบราว์เซอร์ที่เผยแพร่ ให้เก็บเป็น environment variable หรือ Cloudflare Secret</p>
-    <div class="out" data-out="key" hidden></div>
   </section>
 
   <section class="step" id="config">
@@ -211,7 +212,7 @@ try {
 
   <section class="step" id="verify">
     <div class="step-head"><div><div class="step-num">STEP 8</div><h2>ตรวจสอบทั้งคู่มือ</h2></div><span class="badge" data-badge="all">พร้อมรัน</span></div>
-    <p>รันขั้นที่ 1, 4, 5, 6 และ 7 ต่อกันด้วย SDK จริง แล้วสร้าง Proof report (JSON) ที่มีเวลา สถานะ HTTP และผลลัพธ์ของแต่ละขั้น ต้องมี API key จากขั้นที่ 2 ก่อน</p>
+    <p>รันขั้นที่ 1, 4, 5, 6 และ 7 ต่อกันด้วย SDK จริง แล้วสร้าง Proof report (JSON) ที่มีเวลา สถานะ HTTP และผลลัพธ์ของแต่ละขั้น ต้องวาง API key ในขั้นที่ 2 ก่อน</p>
     <div class="actions"><button class="primary" data-run="all">รันทั้งหมด</button><button class="ghost" id="copy-report" type="button" disabled>คัดลอก report</button></div>
     <div class="summary" id="summary" hidden></div>
     <div class="out" data-out="all" hidden></div>

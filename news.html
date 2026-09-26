@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#000000">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<title>ข่าว AI · LSUPERAGENT SDK</title>
+<style>
+:root{color-scheme:dark;--bg:#000;--surface:#0a0a0a;--line:#2a2a2a;--line2:#4a4a4a;--text:#fff;--muted:#a0a0a0;--accent:#3b82f6;--bad:#ff7d86;--mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;padding:28px 16px 64px;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Thai",sans-serif;overflow-x:hidden}
+main{max-width:860px;margin:auto}
+a{color:inherit;text-decoration:none}
+b{color:var(--accent)}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:22px}
+header strong{display:flex;align-items:center;gap:12px;font-size:1.1rem}
+header img{width:34px;height:34px}
+header nav{display:flex;gap:14px;flex-wrap:wrap}
+header nav a{color:var(--muted)}
+header nav a:hover,header nav a[aria-current]{color:var(--text)}
+h1{font-size:clamp(2rem,7vw,3rem);margin:56px 0 12px;letter-spacing:-.03em}
+p{color:var(--muted);line-height:1.65}
+.lead{max-width:640px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:22px}
+.tab{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:6px 11px;font:600 .82rem inherit;cursor:pointer}
+.tab[aria-selected="true"]{color:var(--text);border-color:var(--accent)}
+.tab:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.status{font:.76rem var(--mono);color:var(--muted);margin:14px 0 0;min-height:1.2em}
+.status.bad{color:var(--bad)}
+.list{display:grid;gap:10px;margin:14px 0 0;padding:0;list-style:none}
+.item a{display:block;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:16px 18px}
+.item a:hover{border-color:var(--line2)}
+.item .src{font:700 .7rem var(--mono);letter-spacing:.1em;color:var(--accent);text-transform:uppercase}
+.item h2{font-size:1rem;margin:6px 0 0;line-height:1.45;overflow-wrap:anywhere}
+.item .desc{color:var(--muted);font-size:.9rem;margin:6px 0 0;line-height:1.55;overflow-wrap:anywhere}
+.item .meta{color:var(--muted);font:.76rem var(--mono);margin-top:8px;overflow-wrap:anywhere}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:20px;color:var(--muted)}
+footer{margin-top:44px;color:var(--muted);font-size:.84rem;border-top:1px solid var(--line);padding-top:18px}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <a class="brand-link" href="/home" aria-label="กลับหน้าแรก"><strong><img src="/logo.svg" alt="">LSUPERAGENT <b>SDK</b></strong></a>
+    <nav aria-label="เมนูหลัก"><a href="/home">หน้าแรก</a><a href="/chat">แชท</a><a href="/docs">เอกสาร</a><a href="/guide">Playground</a><a href="/news" aria-current="page">ข่าว AI</a><a href="/auth/logout">ออกจากระบบ</a></nav>
+  </header>
+
+  <h1>ข่าว AI</h1>
+  <p class="lead">ข่าวล่าสุดจากแหล่งจริง ดึงสดทุกครั้งที่เปิด (แคชที่ขอบเครือข่าย 5 นาที) และรีเฟรชแท็บที่เปิดอยู่ทุก 60 วินาที ถ้าแหล่งใดล่ม แหล่งอื่นยังแสดงตามปกติ</p>
+
+  <div class="tabs" role="tablist" aria-label="แหล่งข่าว">
+    <button class="tab" role="tab" data-source="all">ทั้งหมด</button>
+    <button class="tab" role="tab" data-source="openai">OpenAI</button>
+    <button class="tab" role="tab" data-source="anthropic">Anthropic</button>
+    <button class="tab" role="tab" data-source="claude">Claude</button>
+    <button class="tab" role="tab" data-source="grok">Grok</button>
+    <button class="tab" role="tab" data-source="ai">AI News</button>
+    <button class="tab" role="tab" data-source="community">Community</button>
+  </div>
+  <p class="status" id="news-status" aria-live="polite">กำลังโหลด…</p>
+  <ul class="list" id="news-list" aria-label="รายการข่าว"></ul>
+
+  <footer>แหล่งข่าว: OpenAI RSS · GitHub releases ของ Claude Code · Hacker News (Anthropic, Grok, AI) · GitHub repos หัวข้อ <code>ai-agents</code> ที่สร้างใน 30 วันล่าสุด</footer>
+</main>
+<script src="/assets/news.js" defer></script>
+</body>
+</html>

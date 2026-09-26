@@ -1,3 +1,5 @@
+import { getFeed, SOURCES as FEED_SOURCES } from './feeds.js';
+
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 10;
 const RATE_LIMIT_BUCKETS = new Map();
@@ -679,6 +681,20 @@ async function handleSdkApi(request, env, pathname) {
   return withSdkHeaders(pathname === '/v1/chat' ? await handleChat(request, env) : await handleImage(request, env));
 }
 
+async function handleFeed(request, env, url) {
+  if (request.method !== 'GET') return json({ ok: false, status: 'method_not_allowed', message: 'Use GET' }, 405, { allow: 'GET' });
+  if (!await currentSession(request, env)) return json({ ok: false, error: 'authentication_required', message: 'กรุณาเข้าสู่ระบบก่อนอ่านข่าว' }, 401);
+  const source = url.searchParams.get('source') || 'all';
+  if (source !== 'all' && !Object.hasOwn(FEED_SOURCES, source)) return json({ ok: false, error: 'unknown_source', message: 'Unknown source: ' + source }, 400);
+  try {
+    const feed = await getFeed(source, { githubToken: env.GITHUB_TOKEN });
+    const status = feed.items.length || !feed.errors.length ? 200 : 502;
+    return json({ ok: status === 200, ...feed }, status, { 'cache-control': 'private, max-age=60' });
+  } catch (err) {
+    return json({ ok: false, error: 'upstream_failed', message: String(err && err.message || err) }, 502);
+  }
+}
+
 function plannedEndpoint(pathname) {
   const planned = {
     '/admin/auth/github': { status: 'retired', method: 'GET', message: 'Use /dev.' },
@@ -758,6 +774,8 @@ export default {
     if (pathname === '/api/chat') return handleChat(request, env);
     if (pathname === '/api/image') return handleImage(request, env);
 
+    if (pathname === '/api/feed') return handleFeed(request, env, url);
+
     if (pathname === '/api/sdk/keys') return handleSdkKeyCreate(request, env);
     if (pathname === '/v1' || pathname.startsWith('/v1/')) return handleSdkApi(request, env, pathname);
 
@@ -773,7 +791,8 @@ export default {
       ['/home', '/home'], ['/home.html', '/home'],
       ['/chat', '/chat'], ['/chat.html', '/chat'],
       ['/tools', '/tools'], ['/tools.html', '/tools'],
-      ['/guide', '/guide'], ['/guide.html', '/guide']
+      ['/guide', '/guide'], ['/guide.html', '/guide'],
+      ['/news', '/news'], ['/news.html', '/news']
     ]);
     if (workspacePaths.has(pathname) && !await currentSession(request, env)) {
       return redirectTo(`/login?return_to=${encodeURIComponent(workspacePaths.get(pathname))}`, 302);

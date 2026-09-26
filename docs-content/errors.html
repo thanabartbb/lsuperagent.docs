@@ -27,6 +27,6 @@ try {
   }
 }</code></pre>
 <h2>รูปแบบ error body</h2>
-<pre data-title="401"><code>{ "ok": false, "error": "invalid_api_key", "message": "Missing, invalid, or expired API key. Create one at /guide." }</code></pre>
+<pre data-title="401"><code>{ "ok": false, "error": "invalid_api_key", "message": "Missing, invalid, or expired API key. Create one at /keys." }</code></pre>
 <pre data-title="503"><code>{ "ok": false, "status": "service_unavailable", "message": "บริการ AI ยังไม่พร้อมใช้งานในขณะนี้" }</code></pre>
 <p>ข้อความใน <code>body.message</code> ถูกใช้เป็น <code>err.message</code> ด้วย</p>

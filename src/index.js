@@ -675,7 +675,7 @@ async function handleSdkApi(request, env, pathname) {
   const routes = { '/v1/me': 'GET', '/v1/chat': 'POST', '/v1/image': 'POST' };
   if (!routes[pathname]) return sdkJson({ ok: false, error: 'not_found', message: 'Unknown endpoint: ' + pathname }, 404);
   const key = await sdkKeyFromRequest(request, env);
-  if (!key) return sdkJson({ ok: false, error: 'invalid_api_key', message: 'Missing, invalid, or expired API key. Create one at /guide.' }, 401, { 'www-authenticate': 'Bearer' });
+  if (!key) return sdkJson({ ok: false, error: 'invalid_api_key', message: 'Missing, invalid, or expired API key. Create one at /keys.' }, 401, { 'www-authenticate': 'Bearer' });
   if (request.method !== routes[pathname]) return sdkJson({ ok: false, error: 'method_not_allowed', message: 'Use ' + routes[pathname] }, 405, { allow: routes[pathname] + ', OPTIONS' });
   if (pathname === '/v1/me') return sdkJson({ ok: true, user: { provider: key.provider, id: key.id, email: key.email, name: key.name }, key: sdkKeyInfo(key) });
   return withSdkHeaders(pathname === '/v1/chat' ? await handleChat(request, env) : await handleImage(request, env));
@@ -792,7 +792,8 @@ export default {
       ['/chat', '/chat'], ['/chat.html', '/chat'],
       ['/tools', '/tools'], ['/tools.html', '/tools'],
       ['/guide', '/guide'], ['/guide.html', '/guide'],
-      ['/news', '/news'], ['/news.html', '/news']
+      ['/news', '/news'], ['/news.html', '/news'],
+      ['/keys', '/keys'], ['/keys.html', '/keys']
     ]);
     if (workspacePaths.has(pathname) && !await currentSession(request, env)) {
       return redirectTo(`/login?return_to=${encodeURIComponent(workspacePaths.get(pathname))}`, 302);

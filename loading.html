@@ -246,7 +246,7 @@
             <span class="icon"><svg viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span>
             <span class="go" aria-hidden="true">↗</span>
             <h3>lsupergen-sdk</h3>
-            <p>แพ็กเกจ npm สำหรับเรียก API <code>/v1</code> ของเว็บนี้ สร้าง API key และทดสอบเรียกจริงได้ในหน้า Playground</p>
+            <p>แพ็กเกจ npm สำหรับเรียก API <code>/v1</code> ของเว็บนี้ สร้าง key ที่หน้า API keys แล้วทดสอบเรียกจริงในหน้า Playground</p>
           </a>
           <a class="feature wide-sm" href="/docs">
             <span class="go" aria-hidden="true">↗</span>
@@ -294,11 +294,11 @@
         <div class="steps">
           <ol>
             <li><div><strong>เข้าสู่ระบบ</strong>ด้วยบัญชี Google เพื่อเปิด AI Workspace</div></li>
-            <li><div><strong>สร้าง API key</strong>ในหน้า Playground (<code>/guide</code>) key มีอายุ 30 วัน</div></li>
+            <li><div><strong>สร้าง API key</strong>ที่หน้า API keys (<code>/keys</code>) แล้วคัดลอกไปใส่เอง key มีอายุ 30 วัน</div></li>
             <li><div><strong>ติดตั้ง SDK</strong>แล้วเรียก <code>/v1/chat</code> หรือ <code>/v1/image</code> จากโค้ดของคุณ</div></li>
           </ol>
           <pre data-code-window data-title="quickstart.mjs" data-lang="js"><code>// npm install lsupergen-sdk
-// export LSUPERGEN_API_KEY=lsg_…  (สร้างได้ที่ /guide)
+// export LSUPERGEN_API_KEY=lsg_…  (สร้างได้ที่ /keys)
 import { Lsupergen } from 'lsupergen-sdk';
 
 const client = new Lsupergen({

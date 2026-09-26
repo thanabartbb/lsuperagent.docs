@@ -39,7 +39,7 @@ function errorDetail(err) {
 }
 
 function requireKey() {
-  if (!keyInput.value.trim().startsWith('lsg_')) throw new Error('ยังไม่มี API key — สร้างในขั้นที่ 2 ก่อน');
+  if (!keyInput.value.trim().startsWith('lsg_')) throw new Error('ยังไม่มี API key — สร้างที่หน้า /keys แล้ววางในขั้นที่ 2');
 }
 
 // Each check returns { pass, data } and throws only on unexpected failures.
@@ -48,14 +48,6 @@ const checks = {
     const exported = ['Lsupergen', 'APIError', 'TimeoutError', 'ConnectionError', 'LsupergenError', 'VERSION'];
     const missing = exported.filter((name) => !(name in sdk));
     return { pass: missing.length === 0 && VERSION === '0.1.0', data: { package: 'lsupergen-sdk', version: VERSION, exports: Object.keys(sdk).sort(), missing } };
-  },
-  async key() {
-    const response = await fetch('/api/sdk/keys', { method: 'POST', headers: { accept: 'application/json' }, credentials: 'same-origin' });
-    const body = await response.json().catch(() => ({}));
-    if (!response.ok || !body.api_key) return { pass: false, status: response.status, data: body };
-    keyInput.value = body.api_key;
-    const { api_key, ...rest } = body;
-    return { pass: true, status: response.status, data: { ...rest, api_key: `${api_key.slice(0, 12)}…(ซ่อน ${api_key.length - 12} ตัวอักษร)` } };
   },
   async health() {
     const data = await client().get('/health');
@@ -186,7 +178,7 @@ document.querySelectorAll('[data-run]').forEach((button) => {
     if (name === 'all') {
       if (!keyInput.value.trim().startsWith('lsg_')) {
         setBadge('all', 'fail', 'ต้องมี key');
-        show('all', 'FAIL', 'ยังไม่มี API key — สร้างในขั้นที่ 2 ก่อนรันทั้งหมด');
+        show('all', 'FAIL', 'ยังไม่มี API key — สร้างที่หน้า /keys แล้ววางในขั้นที่ 2 ก่อนรันทั้งหมด');
         button.disabled = false;
         return;
       }
@@ -198,12 +190,16 @@ document.querySelectorAll('[data-run]').forEach((button) => {
   });
 });
 
-$('#toggle-key').addEventListener('click', (event) => {
-  const hidden = keyInput.type === 'password';
-  keyInput.type = hidden ? 'text' : 'password';
-  event.currentTarget.textContent = hidden ? 'ซ่อน key' : 'แสดง key';
-});
-$('#copy-key').addEventListener('click', (event) => { if (keyInput.value) copyText(keyInput.value, event.currentTarget); });
+function updateKeyState() {
+  const value = keyInput.value.trim();
+  const badge = $('#key-state');
+  if (!badge) return;
+  const ok = /^lsg_[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value);
+  badge.className = `badge ${value ? (ok ? 'pass' : 'fail') : ''}`.trim();
+  badge.textContent = value ? (ok ? 'วาง key แล้ว' : 'รูปแบบ key ไม่ถูกต้อง') : 'ยังไม่มี key';
+}
+keyInput.addEventListener('input', updateKeyState);
+$('#clear-key').addEventListener('click', () => { keyInput.value = ''; updateKeyState(); keyInput.focus(); });
 $('#copy-report').addEventListener('click', (event) => { if (lastReport) copyText(JSON.stringify(lastReport, null, 2), event.currentTarget); });
 
 fillTemplates();

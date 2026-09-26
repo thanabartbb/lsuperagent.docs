@@ -65,6 +65,7 @@ src/firebase-worker.js
         ├─ /api/image  POST               login required → OpenAI Images API
         ├─ /docs, /docs/:page             login required → docs-shell.html (Docus-style docs: sidebar, search, TOC)
         ├─ /guide  (/sdk → /guide)        login required → lsupergen-sdk guide with live "run" checks
+        ├─ /keys                          login required → keys.html: create an SDK key, copy it (masked on screen)
         ├─ /news                          login required → news.html (live AI news tabs, assets/news.js)
         ├─ /api/feed GET                  login required → src/feeds.js (OpenAI RSS, Claude Code releases, HN, GitHub)
         ├─ /api/sdk/keys POST             login required, same-origin → stateless signed API key (lsg_…, 30 days)
@@ -91,7 +92,7 @@ email form  → /api/auth/platform/login | register (server-side Firebase Identi
 ```txt
 npm package:  lsupergen-sdk (thanabartbb/npm-lsupergen-sdk)
 Base URL:     https://agents-sdk.space/v1   (SDK default api.lsupergen.com is NOT this site)
-API key:      POST /api/sdk/keys from /guide → HMAC token signed with AUTH_SESSION_SECRET, typ "sdk_key"
+API key:      POST /api/sdk/keys from /keys (keys.html + assets/keys.js; copy-only, never rendered in full) → HMAC token signed with AUTH_SESSION_SECRET, typ "sdk_key"
               no storage; expires in 30 days; rotating AUTH_SESSION_SECRET revokes all keys (and sessions)
 Guide page:   guide.html + assets/guide.js, runs vendor/lsupergen-sdk/0.1.0/index.js
               (byte-identical npm dist, sha256 pinned in tests/sdk-guide.test.mjs)
@@ -214,7 +215,7 @@ Live checklist:
 4. GET /api/firebase/status → configured: true, secret_values_exposed: false
 5. POST /api/chat signed out → 401 authentication_required
 6. POST /api/chat signed in  → real model output, ok: true
-6b. /guide signed in → create API key → "รันทั้งหมด" → Proof report PASS 5/5 (chat needs OPENAI_API_KEY)
+6b. /keys signed in → create + copy key → /guide paste key → "รันทั้งหมด" → Proof report PASS 5/5 (chat needs OPENAI_API_KEY)
 7. No secret appears in repo, logs, screenshots, or UI
 ```
 

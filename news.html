@@ -39,13 +39,15 @@ p{color:var(--muted);line-height:1.65}
 .empty{border:1px dashed var(--line);border-radius:12px;padding:20px;color:var(--muted)}
 footer{margin-top:44px;color:var(--muted);font-size:.84rem;border-top:1px solid var(--line);padding-top:18px}
 </style>
+<link rel="stylesheet" href="/assets/layout.css?v=1">
 </head>
-<body>
-<main>
-  <header>
+<body class="sdk-layout sdk-simple">
+<header class="sdk-site-header"><div class="sdk-frame sdk-header-row">
     <a class="brand-link" href="/home" aria-label="กลับหน้าแรก"><strong><img src="/logo.svg" alt="">LSUPERAGENT <b>SDK</b></strong></a>
     <nav aria-label="เมนูหลัก"><a href="/home">หน้าแรก</a><a href="/chat">แชท</a><a href="/docs">เอกสาร</a><a href="/guide">Playground</a><a href="/news" aria-current="page">ข่าว AI</a><a href="/auth/logout">ออกจากระบบ</a></nav>
-  </header>
+  </div></header>
+<main class="sdk-frame sdk-page-content">
+
 
   <h1>ข่าว AI</h1>
   <p class="lead">ข่าวล่าสุดจากแหล่งจริง ดึงสดทุกครั้งที่เปิด (แคชที่ขอบเครือข่าย 5 นาที) และรีเฟรชแท็บที่เปิดอยู่ทุก 60 วินาที ถ้าแหล่งใดล่ม แหล่งอื่นยังแสดงตามปกติ</p>

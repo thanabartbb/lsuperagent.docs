@@ -69,13 +69,15 @@ th{color:var(--muted);font-weight:600}
 .summary span:last-child{font:700 .76rem var(--mono)}
 footer{margin-top:44px;color:var(--muted);font-size:.84rem;border-top:1px solid var(--line);padding-top:18px}
 </style>
+<link rel="stylesheet" href="/assets/layout.css?v=1">
 </head>
-<body>
-<main>
-  <header>
+<body class="sdk-layout sdk-simple">
+<header class="sdk-site-header"><div class="sdk-frame sdk-header-row">
     <a class="brand-link" href="/home" aria-label="กลับหน้าแรก"><strong><img src="/logo.svg" alt="">LSUPERAGENT <b>SDK</b></strong></a>
     <nav aria-label="เมนูหลัก"><a href="/home">หน้าแรก</a><a href="/chat">แชท</a><a href="/docs">เอกสาร</a><a href="/guide" aria-current="page">Playground</a><a href="/keys">API keys</a><a href="/auth/logout">ออกจากระบบ</a></nav>
-  </header>
+  </div></header>
+<main class="sdk-frame sdk-page-content">
+
 
   <h1>คู่มือ lsupergen-sdk</h1>
   <p class="lead">ติดตั้งแพ็กเกจ <a href="https://www.npmjs.com/package/lsupergen-sdk"><code>lsupergen-sdk</code></a> จาก npm แล้วเรียก API ของ agents-sdk.space ได้ทันที ทุกขั้นในหน้านี้มีปุ่ม <strong>รันจริง</strong> ที่เรียกผ่านแพ็กเกจตัวเดียวกับที่เผยแพร่บน npm (เวอร์ชัน 0.1.0) และแสดงผลตอบกลับจริงจากเซิร์ฟเวอร์ ไม่มีผลลัพธ์จำลอง</p>

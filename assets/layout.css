@@ -1,0 +1,86 @@
+/* Shared outer geometry. Page-specific colors, content and actions stay local. */
+:root {
+  --sdk-width: 1080px;
+  --sdk-gutter: 24px;
+  --sdk-header: 64px;
+  --sdk-page-gap: 32px;
+  --top: var(--sdk-header);
+}
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--sdk-header) + 16px); }
+body.sdk-layout { margin: 0; padding: 0; width: 100%; max-width: none; min-height: 100dvh; }
+.sdk-layout *, .sdk-layout *::before, .sdk-layout *::after { box-sizing: border-box; }
+.sdk-layout .sdk-frame {
+  width: 100%; max-width: var(--sdk-width); min-width: 0;
+  margin-inline: auto; padding-inline: var(--sdk-gutter);
+}
+.sdk-layout .sdk-site-header {
+  position: sticky; top: 0; z-index: 50; flex: none;
+  display: block; width: 100%; max-width: none;
+  height: auto; min-height: var(--sdk-header);
+  margin: 0; padding: 0;
+  background: var(--bg, #000); border-bottom: 1px solid var(--line, #1f1f1f);
+}
+.sdk-layout .sdk-site-header .sdk-header-row {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: nowrap; flex: none; gap: 12px;
+  height: calc(var(--sdk-header) - 1px); min-height: 0;
+  padding-block: 0; border: 0;
+}
+.sdk-header-row > * { min-width: 0; }
+.sdk-header-row > a:not(.brand):not(.brand-link):not(.sdk-brand) { white-space: nowrap; font-size: 12px; }
+.sdk-header-row :is(.brand, .brand-link, .page-title, .sdk-brand) {
+  flex: none; margin: 0; font-size: 14px; line-height: 1.2;
+  font-weight: 700; letter-spacing: 0; white-space: nowrap;
+}
+.sdk-header-row :is(.brand, .page-title, .sdk-brand, .brand-link strong) {
+  display: flex; align-items: center; gap: 6px;
+}
+.sdk-header-row .brand-link strong { font-size: inherit; }
+.sdk-header-row :is(.brand, .page-title, .sdk-brand, .brand-link) :is(img, svg, .mark, .brand-mark) {
+  width: 22px; height: 22px; flex: none;
+}
+.sdk-header-row :is(.brand-copy, .brand-name, .bn) { font-size: inherit; }
+.sdk-header-row > nav {
+  min-width: 0; flex-wrap: nowrap; overflow-x: auto;
+  scrollbar-width: thin; white-space: nowrap; gap: 8px;
+}
+.sdk-header-row > nav > * { flex-shrink: 0; }
+.sdk-header-row :is(.hsrch, .header-search) { min-width: 120px; flex: 0 1 200px; }
+.sdk-brand { color: inherit; text-decoration: none; }
+.sdk-brand span { color: var(--accent, #3b82f6); }
+.sdk-brand:focus-visible { outline: 2px solid var(--accent, #3b82f6); outline-offset: 4px; }
+.sdk-layout.sdk-simple { display: block; }
+.sdk-layout .sdk-page-content { padding-top: var(--sdk-page-gap); padding-bottom: 64px; }
+.sdk-simple .sdk-page-content > h1:first-child { margin-top: 0; }
+.sdk-layout .tools-main { padding-top: var(--sdk-page-gap); }
+.sdk-layout.sdk-auth { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; height: auto; }
+.sdk-auth > .login, .sdk-auth > .view {
+  width: calc(100% - 2 * var(--sdk-gutter)); max-width: 380px;
+  margin: auto; padding-block: 40px;
+}
+.sdk-layout.sdk-chat { display: flex; flex-direction: column; height: 100dvh; min-height: 100dvh; }
+.sdk-chat .sdk-chat-content {
+  display: flex; flex-direction: column; flex: 1; min-height: 0;
+  padding-top: var(--sdk-page-gap); padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+.sdk-chat .chat { min-height: 0; }
+.sdk-chat .composer textarea { min-width: 0; }
+.sdk-chat .sdk-header-row .who { max-width: 140px; }
+.sdk-docs .layout { grid-template-columns: 220px minmax(0, 1fr) 160px; }
+.sdk-docs .content { padding: var(--sdk-page-gap) 24px 64px; }
+.sdk-docs .sidebar, .sdk-docs .toc { top: var(--sdk-header); height: calc(100dvh - var(--sdk-header)); }
+.sdk-docs .sidebar { padding-left: 0; }
+.sdk-docs .toc { padding-right: 0; }
+@media (max-width: 1180px) { .sdk-docs .layout { grid-template-columns: 220px minmax(0, 1fr); } }
+@media (max-width: 860px) {
+  .sdk-docs .layout { display: block; }
+  .sdk-docs .content { padding-inline: 0; }
+  .sdk-docs .sidebar { inset: var(--sdk-header) 0 0; height: auto; padding-inline: var(--sdk-gutter); }
+}
+@media (max-width: 767px) {
+  :root { --sdk-gutter: 16px; --sdk-header: 56px; --sdk-page-gap: 24px; }
+  .sdk-header-row :is(.hsrch, .header-search) { display: none; }
+  .sdk-header-row :is(.shell-profile, .who) { display: none; }
+  .sdk-header-row > nav { font-size: 12px; }
+  .sdk-header-row > nav :is(a, button) { font-size: 12px; }
+}

@@ -167,9 +167,10 @@
     .hint { margin-top: 8px; font-size: 12px; color: #636366; line-height: 1.5; }
     .hint a { color: var(--muted); }
   </style>
+<link rel="stylesheet" href="/assets/layout.css?v=1">
 </head>
-<body>
-  <header class="top">
+<body class="sdk-layout sdk-chat">
+  <header class="top sdk-site-header"><div class="sdk-frame sdk-header-row">
     <a class="brand" href="/">
       <svg viewBox="30 20 144 160" aria-hidden="true"><path fill="#FFFFFF" fill-rule="evenodd" d="M104,30 L162,66 L163,133 L103,169 L103,139 L131,120 L103,101 Z M97,30 L41,66 L41,93 L94,63 Z M88,76 L41,102 L41,133 L94,168 L94,138 L63,119 L67,111 L93,96 L93,79 Z M126,72 L144,84 L143,108 L124,92 Z"/></svg>
       LSUPERAGENT SDK
@@ -179,7 +180,8 @@
       <span class="who" id="who"></span>
       <button type="button" id="signout">Sign out</button>
     </nav>
-  </header>
+  </div></header>
+<main class="sdk-frame sdk-chat-content">
 
   <div class="bar">
     <select id="provider" aria-label="Model" disabled><option>กำลังโหลดโมเดล…</option></select>
@@ -198,6 +200,7 @@
   </form>
   <p class="hint" id="hint">ประวัติแชทอยู่ในหน้านี้เท่านั้น ปิดหน้าแล้วหาย · อย่าใส่รหัสผ่านหรือ API key</p>
 
+</main>
   <script src="/assets/chat.js"></script>
 </body>
 </html>

@@ -54,8 +54,10 @@ test('brand names on login and home open the public intro page with usable actio
   const intro = await read('loading.html');
   assert.match(login, /<h1 class="brand"><a href="\/loading"/);
   assert.match(home, /class="brand-link" href="\/loading"/);
-  assert.match(intro, /href="\/">เริ่มใช้งานทันที<\/a>/);
-  assert.match(intro, /href="\/chat">เปิดแชท<\/a>/);
+  assert.match(intro, /href="\/">Open Workspace<\/a>/);
+  assert.match(intro, /href="\/chat">Open Chat<\/a>/);
+  assert.match(intro, /class="login" href="\/docs">Docs<\/a>/);
+  assert.match(intro, /href="\/guide">Step into the SDK<\/a>/);
   assert.match(intro, /src="\/logo\.svg"/);
   assert.doesNotMatch(intro, /href="\/(?:news|community)(?:\?|\")/);
 });

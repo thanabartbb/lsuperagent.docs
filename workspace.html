@@ -311,14 +311,15 @@ td .yes{color:var(--accent-strong)}td .no{color:var(--fg-muted)}
 .tbl td{padding:10px 14px;border-bottom:1px solid var(--border-subtle);color:var(--fg-secondary);vertical-align:top}
 .tbl tr:last-child td{border-bottom:0}
 .tbl code{font-family:"IBM Plex Mono",monospace;font-size:.82em;background:var(--surface-inset);border:1px solid var(--border-default);border-radius:5px;padding:1px 6px;color:#8ec6ff}
-</style></head>
-<body><a class="skip" href="#main">ข้ามไปเนื้อหาหลัก</a>
+</style><link rel="stylesheet" href="/assets/layout.css?v=1">
+</head>
+<body class="sdk-layout sdk-standard"><a class="skip" href="#main">ข้ามไปเนื้อหาหลัก</a>
 <div class="blueprint-bg" aria-hidden="true"></div><svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
 <linearGradient id="chrome" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6f8fa"/><stop offset=".22" stop-color="#c3c8cf"/><stop offset=".45" stop-color="#6b7078"/><stop offset=".6" stop-color="#3a3d43"/><stop offset=".78" stop-color="#9aa0a8"/><stop offset="1" stop-color="#d7dbe0"/></linearGradient>
 <linearGradient id="chromeEdge" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#242629"/><stop offset=".5" stop-color="#8b9098"/><stop offset="1" stop-color="#f2f4f6"/></linearGradient>
 <linearGradient id="markMini" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef0f2"/><stop offset=".5" stop-color="#7d828a"/><stop offset="1" stop-color="#c9cdd3"/></linearGradient>
 </defs></svg>
-<header class="site-header"><div class="wrap header-inner">
+<header class="site-header sdk-site-header"><div class="wrap header-inner sdk-frame sdk-header-row">
 <a class="brand" href="index.html" aria-label="lsuperagen.docs"><svg class="mono-mark" viewBox="0 0 40 40" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="9" fill="#0d0e10" stroke="#33373f"/><text x="20" y="27" text-anchor="middle" font-family="Inter,sans-serif" font-weight="800" font-size="19" fill="url(#markMini)">LS</text></svg><span class="brand-name"><b>lsuperagen</b><span>.docs</span></span></a>
 <nav class="primary-nav" aria-label="เมนูหลัก">
 <a href="getting-started.html">Docs</a><a href="guides.html">Guides</a><a href="api.html">API</a>
@@ -368,7 +369,7 @@ PREVIEW BUILD — NOT PRODUCTION
 <button class="ws-tab" data-panel="spec" role="tab" aria-selected="false">Spec Docs</button>
 </div>
 <main id="main"><div id="p-workspace" class="ws-panel on">
-<div class="wrap">
+<div class="wrap sdk-frame">
 <!-- evidence legend -->
 <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:var(--space-6);padding:12px 16px;background:var(--surface-inset);border:1px solid var(--border-subtle);border-radius:10px;align-items:center" role="note" aria-label="Evidence Classification Legend">
 <span style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--fg-muted);margin-right:4px;letter-spacing:.06em">EVIDENCE:</span>
@@ -409,7 +410,7 @@ PREVIEW BUILD — NOT PRODUCTION
 <tr><td>R7</td><td>Deploy Approval</td><td><span class="ev-badge" style="color:#ff6b6b;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.25)">BLOCKED</span></td><td class="cm" style="font-family:monospace;font-size:.78rem">รอ R6 ผ่านก่อน</td></tr>
 </tbody></table></div>
 </div></div><div id="p-sdk" class="ws-panel">
-<div class="wrap">
+<div class="wrap sdk-frame">
 <p class="ws-slabel">PACKET BUILDER</p>
 <p style="color:var(--fg-secondary);font-size:.9rem;margin-bottom:var(--space-3)">ประกอบ POTOCALL Frame สด — CRC-16 Modbus คำนวณอัตโนมัติ</p>
 <div role="note" style="display:flex;gap:10px;padding:10px 14px;background:rgba(99,179,255,.06);border:1px solid rgba(99,179,255,.2);border-radius:8px;margin-bottom:var(--space-6);font-size:.82rem;color:#8ec6ff" class="thai">
@@ -469,7 +470,7 @@ PREVIEW BUILD — NOT PRODUCTION
 </div>
 <div class="frame-box"><pre id="code-out">// กด Build Frame ก่อน แล้ว code จะ generate ที่นี่</pre></div>
 </div></div><div id="p-cli" class="ws-panel">
-<div class="wrap">
+<div class="wrap sdk-frame">
 <p class="ws-slabel">CLI REFERENCE</p>
 <div role="note" style="display:flex;gap:10px;padding:10px 14px;background:rgba(99,179,255,.06);border:1px solid rgba(99,179,255,.2);border-radius:8px;margin-bottom:var(--space-6);font-size:.82rem;color:#8ec6ff" class="thai">
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="flex:0 0 auto;margin-top:2px"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
@@ -548,7 +549,7 @@ PREVIEW BUILD — NOT PRODUCTION
 <button style="margin-left:auto;height:30px;padding:0 12px;background:transparent;border:1px solid var(--border-strong);border-radius:8px;color:var(--fg-secondary);font-family:monospace;font-size:.76rem;cursor:pointer" id="copyCli">copy</button>
 </div>
 </div></div><div id="p-sniffer" class="ws-panel">
-<div class="wrap">
+<div class="wrap sdk-frame">
 <p class="ws-slabel">TRAFFIC SNIFFER</p>
 <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:var(--space-4)">
 <button class="chip" data-sniff="all" aria-pressed="true">ทั้งหมด</button>
@@ -567,7 +568,7 @@ PREVIEW BUILD — NOT PRODUCTION
 <tr data-cmd="0x40"><td>005</td><td>11:45:12.441</td><td><span class="cmd-badge cmd-tx">0x40 DONE</span></td><td>0x02</td><td>0x04</td><td><span style="color:var(--success)">✓ OK</span></td><td><span class="ev-badge ev-obs">OBS</span></td><td style="font-family:monospace;font-size:.78rem">02 00 12 02 04 40 00 C8 23 28 BC D3 03</td></tr>
 </tbody></table></div>
 </div></div><div id="p-spec" class="ws-panel">
-<div class="wrap">
+<div class="wrap sdk-frame">
 <div style="display:flex;flex-wrap:wrap;gap:12px 24px;padding:14px 16px;background:var(--surface-inset);border:1px solid var(--border-default);border-radius:10px;margin-bottom:var(--space-6);font-family:'IBM Plex Mono',monospace;font-size:.76rem;color:var(--fg-muted)" role="note" aria-label="Document traceability">
 <span><span style="color:var(--fg-primary);font-weight:600">DOC:</span> Site SDK POTOCALL Technical Blueprint</span>
 <span><span style="color:var(--fg-primary);font-weight:600">VER:</span> 2.4-PRODUCTION</span>
@@ -654,7 +655,7 @@ PREVIEW BUILD — NOT PRODUCTION
 </div>
 
 </div></div></main>
-<footer class="site-footer"><div class="wrap footer-inner">
+<footer class="site-footer"><div class="wrap footer-inner sdk-frame">
 <div class="footer-brand"><svg class="mono-mark" viewBox="0 0 40 40" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="9" fill="#0d0e10" stroke="#33373f"/><text x="20" y="27" text-anchor="middle" font-family="Inter,sans-serif" font-weight="800" font-size="19" fill="url(#markMini)">LS</text></svg><span class="brand-name"><b>lsuperagen</b><span>.docs</span></span><span class="footer-ver">V11 · Public Beta</span></div>
 <nav class="footer-nav"><a href="getting-started.html">Docs</a><a href="api.html">API</a><a href="tools.html">Tools</a><a href="examples.html">SDK</a><a href="changelog.html">Changelog</a><a href="workspace.html">Workspace</a></nav>
 <div class="footer-social"><a href="#" aria-label="GitHub"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.4-2.2-.2-4.6-1.1-4.6-4.9 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.6 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.3.2 2.3.1 2.6.6.7 1 1.6 1 2.7 0 3.8-2.4 4.7-4.6 4.9.3.3.6.9.6 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg></a><a href="#" aria-label="X"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7 8 8.2 12h-6.4l-5-6.6L6 22H2.9l7.5-8.6L2.5 2H9l4.5 6z"/></svg></a><a href="#" aria-label="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 5.3A17 17 0 0 0 15.8 4l-.2.4a13 13 0 0 1 3.7 1.9 12 12 0 0 0-10.6 0A13 13 0 0 1 12.4 4.4L12.2 4A17 17 0 0 0 4 5.3C1.6 8.8.9 12.3 1.2 15.7A17 17 0 0 0 6.3 18l.6-.9a11 11 0 0 1-1.7-.8l.4-.3a12 12 0 0 0 10.8 0l.4.3c-.5.3-1.1.6-1.7.8l.6.9a17 17 0 0 0 5.1-2.3c.4-4-.7-7.4-3.6-10.4zM8.9 14c-.8 0-1.5-.8-1.5-1.7s.7-1.7 1.5-1.7 1.5.8 1.5 1.7-.7 1.7-1.5 1.7zm6.2 0c-.8 0-1.5-.8-1.5-1.7s.7-1.7 1.5-1.7 1.5.8 1.5 1.7-.7 1.7-1.5 1.7z"/></svg></a></div>

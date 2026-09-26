@@ -2,8 +2,8 @@
 
 AI Framework: **LSUPERAGENT public AI workspace**
 
-Last updated: **2026-09-25T21:49:15+07:00 Asia/Bangkok**
-Last update task: **Add the login-gated `/docs` documentation site and record the `/guide`, `/api/sdk/keys` and `/v1` SDK API routes in the contract.**
+Last updated: **2026-09-26T13:58:17+07:00 Asia/Bangkok**
+Last update task: **Combine the English SDK landing copy and navigation with shared page widths, gutters and header geometry.**
 
 The proposed one-owner session continuity system is specified in [`docs/session-continuity-pilot.md`](docs/session-continuity-pilot.md). It is design-only; no database or resumable chat runtime has been created.
 
@@ -40,7 +40,7 @@ Agents working in this repository must treat this stack as pinned unless the own
 
 Build a public AI Workspace so authenticated users can safely use real AI capabilities without an anonymous access path, with `/login` as the public entry surface.
 
-The public auth pages are `login.html`, `signup.html`, and `forgot-password.html`. Brand links on `/login` and `/home` open the public `/loading` intro page adapted from the supplied HTML. Its primary action goes through `/` to `/login` or `/home` according to the signed session; the chat action uses the guarded `/chat`. Its news cards link to external publisher pages and are static links, not a live feed. Successful sign-in and the authenticated root default to `/home`; direct links to `/chat` remain available. Authenticated `/home` links to `/chat`, `/tools`, `/docs`, and `/guide`. The docs site (`docs-shell.html`, `assets/docs*.{js,css}`, `docs-content/*.html`) and its content route `/docs-content/*` require the signed session. `assets/chat.js` checks `/api/auth/session` and sends conversation to `POST /api/chat`. Google and GitHub callbacks remain `/auth/google/callback` and `/auth/github/callback`. GitHub login uses `read:user user:email` only; it does not authorize repository writes or save a GitHub access token.
+The public auth pages are `login.html`, `signup.html`, and `forgot-password.html`. Brand links on `/login` and `/home` open the public `/loading` intro page adapted from the supplied HTML. Its primary action goes through `/` to `/login` or `/home` according to the signed session; the chat action uses the guarded `/chat`. The header and lower Docs action use `/docs`; the lower SDK action uses `/guide`. Its news cards link to external publisher pages and are static links, not a live feed. Successful sign-in and the authenticated root default to `/home`; direct links to `/chat` remain available. Authenticated `/home` links to `/chat`, `/tools`, `/docs`, and `/guide`. The docs site (`docs-shell.html`, `assets/docs*.{js,css}`, `docs-content/*.html`) and its content route `/docs-content/*` require the signed session. `assets/chat.js` checks `/api/auth/session` and sends conversation to `POST /api/chat`. Google and GitHub callbacks remain `/auth/google/callback` and `/auth/github/callback`. GitHub login uses `read:user user:email` only; it does not authorize repository writes or save a GitHub access token.
 
 ### 3. Data Contract
 
@@ -57,7 +57,7 @@ Every feature or page must declare its data contract before implementation.
 | `evidence` | string | commit SHA, file path, route, or observed result | Must not be invented. |
 | `secret_values_exposed` | boolean | API response/docs statement | Must be `false` for any public or docs-only surface. |
 | `authenticated` | boolean | signed session cookie verification | Must be `true` before `/chat`, `/tools`, `/api/chat`, or `/api/image` are available. |
-| `intro_links` | static URLs | `loading.html` | Brand route `/loading`, session-aware CTA `/`, guarded `/chat`, and external news sources. |
+| `intro_links` | static URLs | `loading.html` | Brand route `/loading`, session-aware CTA `/`, guarded `/chat`, guarded `/docs` and `/guide`, and external news sources. |
 | `return_to` | relative path | login query/state | Must remain an internal, safe path and defaults to `/home`; explicit `/chat` is preserved. |
 | `mode` | enum `chat`, `code` | `/chat` query and `assets/chat.js` request | Code entry sends `tool: "code"` to the Worker. |
 | `docs_page` | slug `[a-z0-9-]+` | `/docs/:page`, `assets/docs-nav.js` | Must have a matching `docs-content/<slug>.html`; unknown slugs render a not-found message. |
@@ -114,3 +114,19 @@ Two maintenance loops exist conceptually for this repository:
 2. **Prompt Stack Loop** — every 6 hours, update the AI framework layers: pinned stack, feature goal, data contract, acceptance criteria, and negative constraints.
 
 Both loops must write real updates when there is a real state change. If there is no state change, the loop must still update the audit timestamp and say `No material change observed`.
+
+## Shared layout
+
+All 26 complete HTML page shells load `assets/layout.css` last. The root session redirect has no visual layout; docs fragments inherit `docs-shell.html`.
+
+| Field | Type | Source / value |
+|---|---|---|
+| surface | string | Static HTML page shells |
+| status | enum | ready (source checked; deployed rendering unverified) |
+| max_width | CSS length | `assets/layout.css`: 1080px including gutters |
+| gutter | CSS length | 16px below 768px; 24px otherwise |
+| header_height | CSS length | 56px below 768px; 64px otherwise |
+| evidence | string | 41 existing Node tests pass; scripts, forms and IDs preserved across 26 pages |
+| secret_values_exposed | boolean | false |
+
+Auth forms retain a 380px inner width. Docs keeps its sidebar; Chat keeps a flexible conversation area. Browser visual verification remains pending because Chromium download failed in the editing environment.

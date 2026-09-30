@@ -154,3 +154,19 @@ Commit แก้ test: `dff72afbb3423cf92d9663c4b01c531d3c69c8fe`.
 
 
 Security follow-up: ลบการรับ `github_token` จาก request body แล้วใน commit `f3d830ae2872de6928c7499191b15a38045bb1f0`; helper จะอ่านได้เฉพาะ token จาก verified server-side session เท่านั้น โมดูลยังคง `NOT WIRED YET` จนกว่า safety gates ที่เหลือจะครบ
+
+
+## Update — Next.js landing assembly on main
+
+ตรวจ commit `1cf5e1cd2c450a90c2d4c9bee156b59ddd952ebb` แล้ว:
+
+- `next-app/app/page.jsx` และ `next-app/app/loading/page.jsx` ใช้ component กลาง `components/landing-page.jsx` ชุดเดียวกัน ลด markup ซ้ำ
+- ไม่แก้ไฟล์ stylesheet หรือค่าสี จึงไม่พบ color/UI regression จาก diff นี้
+- เพิ่ม redirect จาก preview สำหรับ `/guide`, `/keys`, `/chat`, auth/docs และ workspace routes กลับไป production origin เดิม พร้อมคง query string ตาม contract ของ Next.js
+- `/guide` ยังไม่ถูก migrate หรือ duplicate; signed-session boundary และ flow `/keys → /guide` ยังคงอยู่ที่ production
+- เปิด workflow push ให้ทำงานบน branch `main` แล้ว แต่ GitHub API ยังไม่พบ workflow run หรือ commit status สำหรับ SHA นี้
+- หลักฐานใน commit ระบุ production build ผ่าน, HTTP route tests 2 configuration ผ่าน และ repository Node test files 13/13 ผ่าน แต่ full browser UI suite ยังไม่ยืนยันเพราะ Chromium download ไม่สมบูรณ์
+
+ไม่พบข้อผิดพลาดที่พิสูจน์ได้และไม่แก้โค้ดเพิ่มในรอบนี้
+
+สิ่งที่ควรทำต่อ: รอ/ตรวจ workflow บน `main`, ทดสอบ preview ที่ 390px/1280px, ยืนยัน theme persistence และ query-preserving redirects จาก browser จริง และยังไม่ cut over production domain จนกว่า OAuth/backend integration พร้อม

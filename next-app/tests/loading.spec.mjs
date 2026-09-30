@@ -7,13 +7,13 @@ test('intro preserves layout, theme persistence, copy, and existing workspace li
     Object.defineProperty(navigator, 'clipboard', { configurable: true,
       value: { writeText: async text => { window.copiedText = text; } } });
   });
-  await page.goto('/loading');
+  await page.goto('/');
   await expect(page.getByRole('heading', { name: 'React following deveguide by Next.js' })).toBeVisible();
   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(0, 0, 0)');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.getByRole('button', { name: 'Switch to Docs purple color mode' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'docs');
-  await page.reload();
+  await page.goto('/loading');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'docs');
   await page.getByRole('button', { name: 'Switch to normal black and white color mode' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'normal');
@@ -25,10 +25,21 @@ test('intro preserves layout, theme persistence, copy, and existing workspace li
   expect(errors).toEqual([]);
 });
 
-test('root keeps session decisions on the existing backend; protected pages are not duplicated', async ({ request }) => {
+test('main and intro share content; workspace routes retain the existing auth boundary', async ({ request }) => {
   const root = await request.get('/', { maxRedirects: 0 });
-  expect(root.status()).toBe(307);
-  expect(root.headers().location).toBe('https://agents-sdk.space/');
-  expect((await request.get('/chat')).status()).toBe(404);
+  expect(root.status()).toBe(200);
+  const intro = await request.get('/loading');
+  expect(intro.status()).toBe(200);
+  expect(await root.text()).toContain('React following');
+  expect(await intro.text()).toContain('React following');
+  for (const path of ['/home', '/login', '/chat?mode=code', '/docs/installation', '/guide', '/tools', '/keys', '/news']) {
+    const response = await request.get(path, { maxRedirects: 0 });
+    expect(response.status()).toBe(307);
+    expect(response.headers().location).toBe(`https://agents-sdk.space${path}`);
+  }
+  const blog = await request.get('/blog', { maxRedirects: 0 });
+  expect(blog.headers().location).toBe('https://agents-sdk.space/news');
+  const showcase = await request.get('/showcase', { maxRedirects: 0 });
+  expect(showcase.headers().location).toBe('/#features');
   expect((await request.get('/api/chat')).status()).toBe(404);
 });

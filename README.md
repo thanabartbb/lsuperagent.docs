@@ -2,8 +2,8 @@
 
 AI Framework: **LSUPERAGENT public AI workspace**
 
-Last updated: **2026-09-29T06:09:50+07:00 Asia/Bangkok**
-Last update task: **Add Claude (Anthropic Messages API) as an optional second chat provider selectable in /chat; OpenAI stays the default.**
+Last updated: **2026-09-30T14:27:14+07:00 Asia/Bangkok**
+Last update task: **Assemble the existing Next.js intro as the main preview page, preserve all UI colors, and connect workspace route handoffs.**
 
 The proposed one-owner session continuity system is specified in [`docs/session-continuity-pilot.md`](docs/session-continuity-pilot.md). Signed-in chat history now persists in D1 (see Chat contract below); the rest of that continuity design is not built.
 
@@ -166,3 +166,10 @@ Acceptance: remove the entire AI WORKSPACE intro row; reduce header brand size a
 ## Next.js migration — 2026-09-28
 
 The owner authorized beginning the Next.js migration. `next-app/` is the isolated migration app; production remains the existing Worker/static site until cutover is verified. `/loading` is native React with shared header/footer, React theme state and a React copyable code window. See `next-app/README.md` for run commands, route/data contract, evidence and next stages. This authorization changes the frontend direction only; it does not migrate hosting or authentication. `.assetsignore` excludes the entire migration app from the existing Worker static asset upload.
+
+
+## Next.js page assembly — 2026-09-30
+
+Owner requested combining the existing main files with Next.js while preserving all UI colors. Preview `/` and `/loading` now share `next-app/components/landing-page.jsx`; no stylesheet was modified. This is a public introduction only: Open Workspace still goes through the production signed-session entry. Local workspace/docs/auth URLs redirect to the existing origin, preserving queries. `/blog` hands off to actual `/news`; `/showcase` opens the existing features grid. Production root/auth/API routing is unchanged. No hosting or authentication migration is authorized by this assembly.
+
+Fields: surface (string, existing intro JSX); color_mode (normal|docs, existing localStorage preference); destination (fixed HTTPS route, next.config.mjs); evidence (build/browser checks in commit report); secret_values_exposed (boolean, false). Acceptance: root/intro render identical content, both color modes persist, protected route handoffs retain queries, CSS remains byte-identical.

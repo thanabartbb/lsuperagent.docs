@@ -1,4 +1,4 @@
-# Next.js migration: first working route
+# Next.js migration: integrated main and intro
 
 Build the existing `/loading` surface as native React so the owner can begin migrating the site while preserving its current design and working authentication service.
 
@@ -12,7 +12,7 @@ npm ci
 npm run dev
 ```
 
-Open http://localhost:3000/loading. The root `/` intentionally redirects to the existing production Worker, which chooses login or home from its signed session.
+Open http://localhost:3000/loading. Open `/` or `/loading` for the shared native React landing page. Open Workspace still uses the existing production origin to select login or home from its signed session.
 
 ```sh
 npm run build
@@ -26,7 +26,7 @@ Next.js, React and Playwright versions are pinned in package.json and package-lo
 
 ## What is migrated
 
-- `app/loading/page.jsx`: native JSX converted from the current `loading.html`, preserving the copy, links and section structure.
+- `components/landing-page.jsx`: shared native JSX from the existing intro. `app/page.jsx` and `app/loading/page.jsx` render it without duplicating markup. All styles and color values remain unchanged.
 - `app/layout.jsx`: metadata, document shell and ordered styles.
 - `components/site-header.jsx` and `site-footer.jsx`: reusable structure.
 - `components/theme-toggle.jsx`: React state with the existing normal/docs preference key.
@@ -47,17 +47,21 @@ There is no iframe or HTML-string injection. Existing static pages remain the pr
 | brand | SVG | Repository logo.svg | Public static asset |
 | secret_values_exposed | boolean | No runtime credentials used | false |
 
-Only `/loading` is migrated. `/` redirects to https://agents-sdk.space/. Links to `/chat`, `/docs`, `/guide`, `/keys` and other unmigrated pages use the existing production origin explicitly; fragment links stay local. This keeps login and cookies on their current origin rather than forwarding credentials through an unverified proxy. Direct local protected/API URLs return 404. No auth or API implementation is duplicated.
+`/` and `/loading` render the same public introduction. Protected workspace pages remain on the existing production origin. Explicit local `/home`, auth pages, `/chat`, `/tools`, `/guide`, `/keys`, `/news`, `/exa` and `/docs/:path*` redirect there with query strings preserved. `/blog` links to the real `/news` page; `/showcase` opens the existing feature grid at `/#features`. No fabricated articles, dead subscribe form, or Next.js/Vercel branding is imported from the supplied clone.
 
-The migration app MUST remain on a separate local/preview origin at this stage. Pointing agents-sdk.space to it would cause a root redirect loop and break unmigrated routes. Before domain cutover, replace the temporary absolute navigation and implement verified session-aware routes and backend integration. Do not infer shared localStorage between preview and production origins.
+The Open Workspace action still targets `https://agents-sdk.space/`, whose signed session selects login or home. No cookies, API credentials or auth implementation are copied into the preview. Local `/api/chat` remains unavailable. No API proxy exists.
+
+Keep this app on a separate preview origin until verified backend and OAuth integration supports a domain cutover. Production HTML, Worker routing and CSS are unchanged by this assembly.
+
+Acceptance: both public landing routes render; protected routes redirect to the real backend; queries survive; styles remain byte-identical; copy and both saved color modes work on mobile and desktop; no secret values exposed.
 
 ## Verification
 
 - Next.js production build passed locally.
-- HTTP smoke passed: `/loading` and referenced CSS/logo return 200; `/` returns 307 to the existing Worker; local `/chat` and `/api/chat` return 404.
-- Existing repository Node tests: 75/75 passed.
+- Root/intro and route handoff are covered by the Playwright desktop/mobile suite. Local `/api/chat` remains 404.
+- Existing repository Node test files: 13/13 passed for this assembly.
 - Playwright desktop/mobile suite covers theme persistence, copy behavior (clipboard stub only), horizontal overflow, console errors and workspace links.
-- Local browser execution is not yet verified: Chromium downloads returned truncated archives. The PR workflow installs Chromium and runs the browser suite.
+- Assembly verification: production build passed; 2 HTTP route tests passed (desktop/mobile project configurations). CSS is byte-identical and shared intro JSX differs only in component name/import paths. Browser UI execution remains unverified because the Chromium download returned truncated archives; CI runs the full suite.
 - No live AI request, deployment or domain cutover has been performed.
 
 ## Next migration stages

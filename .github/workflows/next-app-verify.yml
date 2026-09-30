@@ -3,7 +3,7 @@ on:
   pull_request:
     paths: ['next-app/**', '.github/workflows/next-app-verify.yml']
   push:
-    branches: ['codex/nextjs-loading-migration']
+    branches: ['main', 'codex/nextjs-loading-migration']
     paths: ['next-app/**', '.github/workflows/next-app-verify.yml']
 permissions:
   contents: read

@@ -170,3 +170,18 @@ Security follow-up: ลบการรับ `github_token` จาก request bo
 ไม่พบข้อผิดพลาดที่พิสูจน์ได้และไม่แก้โค้ดเพิ่มในรอบนี้
 
 สิ่งที่ควรทำต่อ: รอ/ตรวจ workflow บน `main`, ทดสอบ preview ที่ 390px/1280px, ยืนยัน theme persistence และ query-preserving redirects จาก browser จริง และยังไม่ cut over production domain จนกว่า OAuth/backend integration พร้อม
+
+
+## Update — production-only repository cleanup
+
+ตรวจ commit `a0d38bba8e06586b35394c95686d3fd4f409b22f` ตามคำสั่งให้คัดสิ่งที่ไม่เกี่ยวกับ production `lsuperagent.docs` ออก:
+
+- ลบ 59 ไฟล์ที่เป็น Agents SDK Lab แยก, integration prototype ที่ไม่ถูก wire, หน้า/แผนออกแบบเก่า, snapshot สถานะ และ archive
+- คง runtime production ที่มี route/import จริง: Firebase/OAuth, D1 history/quota, SDK Guide, Exa, tests และ `next-app/` ซึ่งเป็น migration ที่เจ้าของอนุมัติ
+- เปลี่ยน `.assetsignore` เป็น allowlist ของ browser assets โดยตรง ทำให้ source, tests, migrations, CI, notes และ `next-app/` ไม่ถูกอัปโหลดเป็น static assets
+- `guide.html`, `assets/guide.js`, vendored `lsupergen-sdk@0.1.0`, signed-session check และ flow `/keys → /guide → Proof report` ยังอยู่
+- commit ระบุผลตรวจ 111 Node tests, syntax checks, Next.js production build, Playwright 4 desktop/mobile checks, Wrangler dry-run, public asset boundary 53 ไฟล์ และไม่มี dangling links
+- ไม่พบ regression ที่พิสูจน์ได้ใน `/guide` จาก source ที่ตรวจ จึงไม่แก้ runtime เพิ่ม
+- GitHub API ยังไม่แสดง commit status หรือ workflow run สำหรับ commit นี้ และข้อความ commit ระบุเองว่ายังไม่ได้ยืนยัน production deployment
+
+สิ่งที่ควรทำต่อ: ตรวจ deployment จริงว่า public asset allowlist ไม่ตัดไฟล์ที่ route production ต้องใช้, เปิด `/guide` ด้วย signed session ที่ 390px/1280px, และรัน `/keys → /guide → Run all` ให้ได้ Proof report 5/5 ก่อนถือว่า cleanup ปิดงานได้

@@ -1,0 +1,10 @@
+node_modules/
+.wrangler/
+.env
+.env.*
+.dev.vars
+.dev.vars.*
+.next/
+playwright-report/
+test-results/
+__pycache__/

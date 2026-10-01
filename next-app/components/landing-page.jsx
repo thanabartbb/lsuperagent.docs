@@ -72,7 +72,7 @@ export default function LandingPage(){return <><SiteHeader /><main>
 <span className="go" aria-hidden="true">{"↗"}</span>
 <span className="icon"><svg viewBox="0 0 24 24"><path d="M5 4h10l4 4v12H5zM14 4v5h5M8 13h8M8 17h6"></path></svg></span>
 <h3>{"Docs"}</h3>
-<p>{"SDK guides, API reference, system architecture, and AGENTS-SDK-LAB lessons."}</p>
+<p>{"SDK guides, API reference, and the LSUPERAGENT production architecture."}</p>
 </a>
 </div>
 </div>

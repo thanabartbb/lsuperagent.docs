@@ -311,3 +311,32 @@ test('streamed chat still falls back to the next model before any bytes are sent
     assert.equal(events[events.length - 1].output, 'ok');
   });
 });
+
+
+test('retired public pages keep session-aware handoffs without loading removed assets', async () => {
+  const env = { AUTH_SESSION_SECRET: SESSION_SECRET, ASSETS: { fetch() { throw new Error('retired asset must not be fetched'); } } };
+  for (const path of ['/auth-all', '/auth-all.html', '/workspace', '/secret-handoff', '/provider-connect', '/endpoints', '/system-registry.html']) {
+    const anonymous = await worker.fetch(new Request(`https://agents-sdk.space${path}`), env);
+    assert.equal(anonymous.status, 302);
+    assert.equal(anonymous.headers.get('location'), '/login');
+    const signedIn = await worker.fetch(new Request(`https://agents-sdk.space${path}`, { headers: { cookie: await sessionCookie() } }), env);
+    assert.equal(signedIn.status, 302);
+    assert.equal(signedIn.headers.get('location'), '/home');
+  }
+});
+
+test('old status links reach the authenticated live provider endpoint', async () => {
+  const env = { AUTH_SESSION_SECRET: SESSION_SECRET, OPENAI_API_KEY: 'test-key' };
+  for (const path of ['/api/providers/status', '/api/claude/status', '/provider-status']) {
+    const response = await worker.fetch(new Request(`https://agents-sdk.space${path}`), env);
+    assert.equal(response.status, 301);
+    assert.equal(response.headers.get('location'), 'https://agents-sdk.space/api/chat-providers');
+  }
+  const anonymous = await worker.fetch(new Request('https://agents-sdk.space/api/chat-providers'), env);
+  assert.equal(anonymous.status, 401);
+  const signedIn = await worker.fetch(new Request('https://agents-sdk.space/api/chat-providers', { headers: { cookie: await sessionCookie() } }), env);
+  assert.equal(signedIn.status, 200);
+  const payload = await signedIn.json();
+  assert.equal(payload.default, 'openai');
+  assert.equal(JSON.stringify(payload).includes('test-key'), false);
+});

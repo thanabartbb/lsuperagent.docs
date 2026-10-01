@@ -2,7 +2,7 @@
 # Do not redirect /page -> /page.html because html_handling redirects /page.html -> /page.
 # Route decision 2026-09-19:
 # /control stays owner/dev workspace.
-# /dev/control-plane/ is docs-only public reference and contains no secret/action runtime.
+# Retired control-plane references hand off to the existing owner workspace.
 
 /sdk /guide 301
 /control /dev 301
@@ -13,4 +13,9 @@
 /providers /provider-connect 301
 /provider /provider-connect 301
 /ai-providers /provider-connect 301
-/provider-status /api/providers/status 301
+/provider-status /api/chat-providers 301
+
+/dev/control-plane /dev 301
+/dev/control-plane/index.html /dev 301
+/api/providers/status /api/chat-providers 301
+/api/claude/status /api/chat-providers 301

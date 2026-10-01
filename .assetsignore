@@ -1,1 +1,13 @@
-next-app/**
+# Deploy only browser assets. Worker source is bundled from wrangler.toml.
+*
+!/*.html
+!/logo.svg
+!/app.css
+!/app-shell.js
+!/firebase-auth.js
+!/assets/
+!/assets/**
+!/docs-content/
+!/docs-content/**
+!/vendor/
+!/vendor/**

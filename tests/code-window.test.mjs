@@ -8,7 +8,7 @@ const types = (code, lang) => tokenize(code, lang).filter((t) => t.type).map((t)
 
 test('tokenize is lossless for every language', () => {
   const samples = {
-    python: read('assets/lab/lab_harness.py'),
+    python: 'def request_chat(message):\n    return {"message": message, "stream": True}\n',
     js: read('assets/code-window.js'),
     bash: '$ npm install lsupergen-sdk\n$ curl -s "$BASE/v1/health" --header x # note',
     json: '{ "ok": true, "items": [1, 2.5, null], "name": "x" }',

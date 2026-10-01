@@ -14,6 +14,11 @@ const AUTH_STATE_TTL_SECONDS = 10 * 60;
 const ALIASES = {
   '/sdk': '/guide',
   '/control': '/dev',
+  '/dev/control-plane': '/dev',
+  '/dev/control-plane/index.html': '/dev',
+  '/api/providers/status': '/api/chat-providers',
+  '/api/claude/status': '/api/chat-providers',
+  '/provider-status': '/api/chat-providers',
   '/owner': '/dev',
   '/routes': '/endpoints',
   '/endpoint': '/endpoints',
@@ -1088,37 +1093,6 @@ async function handleFeed(request, env, url) {
   }
 }
 
-function plannedEndpoint(pathname) {
-  const planned = {
-    '/admin/auth/github': { status: 'retired', method: 'GET', message: 'Use /dev.' },
-    '/admin/github/status': { status: 'retired', method: 'GET', message: 'Use /dev.' },
-    '/admin/github/files': { status: 'retired', method: 'GET', message: 'Use /dev.' },
-    '/admin/github/commit': { status: 'retired', method: 'POST', message: 'Use /dev.' },
-    '/admin/handoff/claude': { status: 'planned', method: 'POST', message: 'Use /dev.' }
-  }[pathname];
-  return planned ? json({ ok: false, endpoint: pathname, ...planned, secret_values: false }, 501) : null;
-}
-
-function injectHead(html, content) {
-  return /<\/head>/i.test(html) ? html.replace(/<\/head>/i, content + '\n</head>') : content + html;
-}
-
-function injectBody(html, content) {
-  return /<\/body>/i.test(html) ? html.replace(/<\/body>/i, content + '\n</body>') : html + content;
-}
-
-function publicMobileLinks(page) {
-  const items = [
-    ['/chat', 'Workspace', 'chat.html'],
-    ['/tools', 'Tools', 'tools.html']
-  ];
-  return items.map(([href, label, file]) => `<a href="${href}" ${page === file ? 'aria-current="page"' : ''}>${label}<span>→</span></a>`).join('');
-}
-
-function enhancePublicHtml(html, pathname) {
-  return html;
-}
-
 function isDevOnlyPath(pathname) {
   return pathname === '/dev' || pathname === '/dev.html' || pathname === '/dev-code-drop' || pathname === '/dev-code-drop.html';
 }
@@ -1145,7 +1119,7 @@ export default {
     if (pathname === '/' || pathname === '/index.html') {
       return redirectTo(await currentSession(request, env) ? '/home' : '/login', 302);
     }
-    const legacyPublic = new Set(['/examples','/examples.html','/getting-started','/getting-started.html','/api','/api.html','/guides','/guides.html','/changelog','/changelog.html','/workspace','/workspace.html','/provider-connect','/provider-connect.html','/secret-handoff','/secret-handoff.html','/endpoints','/endpoints.html','/system-registry','/system-registry.html']);
+    const legacyPublic = new Set(['/auth-all','/auth-all.html','/examples','/examples.html','/getting-started','/getting-started.html','/api','/api.html','/guides','/guides.html','/changelog','/changelog.html','/workspace','/workspace.html','/provider-connect','/provider-connect.html','/secret-handoff','/secret-handoff.html','/endpoints','/endpoints.html','/system-registry','/system-registry.html']);
     if (legacyPublic.has(pathname)) return redirectTo(await currentSession(request, env) ? '/home' : '/login', 302);
     if (pathname === '/admin' || pathname === '/admin.html') return redirectTo('/dev', 302, { 'x-lsuperagen-admin-gate': 'redirect-to-dev-v1' });
     if (ALIASES[pathname]) return redirectTo(new URL(ALIASES[pathname], url).toString(), 301);
@@ -1177,9 +1151,6 @@ export default {
 
     if (pathname === '/api/sdk/keys') return handleSdkKeyCreate(request, env);
     if (pathname === '/v1' || pathname.startsWith('/v1/')) return handleSdkApi(request, env, pathname);
-
-    const planned = plannedEndpoint(pathname);
-    if (planned) return planned;
 
     if (isDevOnlyPath(pathname)) {
       const gate = await guardOwnerDev(request, env, 'html');
@@ -1219,8 +1190,7 @@ export default {
 
     const response = await fetchAsset(request, env, pathname);
     if (!(response.headers.get('content-type') || '').includes('text/html')) return response;
-    let html = await response.text();
-    if (!isDevOnlyPath(pathname)) html = enhancePublicHtml(html, pathname);
+    const html = await response.text();
     return new Response(html, { status: response.status, headers: htmlHeaders(response, 'owner-google-dev-gate-v1-openai-runtime-v1-mobile-fix-v1') });
   }
 };

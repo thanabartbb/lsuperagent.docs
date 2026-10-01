@@ -43,7 +43,6 @@ test('standalone pages use the reference palette across the site', async () => {
     if (!name.endsWith('.html')) continue;
     assert.match(await read(name), /\/assets\/theme\.css\?v=\d+/,  `${name} has no shared palette`);
   }
-  assert.match(await read('dev/control-plane/index.html'), /\/assets\/theme\.css\?v=\d+/);
 });
 
 test('published npmjs.sdk-space is identified separately from the API client', async () => {
@@ -114,17 +113,6 @@ test('static root fallback also points to the login entry', async () => {
   const index = await read('index.html');
   assert.match(index, /url=\/login/);
   assert.doesNotMatch(index, /url=\/chat/);
-});
-
-test('injected public navigation does not expose docs or developer surfaces', async () => {
-  const source = await read('src/index.js');
-  const start = source.indexOf('function publicMobileLinks');
-  const end = source.indexOf('function enhancePublicHtml', start);
-  assert.ok(start >= 0 && end > start, 'publicMobileLinks function must exist');
-  const publicNav = source.slice(start, end);
-  for (const term of ["'/getting-started'", "'/api'", "'/guides'", "'/changelog'", "'/examples'", "'/dev'"]) {
-    assert.equal(publicNav.includes(term), false, `legacy/developer public nav remains: ${term}`);
-  }
 });
 
 test('authenticated chat can sign out while the existing tools shell remains guarded', async () => {

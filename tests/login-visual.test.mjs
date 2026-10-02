@@ -45,7 +45,8 @@ test('authenticated home is guarded by the worker and links to chat', async () =
   const home = await read('home.html');
   assert.match(worker, /\['\/home', '\/home'\]/);
   assert.match(home, /href="\/chat"/);
-  assert.match(home, /\/api\/auth\/session/);
+  assert.match(home, /sdkspace-navigation\.js/);
+  assert.match(await read('assets/sdkspace-navigation.js'), /\/api\/auth\/session/);
 });
 
 test('brand names on login and home open the public intro page with usable actions', async () => {
@@ -53,13 +54,13 @@ test('brand names on login and home open the public intro page with usable actio
   const home = await read('home.html');
   const intro = await read('loading.html');
   assert.match(login, /<h1 class="brand"><a href="\/loading"/);
-  assert.match(home, /class="brand-link" href="\/loading"/);
-  assert.match(intro, /href="\/">Open Workspace<\/a>/);
+  assert.match(home, /class="(?:logo )?brand-link" href="\/loading"/);
+  assert.match(intro, /href="\/home">Open Workspace<\/a>/);
   assert.match(intro, /href="\/chat">Open Chat<\/a>/);
   assert.match(intro, /class="login" href="\/docs">Docs<\/a>/);
   assert.match(intro, /href="\/guide">Step into the SDK<\/a>/);
-  assert.match(intro, /src="\/logo\.svg"/);
-  assert.doesNotMatch(intro, /href="\/(?:news|community)(?:\?|\")/);
+  assert.match(intro, /class="cube-icon"/);
+  assert.doesNotMatch(intro, /href="\/community(?:\?|\")/);
 });
 
 test('firebase auth client uses platform email login and reset endpoints', async () => {

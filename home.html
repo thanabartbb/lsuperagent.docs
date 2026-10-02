@@ -1,10 +1,379 @@
-<!doctype html>
-<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#000000"><link rel="icon" href="/logo.svg" type="image/svg+xml"><title>หน้าแรก · LSUPERAGENT SDK</title><style>
-:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100dvh;padding:28px;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:720px;margin:auto}header{display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid #2a2a2a;padding-bottom:22px}header img{width:34px;height:34px}header strong{display:flex;align-items:center;gap:12px;font-size:1.1rem}b{color:#e9a077}a{color:inherit;text-decoration:none}header a{color:#a0a0a0}header .brand-link{color:#fff}header .brand-link:focus-visible{outline:2px solid #e9a077;outline-offset:4px}h1{font-size:clamp(2rem,8vw,3rem);margin:72px 0 12px}p{color:#a0a0a0;line-height:1.6}.grid{display:grid;gap:12px;margin-top:32px}.card{display:block;border:1px solid #2a2a2a;border-radius:12px;padding:20px;background:#10111c}.card:hover{border-color:#4a4a4a}.card span{display:block;color:#a0a0a0;font-size:.9rem;margin-top:7px}#who{overflow-wrap:anywhere}
-</style><link rel="stylesheet" href="/assets/layout.css?v=1">
-<link rel="stylesheet" href="/assets/theme.css?v=3"><link rel="stylesheet" href="/assets/editorial.css?v=1">
-</head><body class="sdk-layout sdk-simple">
-<header class="sdk-site-header"><div class="sdk-frame sdk-header-row"><a class="brand-link" href="/loading" aria-label="ดูหน้าแนะนำ LSUPERAGENT SDK"><strong><img src="/logo.svg" alt="">LSUPERAGENT <b>SDK</b></strong></a><a href="/auth/logout">ออกจากระบบ</a></div></header><main class="sdk-frame sdk-page-content"><h1>เริ่มจากงานที่ต้องการทำ</h1><p id="who">กำลังตรวจสอบบัญชี…</p><div class="grid"><a class="card" href="/chat">เปิดแชท <span>สนทนากับ AI ในพื้นที่ทำงาน</span></a><a class="card" href="/tools">เครื่องมือ <span>เลือกประเภทงานและกำหนดรูปแบบผลลัพธ์</span></a><a class="card" href="/docs">เอกสาร <span>คู่มือ SDK, API reference และโครงสร้างระบบ</span></a><a class="card" href="/guide">Playground <span>ทำตามตัวอย่างทีละขั้น แล้วตรวจผลตอบกลับจาก API</span></a><a class="card" href="/keys">API keys <span>เชื่อมโปรเจกต์เข้ากับ SDK และ API</span></a><a class="card" href="https://www.npmjs.com/package/npmjs.sdk-space">npmjs.sdk-space <span>ดูแพ็กเกจและเลือกส่วนที่เหมาะกับโปรเจกต์</span></a><a class="card" href="/news">ข่าว AI <span>ข่าวล่าสุดจาก OpenAI, Anthropic, Claude, Grok และชุมชน AI</span></a></div></main><script>
-(async()=>{try{const response=await fetch('/api/auth/session',{cache:'no-store'});const data=await response.json();if(!data.authenticated){location.replace('/login?return_to=/home');return}document.getElementById('who').textContent=data.user?.email||data.user?.login||'เข้าสู่ระบบแล้ว'}catch{document.getElementById('who').textContent='ตรวจสอบบัญชีไม่สำเร็จ กรุณาลองโหลดหน้าใหม่'}})();
-</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home · SDKSPACE</title>
+<link rel="stylesheet" href="/assets/theme.css?v=3">
+<link rel="stylesheet" href="/assets/code-window.css">
+<style>
+  @property --angle{
+    syntax:'<angle>';
+    initial-value:0deg;
+    inherits:false;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{background:#000000;}
+  body{
+    display:flex;
+    justify-content:center;
+    padding:20px 12px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
 
+  .phone{
+    position:relative;
+    width:100%;
+    max-width:400px;
+    background:radial-gradient(ellipse 140% 60% at 50% 0%, #0d1a2e 0%, #060a12 45%, #030509 100%);
+    border-radius:26px;
+    border:1px solid #16233a;
+    overflow:hidden;
+    color:#e8ecf3;
+  }
+
+  /* top traveling light strip */
+  .top-strip{
+    position:absolute;top:0;left:0;width:100%;height:2px;
+    background:linear-gradient(90deg, transparent, #4da3ff, #8fc4ff, #4da3ff, transparent);
+    background-size:200% 100%;
+    animation:travel 6s linear infinite;
+    opacity:.9;
+    z-index:5;
+  }
+  @keyframes travel{
+    0%{background-position:200% 0;}
+    100%{background-position:-200% 0;}
+  }
+
+  /* dome glow behind hero */
+  .dome-glow{
+    position:absolute;
+    top:-120px;left:50%;
+    transform:translateX(-50%);
+    width:520px;height:320px;
+    z-index:0;
+    pointer-events:none;
+  }
+
+  .content{position:relative;z-index:2;padding:20px 20px 22px;}
+
+  /* header */
+  header{display:flex;align-items:center;justify-content:space-between;padding-bottom:36px;}
+  .logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;letter-spacing:.2px;}
+  .logo .sdk{color:#fff;}
+  .logo .space{color:#4da3ff;}
+  .cube-icon{width:22px;height:22px;}
+  .burger{width:26px;height:18px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;}
+  .burger span{display:block;height:2px;width:100%;background:#c7d0de;border-radius:2px;}
+
+  /* hero */
+  .hero{text-align:center;padding-bottom:30px;}
+  .badge{
+    display:inline-flex;align-items:center;gap:7px;
+    border:1px solid #24344f;
+    background:rgba(15,25,42,0.6);
+    padding:6px 14px;border-radius:999px;
+    font-size:10.5px;letter-spacing:1.2px;color:#a9c3ea;
+    font-weight:600;
+    margin-bottom:22px;
+    box-shadow:0 0 18px rgba(77,163,255,0.12);
+  }
+  .badge .dot{width:6px;height:6px;border-radius:50%;background:#4da3ff;box-shadow:0 0 8px #4da3ff;}
+
+  h1{font-size:30px;line-height:1.18;font-weight:800;letter-spacing:-0.5px;}
+  h1 .line1{color:#f5f7fa;display:block;}
+  h1 .line2{
+    display:block;
+    background:linear-gradient(90deg,#8fc4ff,#4da3ff 55%,#2f6fe0);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .lede{
+    margin:18px auto 0;
+    max-width:290px;
+    color:#8b96a8;
+    font-size:13.5px;
+    line-height:1.6;
+  }
+
+  .cta-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:26px;}
+  .btn-primary{
+    display:inline-flex;align-items:center;gap:8px;
+    background:linear-gradient(90deg,#4da3ff,#2f6fe0);
+    color:#fff;font-weight:700;font-size:13.5px;
+    padding:13px 22px;border-radius:999px;border:none;
+    box-shadow:0 6px 24px rgba(45,110,224,0.45);
+    cursor:pointer;transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(45,110,224,0.6);}
+  .btn-primary svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
+
+  .btn-play{
+    width:46px;height:46px;border-radius:50%;
+    background:#0d1526;border:1px solid #253552;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:border-color .2s ease, transform .2s ease;
+  }
+  .btn-play:hover{border-color:#4da3ff;transform:scale(1.05);}
+  .btn-play svg{width:14px;height:14px;fill:#dfe6f2;}
+
+  /* glow border wrapper */
+  .glow-border{
+    position:relative;
+    border-radius:20px;
+    padding:1px;
+    background:transparent;
+  }
+  .glow-border::before{
+    content:'';
+    position:absolute;inset:0;
+    border-radius:inherit;
+    padding:1px;
+    background:conic-gradient(from var(--angle), #0d1526 0deg, #0d1526 260deg, #6fb6ff 300deg, #0d1526 340deg);
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+    mask-composite:exclude;
+    animation:spin 7s linear infinite;
+  }
+  @keyframes spin{to{--angle:360deg;}}
+
+  .card{
+    position:relative;
+    background:#070c16;
+    border-radius:20px;
+    padding:20px;
+    overflow:hidden;
+  }
+
+  .lib-card{margin-bottom:16px;}
+  .lib-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+  .lib-row svg{width:15px;height:15px;}
+  .lib-label{font-size:10.5px;font-weight:700;letter-spacing:1.3px;color:#5b9dfa;}
+  .lib-title{font-size:22px;font-weight:800;line-height:1.2;color:#f2f5fa;margin-bottom:10px;max-width:60%;}
+  .lib-desc{font-size:12.5px;color:#8b96a8;line-height:1.6;max-width:62%;margin-bottom:18px;}
+
+  .btn-ghost{
+    display:inline-flex;align-items:center;gap:7px;
+    background:#101828;border:1px solid #24344f;
+    color:#e6ebf3;font-size:12px;font-weight:600;
+    padding:9px 14px;border-radius:999px;
+    cursor:pointer;transition:border-color .2s ease, background .2s ease;
+  }
+  .btn-ghost:hover{border-color:#4da3ff;background:#12213b;}
+  .btn-ghost svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
+
+  /* illustration */
+  .illus{
+    position:absolute;
+    right:10px;top:60px;
+    width:135px;height:150px;
+  }
+  .dotgrid{
+    position:absolute;
+    right:-6px;bottom:-10px;
+    width:70px;height:60px;
+    background-image:radial-gradient(#1c2c47 1.2px, transparent 1.2px);
+    background-size:9px 9px;
+    opacity:.8;
+  }
+  .win{
+    position:absolute;
+    border-radius:12px;
+    background:linear-gradient(160deg,#0c1524,#060a12);
+    border:1px solid #24405f;
+  }
+  .win.back{
+    width:78px;height:56px;
+    top:0;right:0;
+    box-shadow:0 0 22px rgba(77,163,255,0.15);
+  }
+  .win.back .dots{display:flex;gap:3px;padding:6px;}
+  .win.back .dots span{width:4px;height:4px;border-radius:50%;background:#3a5a86;}
+  .win.back .glyph{display:flex;align-items:center;justify-content:center;height:70%;color:#6fb6ff;font-size:11px;font-weight:700;}
+
+  .win.main{
+    width:104px;height:110px;
+    left:0;top:28px;
+    border:1px solid #3a7bd8;
+    box-shadow:0 0 34px rgba(77,163,255,0.35), inset 0 0 30px rgba(45,110,224,0.15);
+    animation:pulseGlow 4.5s ease-in-out infinite;
+  }
+  @keyframes pulseGlow{
+    0%,100%{box-shadow:0 0 24px rgba(77,163,255,0.25), inset 0 0 22px rgba(45,110,224,0.12);}
+    50%{box-shadow:0 0 42px rgba(77,163,255,0.5), inset 0 0 34px rgba(45,110,224,0.22);}
+  }
+  .win.main .dots{display:flex;gap:3px;padding:7px;}
+  .win.main .dots span{width:4px;height:4px;border-radius:50%;background:#3a5a86;}
+  .atom{
+    display:flex;align-items:center;justify-content:center;
+    height:75%;
+  }
+  .atom svg{width:44px;height:44px;filter:drop-shadow(0 0 10px rgba(77,163,255,0.7));}
+
+  /* bottom grid */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;}
+  .mini-card{
+    background:#070c16;
+    border:1px solid #16233a;
+    border-radius:16px;
+    padding:16px 14px;
+    transition:border-color .2s ease, transform .2s ease;
+    cursor:pointer;
+  }
+  .mini-card:hover{border-color:#3a7bd8;transform:translateY(-2px);}
+  .mini-icon{
+    width:34px;height:34px;border-radius:10px;
+    background:#0f1c30;border:1px solid #24405f;
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:12px;
+  }
+  .mini-icon svg{width:16px;height:16px;stroke:#6fb6ff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .mini-icon.book svg{fill:#6fb6ff;stroke:none;}
+  .mini-title{font-size:14.5px;font-weight:700;color:#f2f5fa;margin-bottom:6px;}
+  .mini-desc{font-size:11.5px;color:#8b96a8;line-height:1.5;}
+  .burger{background:none;border:0;padding:0;flex-shrink:0;}
+  .guide-link{display:block;color:inherit;text-decoration:none;}
+  #site-nav:not([hidden]){display:flex;gap:20px;padding:0 0 22px;flex-wrap:wrap;}
+  #site-nav a{color:inherit;text-decoration:none;font-size:14px;}
+  :focus-visible{outline:2px solid currentColor;outline-offset:4px;}
+  #components{scroll-margin-top:20px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;}}
+
+  .logo,.btn-primary,.btn-ghost,.btn-play{color:inherit;text-decoration:none;}
+  a.btn-primary,a.btn-ghost{display:inline-flex;align-items:center;gap:8px;}
+  a.btn-primary{color:#06101e;}
+  .sdk-package{margin-top:24px;padding-top:20px;border-top:1px solid #16233a;font-size:12px;line-height:1.7;color:#8b96a8;}
+  .sdk-package a{color:#6fb6ff;}
+  .sdk-package pre{margin-top:16px;}
+  #who{font-size:12px;color:#8b96a8;margin-bottom:20px;overflow-wrap:anywhere;}
+  [hidden]{display:none!important;}
+</style>
+<link rel="icon" href="/logo.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/sdkspace-reference-modes.css?v=1"></head>
+<body data-sdkspace-page="home">
+
+<div class="phone">
+  <div class="top-strip"></div>
+
+  <!-- animated dome arc glow -->
+  <svg class="dome-glow" viewBox="0 0 520 320">
+    <defs>
+      <linearGradient id="flow" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4da3ff" stop-opacity="0"/>
+        <stop offset="50%" stop-color="#8fc4ff" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#4da3ff" stop-opacity="0"/>
+        <animateTransform attributeName="gradientTransform" type="translate"
+          from="-520 0" to="520 0" dur="6.5s" repeatCount="indefinite"/>
+      </linearGradient>
+      <radialGradient id="softGlow" cx="50%" cy="0%" r="70%">
+        <stop offset="0%" stop-color="#1c3a63" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect x="0" y="0" width="520" height="320" fill="url(#softGlow)"/>
+    <path d="M 40 260 A 220 220 0 0 1 480 260" fill="none" stroke="#123156" stroke-width="1.5" opacity="0.6"/>
+    <path d="M 40 260 A 220 220 0 0 1 480 260" fill="none" stroke="url(#flow)" stroke-width="2"/>
+  </svg>
+
+  <div class="content">
+    <header>
+      <a class="logo brand-link" href="/loading" aria-label="SDKSPACE introduction">
+        <svg class="cube-icon" viewBox="0 0 24 24">
+          <defs>
+            <linearGradient id="cubeGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#8fc4ff"/>
+              <stop offset="100%" stop-color="#2f6fe0"/>
+            </linearGradient>
+          </defs>
+          <path d="M12 2l9 5v10l-9 5-9-5V7z" fill="none" stroke="url(#cubeGrad)" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M12 2v10M3 7l9 5 9-5" fill="none" stroke="url(#cubeGrad)" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+        <span class="sdk">SDK</span><span class="space">SPACE</span>
+      </a>
+      <button class="burger" type="button" aria-label="Open navigation" aria-controls="site-nav" aria-expanded="false"><span></span><span></span><span></span></button>
+    </header><p id="who" role="status" hidden></p>
+    <nav id="site-nav" hidden aria-label="Main navigation"><a href="/home">Open Workspace</a><a href="/chat">Open Chat</a><a class="login" href="/docs">Docs</a><a href="/guide">Step into the SDK</a><a href="/keys">API keys</a><a href="/tools">Tools</a><a href="/news">AI News</a><a href="/auth/logout" data-signout hidden>Sign out</a><button class="theme-toggle" type="button" data-theme-toggle>Docs mode</button></nav>
+
+    <div class="hero">
+      <div class="badge"><span class="dot"></span>BUILT FOR DEVELOPERS</div>
+      <h1>
+        <span class="line1">Build with</span>
+        <span class="line2">SDKSPACE</span>
+      </h1>
+      <p class="lede">Chat, create images and connect your application through the SDK. Start with the guide, then test a real request.</p>
+
+      <div class="cta-row">
+        <a class="btn-primary" href="/chat">Open Chat
+          <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn-play" href="/guide" aria-label="Open Playground">
+          <svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="glow-border lib-card">
+      <div class="card" id="components">
+        <div class="lib-row">
+          <svg viewBox="0 0 24 24"><path d="M12 2l9 5v10l-9 5-9-5V7z" fill="none" stroke="#4da3ff" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <span class="lib-label">SDKSPACE LIBRARY</span>
+        </div>
+        <div class="lib-title">SDK & API</div>
+        <div class="lib-desc">Chat and image APIs for your application.</div>
+        <a class="btn-ghost" href="/docs/quickstart">Quickstart
+          <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+        </a>
+
+        <div class="illus">
+          <div class="win back">
+            <div class="dots"><span></span><span></span><span></span></div>
+            <div class="glyph">&lt;/&gt;</div>
+          </div>
+          <div class="win main">
+            <div class="dots"><span></span><span></span><span></span></div>
+            <div class="atom">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#6fb6ff" stroke-width="1.3">
+                <ellipse cx="12" cy="12" rx="10" ry="4.2"/>
+                <ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(60 12 12)"/>
+                <ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(120 12 12)"/>
+                <circle cx="12" cy="12" r="1.8" fill="#8fc4ff" stroke="none"/>
+              </svg>
+            </div>
+          </div>
+          <div class="dotgrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="mini-card">
+        <div class="mini-icon">
+          <svg viewBox="0 0 24 24"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg>
+        </div>
+        <div class="mini-title">Build Faster</div>
+        <div class="mini-desc">Start with a real API request, then build the workflow you need.</div>
+      </div>
+      <a class="mini-card guide-link" href="/docs">
+        <div class="mini-icon book">
+          <svg viewBox="0 0 24 24"><path d="M4 4c2 0 5 .5 6 2 1-1.5 4-2 6-2 1 0 2 .3 2 .3v14s-1-.3-2-.3c-2 0-5 .5-6 2-1-1.5-4-2-6-2-1 0-2 .3-2 .3v-14S3 4 4 4z"/></svg>
+        </div>
+        <div class="mini-title">Developer Guide</div>
+        <div class="mini-desc">Clear documentation and examples to get you building with confidence.</div>
+      </a>
+    </div>
+    <section class="sdk-package" aria-label="SDK packages"><p><a href="https://www.npmjs.com/package/npmjs.sdk-space">npmjs.sdk-space</a> · Explore the package, inspect its exports. Use <a href="/docs/installation">lsupergen-sdk</a> for this site's API client.</p><pre data-code-window data-title="quickstart.mjs" data-lang="js"><code>// npm install lsupergen-sdk
+// Set LSUPERGEN_API_KEY with a key created at /keys
+import { Lsupergen } from 'lsupergen-sdk';
+
+const client = new Lsupergen({
+  baseURL: 'https://agents-sdk.space/v1',
+});
+const me = await client.get('/me');
+const reply = await client.post('/chat', { body: { message: 'Hello' } });</code></pre></section>
+  </div>
+</div>
+<script type="module" src="/assets/code-window.js"></script>
+<script src="/assets/sdkspace-navigation.js?v=1" defer></script>
+</body>
+</html>

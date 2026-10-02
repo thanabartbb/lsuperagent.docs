@@ -185,3 +185,31 @@ Security follow-up: ลบการรับ `github_token` จาก request bo
 - GitHub API ยังไม่แสดง commit status หรือ workflow run สำหรับ commit นี้ และข้อความ commit ระบุเองว่ายังไม่ได้ยืนยัน production deployment
 
 สิ่งที่ควรทำต่อ: ตรวจ deployment จริงว่า public asset allowlist ไม่ตัดไฟล์ที่ route production ต้องใช้, เปิด `/guide` ด้วย signed session ที่ 390px/1280px, และรัน `/keys → /guide → Run all` ให้ได้ Proof report 5/5 ก่อนถือว่า cleanup ปิดงานได้
+
+## Update — SDKSPACE page integration, Worker route and live 502
+
+ตรวจการเปลี่ยนแปลง production หลัง commit `10b5179f434f878203604ef2a29e9bfba24783f4`:
+
+- `2361ca937bf18123eee43598fa732dcd321fde38` เปลี่ยน Wrangler target ชั่วคราวเป็น `sdkspace`, อัปเดต compatibility date และ Static Assets handling.
+- `7929804a4d14a1c03df52e471f68bcad69d801b0` แก้ชื่อ Worker กลับเป็น `lsuperagent-docs` ให้ตรงกับ connected target.
+- `fd3e5ae5d19f57026e886e7fe705459cd64bae83` นำหน้า SDKSPACE ที่เจ้าของให้มาใช้กับ `home.html`, `loading.html` และ Docs introduction พร้อม navigation/session script.
+- `3f002bdf0ba4b891f96559b448eb2c4e2eaaf848` ประกาศ `agents-sdk.space` เป็น custom domain ใน `wrangler.toml`.
+
+พบ accessibility regression จาก CSS cascade ของหน้าใหม่:
+
+- `home.html` และ `loading.html` กำหนดปุ่มเป็นข้อความขาวก่อน แต่ selector ท้ายไฟล์ override เป็น `#06101e`. จุดมืดของ gradient `#2f6fe0` เหลือ contrast ประมาณ 4.06:1 ซึ่งต่ำกว่า WCAG AA สำหรับข้อความปกติ.
+- `assets/sdkspace-docs-intro.css` override ข้อความเป็น `#090909` บน gradient `#33526b → #1c2f3f`; contrast อยู่ประมาณ 2.43:1 ถึง 1.45:1.
+
+แก้แล้ว:
+
+- `b54ecc5a92b87342c0ec0e88ed7d625164d48e46` — คืนข้อความ CTA ของ Home เป็น `#ffffff`.
+- `43a1aa7ab8526a4b3dd07f44fd1335abcdd64eb0` — คืนข้อความ CTA ของ intro/loading เป็น `#ffffff`.
+- `1b01a479353159d1853b146ea325cef57ba1adb5` — ใช้ `#eef2f5` บน Docs intro; contrast กับ gradient อยู่ประมาณ 7.29:1 ถึง 12.21:1.
+- `385eafd5a81a638131499622ddac968cd74b94f4` — เพิ่ม static regression test เพื่อล็อกสี CTA ทั้งสาม surface.
+
+ตรวจ production แบบ read-only วันที่ 2026-10-02 แล้ว `https://agents-sdk.space/loading` และ `/home` ตอบ `502 Bad Gateway` พร้อม `[Errno 111] Connection refused`. ดังนั้นยังยืนยัน visual หรือ auth flow หลัง deploy ไม่ได้ และปัญหานี้ไม่สามารถแก้จาก CSS/repository อย่างเดียวได้.
+
+ข้อเท็จจริงที่ต้องดำเนินการนอก repository: ยืนยันว่า Cloudflare Worker `lsuperagent-docs` ถูก deploy จริง, custom domain ผูกกับ Worker ตัวเดียวกัน, D1 binding และ secrets เดิมยังอยู่ และ Git integration/build trigger เชื่อมอยู่. Operator รายงานก่อนหน้านี้ว่าได้ถอด repository ออกจาก Cloudflare; commit ใน GitHub จึงไม่ใช่หลักฐานว่า production deploy แล้ว.
+
+GitHub API ยังไม่แสดง Actions run หรือ commit status สำหรับชุด commit production นี้.
+

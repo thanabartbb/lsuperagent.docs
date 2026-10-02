@@ -2,6 +2,7 @@ name = "lsuperagent-docs"
 main = "src/firebase-worker.js"
 compatibility_date = "2026-09-30"
 workers_dev = true
+routes = [{ pattern = "agents-sdk.space", custom_domain = true }]
 
 [assets]
 directory = "."

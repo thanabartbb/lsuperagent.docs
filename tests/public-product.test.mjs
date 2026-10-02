@@ -145,3 +145,12 @@ test('tools surface contains only usable end-user product capabilities', async (
   }
 });
 
+test('SDKSPACE CTA text colors keep readable contrast', async () => {
+  for (const page of ['home.html', 'loading.html']) {
+    assert.match(await read(page), /a\\.btn-primary\\{color:#ffffff;\\}/);
+  }
+  assert.match(
+    await read('assets/sdkspace-docs-intro.css'),
+    /\\.sdkspace-intro a\\.btn-primary\\{color:#eef2f5;\\}/,
+  );
+});

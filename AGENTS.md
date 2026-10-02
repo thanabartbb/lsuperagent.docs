@@ -8,7 +8,7 @@ Current owner instructions take priority. Read `README.md`, `wrangler.toml` and 
 ## Production
 
 - Repository: `thanabartbb/lsuperagent.docs`; domain: `https://agents-sdk.space`.
-- Cloudflare Workers Static Assets; Wrangler target `sdkspace` (previously `lsuperagent-docs`). Verify the connected build target, domain routing and secrets before claiming a production cutover.
+- Cloudflare Workers Static Assets; Wrangler target `lsuperagent-docs`, matching the connected Cloudflare build. SDKSPACE remains the site name.
 - Entry: `src/firebase-worker.js` delegates to `src/index.js`.
 - Frontend: static HTML/CSS/JS. Shared colors and layout live in `assets/theme.css`, `assets/theme-modes.css`, `assets/layout.css` and `assets/editorial.css`.
 - Email/password uses Firebase Identity Toolkit. Google/GitHub OAuth and six-hour signed sessions use the existing Worker handlers. GitHub login does not grant repository write access.

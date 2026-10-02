@@ -1,6 +1,6 @@
 # Deploy lsuperagent.docs
 
-Use Cloudflare Workers Static Assets. The configured Worker name is `sdkspace`; entrypoint is `src/firebase-worker.js` and assets binding is `ASSETS`. The previous configured name was `lsuperagent-docs`. Before production deployment, ensure the connected Cloudflare build targets `sdkspace` and that its domain routing and required secrets are configured.
+Use Cloudflare Workers Static Assets. The configured Worker name is `lsuperagent-docs`; entrypoint is `src/firebase-worker.js` and assets binding is `ASSETS`. The connected Cloudflare build targets this existing Worker; SDKSPACE remains the site name.
 
 ```sh
 node --test tests/*.test.mjs
@@ -9,7 +9,7 @@ npx wrangler login
 npx wrangler deploy
 ```
 
-Deployment targets the configured Worker in the authenticated Cloudflare account. Changing the Wrangler name does not itself transfer the previous Worker's domain routing or secrets. Keep the existing database; this configuration change does not include a database migration.
+Deployment targets the configured Worker in the authenticated Cloudflare account. Keep its existing domain routing and secrets. Keep the existing database; this configuration change does not include a database migration.
 
 D1 binding `DB` refers to the existing `agentssdkspace` database in `wrangler.toml`. Keep `migrations/0001_chat_history.sql` and `migrations/0002_usage_quota.sql`; apply a migration only when its schema change is intended. This cleanup changes no database schema.
 

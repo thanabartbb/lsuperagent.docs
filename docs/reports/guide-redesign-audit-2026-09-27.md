@@ -213,3 +213,17 @@ Security follow-up: ลบการรับ `github_token` จาก request bo
 
 GitHub API ยังไม่แสดง Actions run หรือ commit status สำหรับชุด commit production นี้.
 
+
+
+## Update — custom-domain outage isolated from healthy Worker runtime
+
+ตรวจแบบ read-only วันที่ 2026-10-03 แล้ว:
+
+- `https://agents-sdk.space/loading` ยังตอบ `502 Bad Gateway` พร้อม `[Errno 111] Connection refused`.
+- `https://lsuperagent-docs.thanabartb.workers.dev/loading` ตอบสำเร็จและแสดงหน้า SDKSPACE พร้อม navigation/CTA ตาม source ปัจจุบัน.
+- `/docs/quickstart` บนปลายทาง Worker ตอบและ redirect ผู้ใช้ที่ยังไม่เข้าสู่ระบบไป `/login?return_to=%2Fdocs%2Fquickstart`; จึงยืนยันได้ว่า Worker runtime และ session-aware routing ทำงาน ไม่ใช่ Worker ล่มทั้งตัว.
+- commit ล่าสุดยังเป็น `9634d13ee9c2c48be0ec77f5de42fa1d38b32e03`; GitHub API ยังไม่แสดง workflow run หรือ commit status.
+
+ข้อสรุปจากหลักฐาน: เหตุขัดข้องถูกจำกัดอยู่ที่ชั้น custom domain / Cloudflare routing (รวมถึง DNS, certificate หรือ Worker association ที่เกี่ยวข้อง) ไม่ใช่ source code หรือ runtime ที่ปลายทาง `workers.dev`. จึงไม่แก้ `wrangler.toml` หรือโค้ดแบบคาดเดา เพราะอาจทำให้ Worker ที่ยังทำงานอยู่เสียหาย.
+
+สิ่งที่ควรทำต่อโดยผู้ดูแล Cloudflare: ตรวจว่า custom domain `agents-sdk.space` ผูกกับ Worker `lsuperagent-docs` ตัวที่กำลัง serve `workers.dev`; ถอดและเพิ่ม custom domain ใหม่เมื่อ association ค้าง, ตรวจ DNS/certificate status แล้วทดสอบ `/loading` และ signed-session routes อีกครั้ง. การแก้ repository อย่างเดียวไม่สามารถซ่อม routing ที่ detached อยู่ได้.

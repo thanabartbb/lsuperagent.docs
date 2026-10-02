@@ -7,7 +7,7 @@ Last update task: Remove unrelated project material and retired prototypes while
 
 ## Runtime
 
-`wrangler.toml` runs Worker `lsuperagent-docs` from `src/firebase-worker.js`, which handles Firebase email authentication and delegates to `src/index.js` for signed sessions, Google/GitHub OAuth, chat, image generation, Exa, SDK APIs, quota and page routing.
+`wrangler.toml` targets Worker `sdkspace` from `src/firebase-worker.js`, which handles Firebase email authentication and delegates to `src/index.js` for signed sessions, Google/GitHub OAuth, chat, image generation, Exa, SDK APIs, quota and page routing. The Cloudflare build target, domain routing and required secrets must match this Worker before production deployment; the previous configured name was `lsuperagent-docs`.
 
 | Surface | Route / source |
 | --- | --- |

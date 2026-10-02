@@ -1,11 +1,13 @@
-name = "lsuperagent-docs"
+name = "sdkspace"
 main = "src/firebase-worker.js"
-compatibility_date = "2026-09-17"
+compatibility_date = "2026-09-30"
+workers_dev = true
 
 [assets]
 directory = "."
 binding = "ASSETS"
-html_handling = "auto-trailing-slash"
+html_handling = "drop-trailing-slash"
+not_found_handling = "404-page"
 run_worker_first = true
 
 # Chat history (src/chat-store.js). Schema: migrations/0001_chat_history.sql

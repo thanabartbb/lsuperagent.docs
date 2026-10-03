@@ -227,3 +227,17 @@ GitHub API ยังไม่แสดง Actions run หรือ commit status
 ข้อสรุปจากหลักฐาน: เหตุขัดข้องถูกจำกัดอยู่ที่ชั้น custom domain / Cloudflare routing (รวมถึง DNS, certificate หรือ Worker association ที่เกี่ยวข้อง) ไม่ใช่ source code หรือ runtime ที่ปลายทาง `workers.dev`. จึงไม่แก้ `wrangler.toml` หรือโค้ดแบบคาดเดา เพราะอาจทำให้ Worker ที่ยังทำงานอยู่เสียหาย.
 
 สิ่งที่ควรทำต่อโดยผู้ดูแล Cloudflare: ตรวจว่า custom domain `agents-sdk.space` ผูกกับ Worker `lsuperagent-docs` ตัวที่กำลัง serve `workers.dev`; ถอดและเพิ่ม custom domain ใหม่เมื่อ association ค้าง, ตรวจ DNS/certificate status แล้วทดสอบ `/loading` และ signed-session routes อีกครั้ง. การแก้ repository อย่างเดียวไม่สามารถซ่อม routing ที่ detached อยู่ได้.
+
+
+## Update — custom domain recovered and auth gates verified
+
+ตรวจ production แบบ read-only วันที่ 2026-10-03 แล้ว:
+
+- `https://agents-sdk.space/loading` กลับมาตอบสำเร็จและแสดงหน้า SDKSPACE; ไม่พบ `502 Bad Gateway` ที่เคยเกิดในรอบก่อน.
+- `https://agents-sdk.space/home` ส่งผู้ใช้ที่ยังไม่เข้าสู่ระบบไป `/login?return_to=%2Fhome`.
+- `https://agents-sdk.space/guide` ส่งผู้ใช้ที่ยังไม่เข้าสู่ระบบไป `/login?return_to=%2Fguide`.
+- commit ล่าสุดก่อนบันทึกผลยังเป็น `c4636634456cfa65e6248c6a69831f6d389aeafb` ซึ่งแก้เฉพาะรายงาน; ไม่มี application commit หรือ CI/status ใหม่.
+
+ข้อสรุป: custom-domain routing ฟื้นตัวแล้ว และ public/auth boundary ที่ตรวจได้ทำงานตาม contract. เนื่องจากไม่มี application commit ใหม่ระหว่างเหตุขัดข้องกับการฟื้นตัว จึงมีแนวโน้มว่าเป็นการแก้หรือการ propagate ที่ชั้น Cloudflare/domain มากกว่าการเปลี่ยน source code แต่ยังไม่มีหลักฐาน dashboard/deployment log เพียงพอจะระบุสาเหตุสุดท้าย.
+
+ยังไม่ปิดงาน Guide redesign: ต้องใช้ signed-in test session เพื่อตรวจ `/guide` ที่ 390px/1280px และทดสอบ `/keys → /guide → Run all → Proof report 5/5`. ไม่แก้ runtime เพิ่มในรอบนี้เพราะเส้นทาง public และ auth gate ที่ตรวจพบถูกต้อง.

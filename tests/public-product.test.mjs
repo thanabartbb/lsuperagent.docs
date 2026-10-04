@@ -62,7 +62,7 @@ test('SDKSPACE reference colors carry into the guide while Docs mode stays muted
 
   for (const [name, html] of [['guide.html', guide]]) {
     assert.match(html, /\/assets\/theme-modes\.css\?v=3/);
-    assert.match(html, /\/assets\/theme-modes\.js\?v=1/);
+    assert.match(html, /\/assets\/theme-modes\.js\?v=2/);
     assert.match(html, /data-theme-toggle/);
     assert.match(html, /\/assets\/theme\.css\?v=4/);
   }

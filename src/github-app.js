@@ -223,7 +223,7 @@ export async function handleGithubApp(request, env, pathname, session) {
     if (body.action === 'create_repository') {
       if (!validRepoName(body.name)) return json({ ok: false, error: 'invalid_repository_name' }, 400);
       const description = typeof body.description === 'string' ? body.description.trim().slice(0, 350) : '';
-      const { response, data } = await githubRequest(auth.token, '/user/repos', { method: 'POST', body: JSON.stringify({ name: body.name, description, private: body.private !== false, auto_init: true }) });
+      const { response, data } = await githubRequest(auth.token, '/user/repos', { method: 'POST', body: JSON.stringify({ name: body.name, description, private: true, auto_init: true }) });
       if (!response.ok) return json({ ok: false, error: response.status === 403 ? 'github_permission_denied' : response.status === 422 ? 'repository_name_unavailable' : 'github_api_error', status: response.status });
       return json({ ok: true, action: 'create_repository', repository: { full_name: data.full_name, html_url: data.html_url, private: data.private, default_branch: data.default_branch } }, 201);
     }

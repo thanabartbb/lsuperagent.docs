@@ -211,3 +211,21 @@
 .sdkspace-intro a.btn-primary{color:#eef2f5;}
 .sdkspace-intro .guide-link{color:inherit!important;}
 .sdkspace-intro .sdkspace-title{border:0;margin:0;padding:0;}
+
+/* Full-bleed canvas for the SDKSPACE introduction inside Docs. */
+.sdkspace-intro{
+  display:block;
+  width:100vw;
+  margin:0 calc(50% - 50vw) 32px;
+  padding:0;
+}
+.sdkspace-intro .phone{
+  width:100%;
+  max-width:none;
+  min-height:calc(100svh - var(--sdk-header, 58px));
+  border:0;
+  border-radius:0;
+}
+.sdkspace-intro .sdkspace-content{
+  padding:clamp(20px, 4vw, 36px);
+}

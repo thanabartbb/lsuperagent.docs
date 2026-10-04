@@ -616,6 +616,16 @@ function claudeModel(env) {
   return configured || CLAUDE_DEFAULT_MODEL;
 }
 
+function chatModelOptions(env, provider) {
+  if (provider === 'openai') return modelCandidates(env);
+  const configured = typeof env.ANTHROPIC_MODEL === 'string' ? env.ANTHROPIC_MODEL.trim() : '';
+  return Array.from(new Set([configured, CLAUDE_DEFAULT_MODEL, ...CLAUDE_FALLBACK_MODELS, ...CLAUDE_EFFORT_MODELS].filter(Boolean)));
+}
+
+const IMAGE_MODEL_OPTIONS = ['gpt-image-2', 'gpt-image-1.5', 'gpt-image-1', 'gpt-image-1-mini'];
+
+function imageModelOptions() { return IMAGE_MODEL_OPTIONS.slice(); }
+
 function chatProviders(env) {
   return [
     { id: 'openai', label: 'OpenAI', available: Boolean(env.OPENAI_API_KEY) },
@@ -638,8 +648,8 @@ function claudeMessages(history, message, attachments) {
   return turns;
 }
 
-async function createClaudeMessage(env, messages, tool, mode, stream) {
-  const model = claudeModel(env);
+async function createClaudeMessage(env, messages, tool, mode, stream, selectedModel = '') {
+  const model = selectedModel || claudeModel(env);
   const payload = {
     model,
     max_tokens: tool === 'code' ? 32000 : 16000,
@@ -662,10 +672,10 @@ async function createClaudeMessage(env, messages, tool, mode, stream) {
   return { response, data };
 }
 
-async function chatWithClaude({ env, history, message, attachments, tool, mode, stream, quota, recordHistory, headers }) {
+async function chatWithClaude({ env, history, message, attachments, tool, mode, stream, quota, recordHistory, headers, selectedModel = '' }) {
   let providerResponse, data;
   try {
-    ({ response: providerResponse, data } = await createClaudeMessage(env, claudeMessages(history, message, attachments), tool, mode, stream));
+    ({ response: providerResponse, data } = await createClaudeMessage(env, claudeMessages(history, message, attachments), tool, mode, stream, selectedModel));
   } catch (_) {
     await quota.refund();
     return json({ ok: false, status: 'service_error', message: 'เชื่อมต่อ Claude ไม่สำเร็จ กรุณาลองใหม่' }, 502, headers);
@@ -850,8 +860,11 @@ async function handleChat(request, env, session = null, quotaIdentity = session)
   const mode = typeof body.mode === 'string' && body.mode.trim() ? body.mode.trim().slice(0, 32) : 'chat';
   const tool = inferTool(body, request);
   const provider = body.provider === undefined || body.provider === null || body.provider === '' ? 'openai' : body.provider;
+  const selectedModel = typeof body.model === 'string' ? body.model.trim() : '';
   const stream = body.stream === true && tool !== 'code';
   if (provider !== 'openai' && provider !== 'claude') return json({ ok: false, status: 'validation_error', message: 'ผู้ให้บริการ AI ที่เลือกไม่ถูกต้อง' }, 400);
+  if (body.model !== undefined && typeof body.model !== 'string') return json({ ok: false, status: 'validation_error', message: 'รูปแบบโมเดลไม่ถูกต้อง' }, 400);
+  if (selectedModel && !chatModelOptions(env, provider).includes(selectedModel)) return json({ ok: false, status: 'validation_error', message: 'โมเดลที่เลือกไม่รองรับ' }, 400);
   if (!message) return json({ ok: false, status: 'validation_error', message: 'กรุณาใส่ข้อความก่อนส่ง' }, 400);
   if (message.length > 120000) return json({ ok: false, status: 'validation_error', message: 'ข้อความยาวเกินขีดจำกัด 120,000 ตัวอักษร กรุณาแบ่งเป็นส่วนย่อย' }, 413);
   if (tool === 'invalid') return json({ ok: false, status: 'validation_error', message: 'โหมดที่ส่งมาไม่ถูกต้อง' }, 400);
@@ -870,7 +883,7 @@ async function handleChat(request, env, session = null, quotaIdentity = session)
   Object.assign(baseHeaders, quotaHeaders(quota));
   if (!quota.ok) return json({ ok: false, status: 'quota_exceeded', message: quotaMessage(quota, 'ข้อความ'), reset_at: new Date(quota.resetAt).toISOString() }, 429, { ...baseHeaders, 'retry-after': String(Math.max(1, Math.ceil((quota.resetAt - Date.now()) / 1000))) });
 
-  if (provider === 'claude') return chatWithClaude({ env, history, message, attachments: attachments.items, tool, mode, stream, quota, recordHistory, headers: baseHeaders });
+  if (provider === 'claude') return chatWithClaude({ env, history, message, attachments: attachments.items, tool, mode, stream, quota, recordHistory, headers: baseHeaders, selectedModel });
 
   const requestId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
   const githubTools = tool === 'code' && Boolean(session?.provider && session?.id && env.DB && env.GITHUB_APP_CLIENT_ID && env.GITHUB_APP_CLIENT_SECRET && env.GITHUB_TOKEN_ENCRYPTION_KEY)
@@ -878,9 +891,11 @@ async function handleChat(request, env, session = null, quotaIdentity = session)
     : false;
   const useStream = stream && !(tool === 'code' && githubTools);
   const webMode = tool === 'research' || tool === 'url';
-  const candidates = webMode
-    ? Array.from(new Set(['gpt-6-astra', 'gpt-4.1', typeof env.OPENAI_MODEL === 'string' ? env.OPENAI_MODEL.trim() : ''].filter(Boolean)))
-    : modelCandidates(env);
+  const candidates = selectedModel
+    ? [selectedModel]
+    : webMode
+      ? Array.from(new Set(['gpt-6-astra', 'gpt-4.1', typeof env.OPENAI_MODEL === 'string' ? env.OPENAI_MODEL.trim() : ''].filter(Boolean)))
+      : modelCandidates(env);
   let lastStatus = 502;
   for (const model of candidates) {
     let providerResponse, data;
@@ -945,6 +960,9 @@ async function handleImage(request, env, quotaIdentity = null) {
   let body = {};
   try { body = await request.json(); } catch (_) { body = {}; }
   const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
+  const selectedModel = typeof body.model === 'string' ? body.model.trim() : '';
+  if (body.model !== undefined && typeof body.model !== 'string') return json({ ok: false, status: 'validation_error', message: 'รูปแบบโมเดลภาพไม่ถูกต้อง' }, 400);
+  if (selectedModel && !imageModelOptions().includes(selectedModel)) return json({ ok: false, status: 'validation_error', message: 'โมเดลภาพที่เลือกไม่รองรับ' }, 400);
   if (!prompt) return json({ ok: false, status: 'validation_error', message: 'กรุณาอธิบายภาพที่ต้องการสร้าง' }, 400);
   if (prompt.length > 12000) return json({ ok: false, status: 'validation_error', message: 'คำอธิบายภาพยาวเกินขีดจำกัด 12,000 ตัวอักษร' }, 413);
   const rate = checkRateLimit(request, 'image');
@@ -956,7 +974,7 @@ async function handleImage(request, env, quotaIdentity = null) {
   if (!quota.ok) return json({ ok: false, status: 'quota_exceeded', message: quotaMessage(quota, 'การสร้างภาพ'), reset_at: new Date(quota.resetAt).toISOString() }, 429, { ...baseHeaders, 'retry-after': String(Math.max(1, Math.ceil((quota.resetAt - Date.now()) / 1000))) });
 
   const requestId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
-  const models = ['gpt-image-2', 'gpt-image-1.5', 'gpt-image-1', 'gpt-image-1-mini'];
+  const models = selectedModel ? [selectedModel] : imageModelOptions();
   let lastData = {};
   let lastStatus = 502;
   for (const model of models) {
@@ -1173,7 +1191,13 @@ export default {
     if (pathname === '/api/chats' || pathname.startsWith('/api/chats/')) return handleChatHistory(request, env, pathname);
     if (pathname === '/api/chat-providers') {
       if (!await currentSession(request, env)) return json({ ok: false, error: 'authentication_required' }, 401);
-      return json({ ok: true, providers: chatProviders(env), default: 'openai' });
+      return json({
+        ok: true,
+        providers: chatProviders(env),
+        models: { openai: chatModelOptions(env, 'openai'), claude: chatModelOptions(env, 'claude') },
+        image_models: imageModelOptions(),
+        default: 'openai'
+      });
     }
     if (pathname === '/api/image') return handleImage(request, env, await currentSession(request, env));
     if (pathname === '/api/exa/search') return handleExaSearch(request, env);

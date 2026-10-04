@@ -37,8 +37,8 @@ test('public chat uses the supplied playground with a signed-session API client'
 test('standalone pages use the reference palette across the site', async () => {
   const { readdir } = await import('node:fs/promises');
   const theme = await read('assets/theme.css');
-  assert.match(theme, /--bg: #000000 !important/);
-  assert.match(theme, /--accent: #91a7bd !important/);
+  assert.match(theme, /--bg: #050812 !important/);
+  assert.match(theme, /--accent: #4da3ff !important/);
   for (const name of await readdir(new URL('..', import.meta.url))) {
     if (!name.endsWith('.html')) continue;
     assert.match(await read(name), /\/assets\/theme\.css\?v=\d+/,  `${name} has no shared palette`);

@@ -1,36 +1,43 @@
-/* Two low contrast accents sit on a fully opaque black canvas. */
+/* Normal mode follows the SDKSPACE blue-black reference; Docs keeps its black and muted-purple palette. */
 :root {
-  --mode-accent: #91a7bd;
-  --mode-accent-strong: #b2c0ce;
-  --mode-accent-soft: #c5cfda;
-  --mode-glow: rgba(145, 167, 189, .055);
+  --mode-accent: #4da3ff;
+  --mode-accent-strong: #8fc4ff;
+  --mode-accent-soft: #bfdcff;
+  --mode-glow: rgba(77, 163, 255, .08);
+  --mode-surface: #090f1b;
+  --mode-border: #18243a;
 }
 html[data-theme="docs"] {
   --mode-accent: #70568f;
   --mode-accent-strong: #9276b3;
   --mode-accent-soft: #b09acb;
   --mode-glow: rgba(112, 86, 143, .07);
+  --mode-surface: #000000;
+  --mode-border: #28242e;
 }
-html, body, body.sdk-layout { background-color: #000000 !important; }
-.theme-toggle { background: #000000 !important; opacity: 1 !important; }
+html:not([data-theme="docs"]) body.sdk-layout {
+  color: #f3f6fc !important; background-color: #050812 !important;
+  background-image: radial-gradient(ellipse 140% 60% at 50% 0%, #0d1a2e 0%, #060a12 45%, #030509 100%) !important;
+  background-attachment: fixed !important;
+}
+html[data-theme="docs"], html[data-theme="docs"] body, html[data-theme="docs"] body.sdk-layout { background: #000000 !important; }
+html:not([data-theme="docs"]) .theme-toggle { background: #0c1423 !important; border-color: #263751 !important; color: #dbe8f8 !important; }
+html:not([data-theme="docs"]) .theme-toggle:hover { border-color: #4da3ff !important; }
 html[data-theme="docs"] .theme-toggle,
-html[data-theme="docs"] .btn-primary {
-  color: #ffffff !important;
-  background: #594675 !important;
-  border-color: #70568f !important;
-}
+html[data-theme="docs"] .btn-primary { color: #ffffff !important; background: #594675 !important; border-color: #70568f !important; }
 html[data-theme="docs"] .theme-toggle:hover,
 html[data-theme="docs"] .btn-primary:hover { background: #665181 !important; }
 html[data-theme="docs"] .btn-secondary,
 html[data-theme="docs"] .topnav .login { background-color: #000000 !important; }
 html[data-theme="normal"] button.run,
-html[data-theme="normal"] button.primary { color: #ffffff !important; background: #000000 !important; }
-.theme-toggle-label { color: #a3aab3; }
+html[data-theme="normal"] button.primary { color: #ffffff !important; background: linear-gradient(90deg,#4da3ff,#2f6fe0) !important; border-color: #4da3ff !important; }
+.theme-toggle-label { color: #929bad; }
 html[data-theme="docs"] .theme-toggle-label { color: #b09acb; }
-.topbar, .sdk-site-header { background: #000000 !important; }
-.feature, .news-card, .chip, .step, .fact, pre,
-button[role="tab"], .tab {
-  background: #000000 !important;
-  opacity: 1 !important;
+html:not([data-theme="docs"]) .topbar, html:not([data-theme="docs"]) .sdk-site-header { background: rgba(5,8,18,.96) !important; border-color: #18243a !important; }
+html:not([data-theme="docs"]) :is(.feature, .news-card, .chip, .step, .fact, pre, button[role="tab"], .tab) {
+  background: #090f1b !important; opacity: 1 !important;
 }
-.news-card:hover { background: #000000 !important; }
+html:not([data-theme="docs"]) :is(.feature, .news-card, .chip, .step, .fact, .tab, button[role="tab"]) { border-color: #18243a !important; }
+html:not([data-theme="docs"]) .news-card:hover { background: #0c1423 !important; }
+html[data-theme="docs"] :is(.feature, .news-card, .chip, .step, .fact, pre, button[role="tab"], .tab) { background: #000000 !important; opacity: 1 !important; }
+html[data-theme="docs"] .news-card:hover { background: #000000 !important; }

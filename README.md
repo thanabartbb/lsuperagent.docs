@@ -36,7 +36,7 @@ D1 `agentssdkspace` is bound as `DB`. `src/chat-store.js` enforces per-account h
 
 ## Frontend and SDK
 
-Keep the current colors and layout in `assets/theme.css`, `assets/theme-modes.css`, `assets/layout.css` and `assets/editorial.css`. Normal and Docs modes use an opaque black canvas. Code rendering and docs navigation use the existing assets.
+Keep the current colors and layout in `assets/theme.css`, `assets/theme-modes.css`, `assets/layout.css` and `assets/editorial.css`. Normal mode follows the blue-black SDKSPACE reference palette; Docs mode keeps its opaque black canvas and muted-purple accent. Code rendering and docs navigation use the existing assets.
 
 `/guide` uses vendored `lsupergen-sdk/0.1.0`; preserve its build, integrity tests and license. `npmjs.sdk-space` is a separate package linked from the introduction, not this API client.
 

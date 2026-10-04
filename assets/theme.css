@@ -98,3 +98,50 @@ body.sdk-layout { font-family: var(--sdk-content-font); }
 .sdk-header-row .page-title span { margin-left: -2px; }
 .sdk-layout :is(pre, code, kbd, samp, .cw, .cw *) { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
 .sdk-layout .reading-intro { max-width: 65ch; color: var(--muted); line-height: 1.7; }
+
+
+/* SDKSPACE reference palette: blue-black surfaces with a restrained ice-blue accent. */
+:root:not([data-theme="docs"]) {
+  --bg: #050812 !important; --canvas: #050812 !important;
+  --surface: #090f1b !important; --surface-elevated: #090f1b !important;
+  --surface-2: #0c1423 !important; --surface2: #0c1423 !important; --surface-inset: #030509 !important;
+  --line: #18243a !important; --line-800: #18243a !important; --border-subtle: #18243a !important;
+  --line-2: #263751 !important; --line2: #263751 !important; --line-700: #263751 !important; --border-default: #263751 !important;
+  --line-600: #3b5a83 !important; --border-strong: #3b5a83 !important;
+  --carbon-950: #050812 !important; --c950: #050812 !important;
+  --carbon-900: #030509 !important; --c900: #030509 !important;
+  --carbon-850: #090f1b !important; --c850: #090f1b !important;
+  --carbon-800: #0c1423 !important; --c800: #0c1423 !important;
+  --carbon-750: #111b2d !important; --c750: #111b2d !important;
+  --carbon-700: #17243a !important; --c700: #17243a !important;
+  --graphite-600: #18243a !important; --g600: #18243a !important;
+  --graphite-500: #263751 !important; --g500: #263751 !important;
+  --text: #f3f6fc !important; --fg: #f3f6fc !important; --fg-primary: #f3f6fc !important;
+  --muted: #929bad !important; --fg2: #929bad !important; --fg-secondary: #929bad !important; --fg-muted: #7f8ba0 !important;
+  --accent: #4da3ff !important; --acc: #4da3ff !important; --focus: #4da3ff !important;
+  --acc2: #8fc4ff !important; --accent-strong: #8fc4ff !important;
+  --accent-soft: rgba(77,163,255,.14) !important; --accm: rgba(77,163,255,.14) !important; --accent-muted: rgba(77,163,255,.14) !important;
+}
+html:not([data-theme="docs"]) body.sdk-layout {
+  color: #f3f6fc !important; background-color: #050812 !important;
+  background-image: radial-gradient(ellipse 140% 60% at 50% 0%, #0d1a2e 0%, #060a12 45%, #030509 100%) !important;
+  background-attachment: fixed !important;
+}
+html:not([data-theme="docs"]) body.sdk-layout :is(.topbar, .sdk-site-header, .shell-header, .app-header, .site-header, .header, .sidebar, .toc, .mode-panel, .shell-mobile-panel) {
+  background-color: rgba(5,8,18,.96) !important; border-color: #18243a !important;
+}
+html:not([data-theme="docs"]) body.sdk-layout :is(.card, .feature, .tool-card, .panel, .step, .composer, .message-body, .fact, .pill, .search-box, .code, .terminal, .window, .login, .view) {
+  border-color: #18243a;
+}
+html:not([data-theme="docs"]) body.sdk-layout :is(.card, .feature, .tool-card, .panel, .step, .composer, .message-body, .search-box, .terminal, .window) {
+  background-color: #090f1b;
+}
+html:not([data-theme="docs"]) body.sdk-layout :is(.card, .feature, .tool-card, .panel, .step, .terminal, .window):hover { border-color: #3b5a83; }
+html:not([data-theme="docs"]) body.sdk-layout :is(a, button, input, textarea, select):focus-visible { outline-color: #4da3ff !important; }
+html:not([data-theme="docs"]) body.sdk-layout :where(pre, .code pre, .content pre) { background-color: #030509; }
+html:not([data-theme="docs"]) body.sdk-layout .theme-toggle { border-color: #263751; color: #dbe8f8; background: #0c1423; }
+html:not([data-theme="docs"]) body.sdk-layout :is(.btn-primary, button.primary, button.run, .send-button, .exa-form button) {
+  color: #ffffff !important; background: linear-gradient(90deg,#4da3ff,#2f6fe0) !important;
+  border-color: #4da3ff !important; box-shadow: 0 6px 24px rgba(45,110,224,.28);
+}
+html:not([data-theme="docs"]) body.sdk-layout .theme-toggle:hover { border-color: #4da3ff; }

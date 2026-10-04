@@ -10,7 +10,7 @@
     document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
       const next = active === 'normal' ? 'docs' : 'normal';
       button.textContent = next === 'docs' ? 'DOCS MODE' : 'NORMAL MODE';
-      button.setAttribute('aria-label', `Switch to ${next === 'docs' ? 'Docs purple' : 'normal black and white'} color mode`);
+      button.setAttribute('aria-label', `Switch to ${next === 'docs' ? 'Docs purple' : 'normal blue-black'} color mode`);
       button.setAttribute('aria-pressed', String(active === 'docs'));
       button.title = `Current mode: ${active === 'docs' ? 'Docs' : 'Normal'}`;
     });

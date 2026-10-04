@@ -154,3 +154,18 @@ test('SDKSPACE CTA text colors keep readable contrast', async () => {
     /\.sdkspace-intro a\.btn-primary\{color:#eef2f5;\}/,
   );
 });
+
+test('SDKSPACE pages share the canonical logo and Docs intro fills the viewport width', async () => {
+  for (const name of ['home.html', 'loading.html']) {
+    const html = await read(name);
+    assert.ok(html.includes('<img class="cube-icon" src="/logo.svg" alt="" width="22" height="22">'));
+    assert.equal(html.includes('<svg class="cube-icon"'), false);
+  }
+
+  const introCss = await read('assets/sdkspace-docs-intro.css');
+  const fullBleed = introCss.slice(introCss.lastIndexOf('/* Full-bleed canvas for the SDKSPACE introduction inside Docs. */'));
+  assert.match(fullBleed, /width:100vw;/);
+  assert.match(fullBleed, /max-width:none;/);
+  assert.match(fullBleed, /border-radius:0;/);
+  assert.match(fullBleed, /min-height:calc\(100svh/);
+});

@@ -38,7 +38,6 @@ export default function HomePage() {
           </header>
 
           <section className="home-hero">
-            <div className="home-badge"><span className="home-dot" />BUILT FOR DEVELOPERS</div>
             <h1 className="home-title">
               <span className="home-title-main">Build with</span>
               <span className="home-title-brand">SDKSPACE</span>

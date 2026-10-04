@@ -139,4 +139,8 @@ html:not([data-theme="docs"]) body.sdk-layout :is(.card, .feature, .tool-card, .
 html:not([data-theme="docs"]) body.sdk-layout :is(a, button, input, textarea, select):focus-visible { outline-color: #4da3ff !important; }
 html:not([data-theme="docs"]) body.sdk-layout :where(pre, .code pre, .content pre) { background-color: #030509; }
 html:not([data-theme="docs"]) body.sdk-layout .theme-toggle { border-color: #263751; color: #dbe8f8; background: #0c1423; }
+html:not([data-theme="docs"]) body.sdk-layout :is(.btn-primary, button.primary, button.run, .send-button, .exa-form button) {
+  color: #ffffff !important; background: linear-gradient(90deg,#4da3ff,#2f6fe0) !important;
+  border-color: #4da3ff !important; box-shadow: 0 6px 24px rgba(45,110,224,.28);
+}
 html:not([data-theme="docs"]) body.sdk-layout .theme-toggle:hover { border-color: #4da3ff; }

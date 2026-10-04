@@ -122,10 +122,11 @@ body.sdk-layout { font-family: var(--sdk-content-font); }
   --acc2: #8fc4ff !important; --accent-strong: #8fc4ff !important;
   --accent-soft: rgba(77,163,255,.14) !important; --accm: rgba(77,163,255,.14) !important; --accent-muted: rgba(77,163,255,.14) !important;
 }
-html:not([data-theme="docs"]), html:not([data-theme="docs"]) body {
-  background: radial-gradient(ellipse 140% 60% at 50% 0%, #0d1a2e 0%, #060a12 45%, #030509 100%) fixed !important;
+html:not([data-theme="docs"]) body.sdk-layout {
+  color: #f3f6fc !important; background-color: #050812 !important;
+  background-image: radial-gradient(ellipse 140% 60% at 50% 0%, #0d1a2e 0%, #060a12 45%, #030509 100%) !important;
+  background-attachment: fixed !important;
 }
-html:not([data-theme="docs"]) body { color: #f3f6fc !important; }
 html:not([data-theme="docs"]) body.sdk-layout :is(.topbar, .sdk-site-header, .shell-header, .app-header, .site-header, .header, .sidebar, .toc, .mode-panel, .shell-mobile-panel) {
   background-color: rgba(5,8,18,.96) !important; border-color: #18243a !important;
 }

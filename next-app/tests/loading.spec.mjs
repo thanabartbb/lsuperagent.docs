@@ -9,13 +9,13 @@ test('intro preserves layout, theme persistence, copy, and existing workspace li
   });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'React following deveguide by Next.js' })).toBeVisible();
-  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(5, 8, 18)');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.getByRole('button', { name: 'Switch to Docs purple color mode' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'docs');
   await page.goto('/loading');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'docs');
-  await page.getByRole('button', { name: 'Switch to normal black and white color mode' }).click();
+  await page.getByRole('button', { name: 'Switch to normal blue-black color mode' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'normal');
   await page.getByRole('button', { name: 'คัดลอก', exact: true }).click();
   await expect(page.getByRole('button', { name: 'คัดลอกแล้ว', exact: true })).toBeVisible();

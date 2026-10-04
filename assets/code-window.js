@@ -98,7 +98,7 @@ function el(tag, className, text) {
 }
 
 /** Turn one <pre> into a code window. Safe to call twice; the second call is a no-op. */
-export function codeWindow(pre, { logo = '/logo.svg', copyLabel = 'คัดลอก', copiedLabel = 'คัดลอกแล้ว' } = {}) {
+export function codeWindow(pre, { logo = '/assets/sdkspace-logo.svg', copyLabel = 'คัดลอก', copiedLabel = 'คัดลอกแล้ว' } = {}) {
   if (!pre || pre.closest('.cw')) return null;
   const codeEl = pre.querySelector('code') || pre;
   const code = codeEl.textContent.replace(/\n$/, '');

@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex" />
-  <link rel="icon" type="image/svg+xml" href="/logo.svg">
-  <title>LSUPERAGENT · Chat</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/sdkspace-logo.svg">
+  <title>Chat · SDKSPACE</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     [hidden] { display: none !important; }
@@ -55,7 +55,7 @@
       font-size: 18px;
       font-weight: 700;
     }
-    .brand svg { width: 28px; height: 28px; }
+    .brand img { width: 28px; height: 28px; object-fit: contain; }
     .nav { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
     .nav a, .nav button {
       padding: 6px 10px;
@@ -272,10 +272,7 @@
 </head>
 <body class="sdk-layout sdk-chat">
   <header class="top sdk-site-header"><div class="sdk-frame sdk-header-row">
-    <a class="brand" href="/">
-      <svg viewBox="30 20 144 160" aria-hidden="true"><path fill="#FFFFFF" fill-rule="evenodd" d="M104,30 L162,66 L163,133 L103,169 L103,139 L131,120 L103,101 Z M97,30 L41,66 L41,93 L94,63 Z M88,76 L41,102 L41,133 L94,168 L94,138 L63,119 L67,111 L93,96 L93,79 Z M126,72 L144,84 L143,108 L124,92 Z"/></svg>
-      LSUPERAGENT SDK
-    </a>
+    <a class="brand" href="/home" aria-label="SDKSPACE home"><img src="/assets/sdkspace-logo.svg" width="28" height="28" alt="">SDKSPACE</a>
     <nav class="nav" aria-label="Sections">
       <a href="/home">หน้าแรก</a>
       <span class="who" id="who"></span>

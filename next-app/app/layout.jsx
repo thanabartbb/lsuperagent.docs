@@ -6,7 +6,7 @@ import '../styles/theme-modes.css';
 import '../styles/editorial.css';
 
 export const metadata = {
-  title: 'LSUPERAGENT SDK · Get Started',
+  title: 'SDKSPACE · Get Started',
   description: 'Reusable SDK examples for chat, code, images, and research. Define a task, follow the steps, and review the result.',
   icons: { icon: '/logo.svg' },
 };

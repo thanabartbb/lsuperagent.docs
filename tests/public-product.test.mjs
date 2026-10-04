@@ -158,7 +158,7 @@ test('SDKSPACE CTA text colors keep readable contrast', async () => {
 test('SDKSPACE pages share the canonical logo and Docs intro fills the viewport width', async () => {
   for (const name of ['home.html', 'loading.html']) {
     const html = await read(name);
-    assert.ok(html.includes('<img class="cube-icon" src="/logo.svg" alt="" width="22" height="22">'));
+    assert.ok(html.includes('<img class="cube-icon" src="/assets/sdkspace-logo.svg" alt="" width="22" height="22">'));
     assert.equal(html.includes('<svg class="cube-icon"'), false);
   }
 
@@ -180,4 +180,28 @@ test('attachment control opens a menu for tools, providers, and selectable model
   assert.match(client, /tool: mode/);
   assert.match(client, /model: modelChoice.value/);
   assert.match(client, /aria-expanded/);
+});
+
+test('active site pages share the SDKSPACE name and canonical logo asset', async () => {
+  const pages = [
+    'home.html', 'loading.html', 'chat.html', 'guide.html', 'login.html',
+    'signup.html', 'forgot-password.html', 'news.html', 'keys.html',
+    'tools.html', 'exa.html', 'dev.html', 'dev-code-drop.html', 'docs-shell.html',
+  ];
+  for (const name of pages) {
+    const html = await read(name);
+    assert.match(html, /<img[^>]+src=["']\/assets\/sdkspace-logo\.svg["']/i, `${name} must use the shared logo`);
+    assert.match(visibleHtml(html), /SDKSPACE/i, `${name} must show the canonical site name`);
+    assert.doesNotMatch(visibleHtml(html), /LSUPERAGENT/i, `${name} must not show the old product name`);
+  }
+
+  const logo = await read('assets/sdkspace-logo.svg');
+  assert.match(logo, /<svg[\s\S]*<path/i);
+  const nextHeader = await read('next-app/components/site-header.jsx');
+  const nextFooter = await read('next-app/components/site-footer.jsx');
+  const nextLayout = await read('next-app/app/layout.jsx');
+  assert.match(nextHeader, /SDKSPACE/);
+  assert.match(nextFooter, /SDKSPACE/);
+  assert.match(nextLayout, /SDKSPACE/);
+  assert.doesNotMatch(nextHeader + nextFooter + nextLayout, /LSUPERAGENT/i);
 });

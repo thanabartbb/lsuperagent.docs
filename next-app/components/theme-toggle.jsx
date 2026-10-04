@@ -19,7 +19,7 @@ export default function ThemeToggle() {
   }
   return <button className="theme-toggle" type="button" data-theme-toggle="" onClick={toggle}
     aria-pressed={mode === 'docs'} title={`Current mode: ${mode === 'docs' ? 'Docs' : 'Normal'}`}
-    aria-label={`Switch to ${mode === 'docs' ? 'normal black and white' : 'Docs purple'} color mode`}>
+    aria-label={`Switch to ${mode === 'docs' ? 'normal blue-black' : 'Docs purple'} color mode`}>
     {mode === 'docs' ? 'NORMAL MODE' : 'DOCS MODE'}
   </button>;
 }

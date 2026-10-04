@@ -1,4 +1,5 @@
 import '../../styles/home.css';
+import '../../styles/home-fullscreen.css';
 
 export const metadata = {
   title: 'Home · SDKSPACE',

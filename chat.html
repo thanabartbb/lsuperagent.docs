@@ -268,7 +268,7 @@
     .hint a { color: var(--muted); }
   </style>
 <link rel="stylesheet" href="/assets/layout.css?v=1">
-<link rel="stylesheet" href="/assets/theme.css?v=4"><link rel="stylesheet" href="/assets/editorial.css?v=1">
+<link rel="stylesheet" href="/assets/theme.css?v=4"><link rel="stylesheet" href="/assets/editorial.css?v=1"><link rel="stylesheet" href="/assets/chat-tools.css?v=1">
 </head>
 <body class="sdk-layout sdk-chat">
   <header class="top sdk-site-header"><div class="sdk-frame sdk-header-row">
@@ -285,7 +285,6 @@
 <main class="sdk-frame sdk-chat-content">
 
   <div class="bar">
-    <select id="provider" aria-label="Model" disabled><option>กำลังโหลดโมเดล…</option></select>
     <span id="mode-label" class="mode-label">แชท</span>
     <span class="quota" id="quota"></span>
     <button type="button" class="btn-ghost" id="history-toggle" aria-expanded="false" aria-controls="history" hidden>ประวัติ</button>
@@ -300,9 +299,37 @@
 
   <div class="pending" id="pending" hidden></div>
   <form class="composer" id="composer">
-    <button type="button" class="attach" id="attach" aria-label="แนบรูปภาพหรือ PDF" title="แนบรูปภาพหรือ PDF" disabled>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.4 11.1 12.2 20.3a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg>
-    </button>
+    <div class="chat-tools-wrap">
+      <button type="button" class="attach" id="attach" aria-label="เปิดเมนูเครื่องมือและไฟล์แนบ" title="เครื่องมือและไฟล์แนบ" aria-expanded="false" aria-controls="chat-tools-menu" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.4 11.1 12.2 20.3a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg>
+      </button>
+      <section class="chat-tools-menu" id="chat-tools-menu" aria-label="ตัวเลือกเครื่องมือและโมเดล" hidden>
+        <div class="chat-tools-heading">
+          <strong>ตั้งค่าแชต</strong>
+          <button type="button" id="close-tools-menu" class="chat-tools-close" aria-label="ปิดเมนู">×</button>
+        </div>
+        <label class="chat-tools-field">เครื่องมือ
+          <select id="tool-choice">
+            <option value="chat">แชตทั่วไป</option>
+            <option value="code">เขียนและตรวจโค้ด</option>
+            <option value="research">ค้นคว้าพร้อมแหล่งอ้างอิง</option>
+            <option value="url">อ่าน URL</option>
+            <option value="writer">เขียนและปรับเนื้อหา</option>
+            <option value="image">สร้างภาพ</option>
+          </select>
+        </label>
+        <label class="chat-tools-field">ผู้ให้บริการ
+          <select id="provider" aria-label="ผู้ให้บริการ AI" disabled><option>กำลังโหลด…</option></select>
+        </label>
+        <label class="chat-tools-field">โมเดล
+          <select id="model-choice" aria-label="โมเดล AI" disabled><option value="">กำลังโหลด…</option></select>
+        </label>
+        <button type="button" id="choose-file" class="chat-tools-file" disabled>
+          <span aria-hidden="true">＋</span> แนบรูปภาพหรือ PDF
+        </button>
+        <p id="tool-description" class="chat-tools-description">ถาม อธิบาย และคิดงานทั่วไป</p>
+      </section>
+    </div>
     <input type="file" id="file" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf" multiple hidden>
     <textarea id="input" rows="1" maxlength="12000" placeholder="พิมพ์ข้อความ…" disabled></textarea>
     <button type="submit" class="send" id="send" disabled>ส่ง</button>

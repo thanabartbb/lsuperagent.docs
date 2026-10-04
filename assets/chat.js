@@ -9,6 +9,7 @@
   const toolChoice = $('tool-choice');
   const toolsMenu = $('chat-tools-menu');
   const attachFileButton = $('choose-file');
+  const toolDescription = $('tool-description');
   const quota = $('quota');
   const supportedModes = ['chat', 'code', 'research', 'url', 'writer', 'image'];
   const requestedMode = new URLSearchParams(location.search).get('mode');
@@ -26,11 +27,13 @@
   let availableProviders = [];
   let modelsByProvider = {};
   let availableImageModels = [];
+  let availableWebModels = [];
   function updateModeUI() {
     if (toolChoice) toolChoice.value = mode;
     if (modeLabel) modeLabel.textContent = MODE_LABELS[mode] || MODE_LABELS.chat;
     const hint = $('hint');
     if (hint) hint.textContent = MODE_HINTS[mode] || MODE_HINTS.chat;
+    if (toolDescription) toolDescription.textContent = MODE_HINTS[mode] || MODE_HINTS.chat;
     const empty = $('empty');
     const emptyText = { chat: 'ลองถามอะไรก็ได้เกี่ยวกับ AI SDK', code: 'ส่งโจทย์หรือวางโค้ดเพื่อให้ AI ช่วยเขียน ตรวจ และอธิบาย', research: 'ถามเรื่องที่ต้องการค้นคว้า พร้อมดูแหล่งอ้างอิง', url: 'วาง URL แล้วถามสิ่งที่ต้องการทราบ', writer: 'บอกเนื้อหาที่ต้องการร่างหรือปรับ', image: 'อธิบายภาพที่ต้องการสร้าง' };
     if (empty) empty.textContent = emptyText[mode] || emptyText.chat;
@@ -375,7 +378,7 @@
   const PROVIDER_KEY = 'lsuperagent-chat-provider';
   const MODEL_KEY = 'lsuperagent-chat-model';
   function syncModelOptions() {
-    const models = mode === 'image' ? availableImageModels : (modelsByProvider[model.value] || []);
+    const models = mode === 'image' ? availableImageModels : ['research', 'url'].includes(mode) ? availableWebModels : (modelsByProvider[model.value] || []);
     const savedKey = MODEL_KEY + ':' + (mode === 'image' ? 'image' : model.value);
     let saved = '';
     try { saved = localStorage.getItem(savedKey) || ''; } catch (_) { /* storage may be blocked */ }
@@ -425,6 +428,7 @@
     availableProviders = Array.isArray(result.providers) ? result.providers : [{ id: 'openai', label: 'OpenAI', available: true }];
     modelsByProvider = result.models && typeof result.models === 'object' ? result.models : {};
     availableImageModels = Array.isArray(result.image_models) ? result.image_models : [];
+    availableWebModels = Array.isArray(result.web_search_models) ? result.web_search_models : [];
     let savedProvider = '';
     try { savedProvider = localStorage.getItem(PROVIDER_KEY) || ''; } catch (_) { /* storage may be blocked */ }
     syncProviderOptions(savedProvider);

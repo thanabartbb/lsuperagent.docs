@@ -4,7 +4,7 @@ import CodeWindow from "./code-window";
 export default function LandingPage(){return <><SiteHeader /><main>
 <section className="hero">
 <div className="wrap sdk-frame">
-<div className="logo-container"><img src="/logo.svg" width="72" height="72" alt="LSUPERAGENT SDK logo" /></div>
+<div className="logo-container"><img src="/logo.svg" width="72" height="72" alt="SDKSPACE logo" /></div>
 <h2>{"React following"}<br /><em>{"deveguide by Next.js"}</em></h2>
 <p className="en-text">{"Define your task. Build with reusable examples. Review the result."}</p>
 <div className="buttons-wrapper">

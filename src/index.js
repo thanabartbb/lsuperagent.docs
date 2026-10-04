@@ -863,7 +863,7 @@ async function handleChat(request, env, session = null, quotaIdentity = session)
   const selectedModel = typeof body.model === 'string' ? body.model.trim() : '';
   const stream = body.stream === true && tool !== 'code';
   if (provider !== 'openai' && provider !== 'claude') return json({ ok: false, status: 'validation_error', message: 'ผู้ให้บริการ AI ที่เลือกไม่ถูกต้อง' }, 400);
-  if (body.model !== undefined && typeof body.model !== 'string') return json({ ok: false, status: 'validation_error', message: 'รูปแบบโมเดลไม่ถูกต้อง' }, 400);
+  if (body.model !== undefined && body.model !== null && typeof body.model !== 'string') return json({ ok: false, status: 'validation_error', message: 'รูปแบบโมเดลไม่ถูกต้อง' }, 400);
   if (selectedModel && !chatModelOptions(env, provider).includes(selectedModel)) return json({ ok: false, status: 'validation_error', message: 'โมเดลที่เลือกไม่รองรับ' }, 400);
   if (!message) return json({ ok: false, status: 'validation_error', message: 'กรุณาใส่ข้อความก่อนส่ง' }, 400);
   if (message.length > 120000) return json({ ok: false, status: 'validation_error', message: 'ข้อความยาวเกินขีดจำกัด 120,000 ตัวอักษร กรุณาแบ่งเป็นส่วนย่อย' }, 413);
@@ -961,7 +961,7 @@ async function handleImage(request, env, quotaIdentity = null) {
   try { body = await request.json(); } catch (_) { body = {}; }
   const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
   const selectedModel = typeof body.model === 'string' ? body.model.trim() : '';
-  if (body.model !== undefined && typeof body.model !== 'string') return json({ ok: false, status: 'validation_error', message: 'รูปแบบโมเดลภาพไม่ถูกต้อง' }, 400);
+  if (body.model !== undefined && body.model !== null && typeof body.model !== 'string') return json({ ok: false, status: 'validation_error', message: 'รูปแบบโมเดลภาพไม่ถูกต้อง' }, 400);
   if (selectedModel && !imageModelOptions().includes(selectedModel)) return json({ ok: false, status: 'validation_error', message: 'โมเดลภาพที่เลือกไม่รองรับ' }, 400);
   if (!prompt) return json({ ok: false, status: 'validation_error', message: 'กรุณาอธิบายภาพที่ต้องการสร้าง' }, 400);
   if (prompt.length > 12000) return json({ ok: false, status: 'validation_error', message: 'คำอธิบายภาพยาวเกินขีดจำกัด 12,000 ตัวอักษร' }, 413);

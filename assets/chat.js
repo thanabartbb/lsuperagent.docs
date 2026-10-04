@@ -5,16 +5,40 @@
   const input = $('input');
   const send = $('send');
   const model = $('provider');
+  const modelChoice = $('model-choice');
+  const toolChoice = $('tool-choice');
+  const toolsMenu = $('chat-tools-menu');
+  const attachFileButton = $('choose-file');
   const quota = $('quota');
-  const mode = new URLSearchParams(location.search).get('mode') === 'code' ? 'code' : 'chat';
+  const supportedModes = ['chat', 'code', 'research', 'url', 'writer', 'image'];
+  const requestedMode = new URLSearchParams(location.search).get('mode');
+  let mode = requestedMode === 'write' ? 'writer' : supportedModes.includes(requestedMode) ? requestedMode : 'chat';
   const modeLabel = $('mode-label');
-  if (modeLabel) modeLabel.textContent = mode === 'code' ? 'โหมดโค้ด' : 'แชท';
-  if (mode === 'code') {
-    $('empty').textContent = 'ส่งโจทย์หรือวางโค้ดเพื่อให้ AI ช่วยเขียน ตรวจ และอธิบาย';
-    $('hint').textContent = 'AI เสนอสร้าง repo หรือ commit ไป GitHub ได้ ต้องเชื่อมบัญชีที่หน้าเครื่องมือและกดยืนยันทุกครั้ง · อย่าใส่รหัสผ่านหรือ API key';
+  const MODE_LABELS = { chat: 'แชต', code: 'เขียนโค้ด', research: 'ค้นคว้า', url: 'อ่าน URL', writer: 'เขียนเนื้อหา', image: 'สร้างภาพ' };
+  const MODE_HINTS = {
+    chat: 'แชตจะถูกบันทึกในบัญชีของคุณ ลบได้จากปุ่ม “ประวัติ” · อย่าใส่รหัสผ่านหรือ API key',
+    code: 'AI ช่วยเขียนและตรวจโค้ด; การสร้าง repo หรือ commit ต้องเชื่อม GitHub และกดยืนยันก่อนทุกครั้ง',
+    research: 'ค้นคว้าจากเว็บพร้อมแหล่งอ้างอิง · ใช้ได้กับ OpenAI',
+    url: 'วาง URL ที่ต้องการให้อ่านและถามต่อ · ใช้ได้กับ OpenAI',
+    writer: 'ร่างหรือปรับเนื้อหาให้ตรงเป้าหมาย แล้วคัดลอกคำตอบไปใช้',
+    image: 'อธิบายภาพที่ต้องการสร้าง · ใช้โมเดลสร้างภาพของ OpenAI'
+  };
+  let availableProviders = [];
+  let modelsByProvider = {};
+  let availableImageModels = [];
+  function updateModeUI() {
+    if (toolChoice) toolChoice.value = mode;
+    if (modeLabel) modeLabel.textContent = MODE_LABELS[mode] || MODE_LABELS.chat;
+    const hint = $('hint');
+    if (hint) hint.textContent = MODE_HINTS[mode] || MODE_HINTS.chat;
+    const empty = $('empty');
+    const emptyText = { chat: 'ลองถามอะไรก็ได้เกี่ยวกับ AI SDK', code: 'ส่งโจทย์หรือวางโค้ดเพื่อให้ AI ช่วยเขียน ตรวจ และอธิบาย', research: 'ถามเรื่องที่ต้องการค้นคว้า พร้อมดูแหล่งอ้างอิง', url: 'วาง URL แล้วถามสิ่งที่ต้องการทราบ', writer: 'บอกเนื้อหาที่ต้องการร่างหรือปรับ', image: 'อธิบายภาพที่ต้องการสร้าง' };
+    if (empty) empty.textContent = emptyText[mode] || emptyText.chat;
+    if (attachFileButton) attachFileButton.disabled = mode === 'image';
   }
   const turns = [];
   const MAX_TURNS = 20;
+  updateModeUI();
   const historyPanel = $('history');
   const historyToggle = $('history-toggle');
   let conversationId = new URLSearchParams(location.search).get('c');
@@ -128,6 +152,37 @@
   const pendingBox = $('pending');
   const attachButton = $('attach');
   const fileInput = $('file');
+  const closeToolsButton = $('close-tools-menu');
+  const openToolsMenu = (open) => {
+    toolsMenu.hidden = !open;
+    attachButton.setAttribute('aria-expanded', String(open));
+    if (open) toolChoice.focus();
+  };
+  attachButton.addEventListener('click', () => openToolsMenu(toolsMenu.hidden));
+  closeToolsButton.addEventListener('click', () => { openToolsMenu(false); attachButton.focus(); });
+  attachFileButton.addEventListener('click', () => {
+    if (mode === 'image') return;
+    openToolsMenu(false);
+    fileInput.click();
+  });
+  document.addEventListener('pointerdown', (event) => {
+    if (!toolsMenu.hidden && !toolsMenu.contains(event.target) && !attachButton.contains(event.target)) openToolsMenu(false);
+  });
+  toolsMenu.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') { openToolsMenu(false); attachButton.focus(); }
+  });
+  toolChoice.addEventListener('change', () => {
+    const nextMode = toolChoice.value;
+    if (!supportedModes.includes(nextMode)) { toolChoice.value = mode; return; }
+    if (nextMode === 'image' && pending.length) {
+      bubble('e', 'นำไฟล์แนบออกก่อน แล้วจึงเลือกสร้างภาพ');
+      toolChoice.value = mode;
+      return;
+    }
+    mode = nextMode;
+    updateModeUI();
+    if (availableProviders.length) syncProviderOptions(model.value);
+  });
 
   const readDataUrl = (blob) => new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -202,6 +257,7 @@
   function syncControls() {
     send.disabled = sending || preparing > 0 || input.disabled;
     attachButton.disabled = sending || input.disabled;
+    if (attachFileButton) attachFileButton.disabled = sending || input.disabled || mode === 'image';
   }
 
   // Batches are prepared one after another, so the 4-file limit is checked against settled results.
@@ -237,7 +293,6 @@
     renderPending();
   }
 
-  attachButton.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', async () => {
     await addFiles(Array.from(fileInput.files || []));
     fileInput.value = '';
@@ -316,30 +371,72 @@
     return node;
   }
 
-  // AI provider picker: lists only providers the server has a key for; remembers the choice per browser.
+  // Provider and model choices come from the Worker, so the menu only offers configured providers.
   const PROVIDER_KEY = 'lsuperagent-chat-provider';
-  async function loadProviders() {
-    let providers = [{ id: 'openai', label: 'OpenAI', available: true }];
-    try {
-      const response = await fetch('/api/chat-providers', { credentials: 'same-origin', cache: 'no-store' });
-      const result = await response.json();
-      if (response.ok && Array.isArray(result.providers)) providers = result.providers.filter((item) => item.available);
-    } catch (_) { /* keep the OpenAI default */ }
-    if (!providers.length) providers = [{ id: 'openai', label: 'OpenAI' }];
-    model.innerHTML = '';
+  const MODEL_KEY = 'lsuperagent-chat-model';
+  function syncModelOptions() {
+    const models = mode === 'image' ? availableImageModels : (modelsByProvider[model.value] || []);
+    const savedKey = MODEL_KEY + ':' + (mode === 'image' ? 'image' : model.value);
+    let saved = '';
+    try { saved = localStorage.getItem(savedKey) || ''; } catch (_) { /* storage may be blocked */ }
+    modelChoice.replaceChildren();
+    const auto = document.createElement('option');
+    auto.value = '';
+    auto.textContent = 'อัตโนมัติ · เลือกสำรองให้';
+    modelChoice.append(auto);
+    for (const id of models) {
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = id;
+      modelChoice.append(option);
+    }
+    modelChoice.value = models.includes(saved) ? saved : '';
+    modelChoice.disabled = false;
+  }
+
+  function syncProviderOptions(preferred = '') {
+    const openAIOnly = ['research', 'url', 'image'].includes(mode);
+    const providers = availableProviders.filter((item) => item.available && (!openAIOnly || item.id === 'openai'));
+    model.replaceChildren();
     for (const item of providers) {
       const option = document.createElement('option');
       option.value = item.id;
       option.textContent = item.label;
       model.append(option);
     }
-    let saved = null;
-    try { saved = localStorage.getItem(PROVIDER_KEY); } catch (_) { /* storage may be blocked */ }
-    if (saved && providers.some((item) => item.id === saved)) model.value = saved;
+    if (!providers.length) {
+      const option = document.createElement('option');
+      option.value = 'openai';
+      option.textContent = 'OpenAI';
+      model.append(option);
+    }
+    model.value = providers.some((item) => item.id === preferred) ? preferred : providers[0]?.id || 'openai';
     model.disabled = providers.length < 2;
+    syncModelOptions();
   }
+
+  async function loadProviders() {
+    let result = {};
+    try {
+      const response = await fetch('/api/chat-providers', { credentials: 'same-origin', cache: 'no-store' });
+      result = await response.json();
+      if (!response.ok) result = {};
+    } catch (_) { /* use the public defaults; API will return a clear unavailable response */ }
+    availableProviders = Array.isArray(result.providers) ? result.providers : [{ id: 'openai', label: 'OpenAI', available: true }];
+    modelsByProvider = result.models && typeof result.models === 'object' ? result.models : {};
+    availableImageModels = Array.isArray(result.image_models) ? result.image_models : [];
+    let savedProvider = '';
+    try { savedProvider = localStorage.getItem(PROVIDER_KEY) || ''; } catch (_) { /* storage may be blocked */ }
+    syncProviderOptions(savedProvider);
+  }
+
   model.addEventListener('change', () => {
     try { localStorage.setItem(PROVIDER_KEY, model.value); } catch (_) { /* storage may be blocked */ }
+    syncModelOptions();
+  });
+  modelChoice.addEventListener('change', () => {
+    const key = MODEL_KEY + ':' + (mode === 'image' ? 'image' : model.value);
+    try { if (modelChoice.value) localStorage.setItem(key, modelChoice.value); else localStorage.removeItem(key); } catch (_) { /* storage may be blocked */ }
   });
 
   function toLogin() {
@@ -352,7 +449,7 @@
 
   $('clear').addEventListener('click', () => {
     setConversation(null);
-    resetChat(mode === 'code' ? 'เริ่มโจทย์โค้ดใหม่ได้เลย' : 'เริ่มแชทใหม่ได้เลย');
+    resetChat(mode === 'code' ? 'เริ่มโจทย์โค้ดใหม่ได้เลย' : mode === 'image' ? 'อธิบายภาพที่ต้องการสร้างได้เลย' : 'เริ่มแชทใหม่ได้เลย');
   });
 
   input.addEventListener('input', () => {
@@ -370,6 +467,10 @@
   $('composer').addEventListener('submit', async (event) => {
     event.preventDefault();
     if (send.disabled || preparing > 0) return;
+    if (mode === 'image' && pending.length) {
+      bubble('e', 'โหมดสร้างภาพรับคำสั่งข้อความก่อน กรุณานำไฟล์แนบออก');
+      return;
+    }
     const files = pending.splice(0);
     const typed = input.value.trim();
     const text = typed || (files.length ? 'ช่วยดูไฟล์ที่แนบมา' : '');
@@ -414,18 +515,20 @@
     if (turns[0]?.role !== 'user') turns.shift();
 
     sending = true;
-    const providerLabel = (model.selectedOptions[0] && model.selectedOptions[0].textContent) || 'AI';
+    const providerLabel = ((model.selectedOptions[0] && model.selectedOptions[0].textContent) || 'AI') + (modelChoice.value ? ' · ' + modelChoice.value : '');
     syncControls();
     renderPending();
     const wait = bubble('a', 'กำลังคิด');
     wait.classList.add('thinking');
     let answerNode = null;
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch(mode === 'image' ? '/api/image' : '/api/chat', {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ message: text, messages: turns, mode, stream: mode !== 'code', ...(conversationId ? { conversation_id: conversationId } : {}), ...(files.length ? { attachments: files.map(({ name, data }) => ({ name, data })) } : {}), ...(mode === 'code' ? { tool: 'code' } : {}), provider: model.value || 'openai' }),
+        body: JSON.stringify(mode === 'image'
+          ? { prompt: text, ...(modelChoice.value ? { model: modelChoice.value } : {}) }
+          : { message: text, messages: turns, mode, stream: !['code', 'research', 'url'].includes(mode), ...(conversationId ? { conversation_id: conversationId } : {}), ...(files.length ? { attachments: files.map(({ name, data }) => ({ name, data })) } : {}), ...(mode === 'chat' ? {} : { tool: mode }), provider: model.value || 'openai', ...(modelChoice.value ? { model: modelChoice.value } : {}) }),
       });
       // Prefer the daily account quota; fall back to the short burst guard when no quota applies (e.g. owner).
       const dailyLeft = response.headers.get('x-lsuperagen-quota-remaining');
@@ -434,7 +537,32 @@
       const limit = response.headers.get('x-lsuperagen-rate-limit');
       if (dailyLeft !== null && dailyLimit) quota.textContent = 'วันนี้เหลือ ' + dailyLeft + '/' + dailyLimit + ' ข้อความ';
       else if (remaining !== null && limit) quota.textContent = 'เหลือในรอบนี้ ' + remaining + '/' + limit;
-      if (mode === 'code' && (response.headers.get('content-type') || '').includes('application/json')) {
+      if (mode === 'image') {
+        const result = await response.json().catch(() => ({}));
+        wait.remove();
+        if (!response.ok || !result.ok || !result.image?.data_base64) {
+          turns.pop();
+          restoreFiles();
+          if (response.status === 401) return toLogin();
+          bubble('e', result.message || 'สร้างภาพไม่สำเร็จ (' + response.status + ')');
+          return;
+        }
+        turns.pop();
+        const output = document.createElement('div');
+        output.className = 'bubble a image-result';
+        const image = document.createElement('img');
+        image.src = 'data:' + (result.image.mime_type || 'image/png') + ';base64,' + result.image.data_base64;
+        image.alt = text;
+        const download = document.createElement('a');
+        download.href = image.src;
+        download.download = result.image.filename || 'sdkspace-image.png';
+        download.textContent = 'ดาวน์โหลดภาพ';
+        output.append(image, download);
+        chat.append(output);
+        chat.scrollTop = chat.scrollHeight;
+        return;
+      }
+      if (['code', 'research', 'url'].includes(mode) && (response.headers.get('content-type') || '').includes('application/json')) {
         const result = await response.json().catch(() => ({}));
         wait.remove();
         if (!response.ok || !result.ok) {
@@ -450,7 +578,16 @@
         } else {
           const answer = result.output || result.message || '';
           turns.push({ role: 'assistant', content: answer });
-          bubble('a', answer, providerLabel);
+          const answerNode = bubble('a', answer, providerLabel);
+          for (const source of Array.isArray(result.sources) ? result.sources : []) {
+            if (!source || typeof source.url !== 'string' || !/^https?:\/\//i.test(source.url)) continue;
+            const link = document.createElement('a');
+            link.href = source.url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.textContent = source.title || source.url;
+            answerNode.append(document.createElement('br'), link);
+          }
         }
         if (result.conversation_id) { setConversation(result.conversation_id); if (!historyPanel.hidden) loadHistoryList(); }
         return;
@@ -548,9 +685,7 @@
       const probe = await fetch('/api/chats', { credentials: 'same-origin', cache: 'no-store' }).catch(() => null);
       historyAvailable = Boolean(probe && probe.ok);
       historyToggle.hidden = !historyAvailable;
-      if (historyAvailable) $('hint').textContent = mode === 'code'
-        ? 'แชตบันทึกในบัญชี · เชื่อม GitHub ที่หน้าเครื่องมือ และกดยืนยันทุกครั้งก่อนสร้าง repo หรือ commit · อย่าใส่รหัสผ่านหรือ API key'
-        : 'แชตจะถูกบันทึกในบัญชีของคุณ ลบได้จากปุ่ม "ประวัติ" · อย่าใส่รหัสผ่านหรือ API key';
+      if (historyAvailable && mode === 'chat') $('hint').textContent = 'แชตบันทึกในบัญชี · ดูหรือลบได้จากปุ่ม “ประวัติ” · อย่าใส่รหัสผ่านหรือ API key';
       if (historyAvailable && conversationId) await openConversation(conversationId);
       else if (conversationId) setConversation(null);
     } catch (_) {

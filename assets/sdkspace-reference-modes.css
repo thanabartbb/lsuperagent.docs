@@ -206,3 +206,19 @@
   @media(prefers-reduced-motion:reduce){html[data-theme="docs"] *,html[data-theme="docs"] *::before,html[data-theme="docs"] *::after{animation:none!important;transition:none!important;}}
 
 html[data-theme="docs"] .glow-border{animation:none;background:#1c1c1c;}
+
+/* Let the mobile page fill the browser viewport in both color modes. */
+@media (max-width: 600px){
+  body[data-sdkspace-page],
+  html[data-theme="docs"] body[data-sdkspace-page]{
+    padding:0;
+    min-height:100svh;
+  }
+  body[data-sdkspace-page] > .phone,
+  html[data-theme="docs"] body[data-sdkspace-page] > .phone{
+    max-width:none;
+    min-height:100svh;
+    border:0;
+    border-radius:0;
+  }
+}

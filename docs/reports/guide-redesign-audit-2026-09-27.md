@@ -256,3 +256,17 @@ GitHub API ยังไม่แสดง Actions run หรือ commit status
 ไม่แก้ runtime เพิ่ม เพราะ commit นี้แก้ false-negative ใน test เท่านั้นและไม่พบ production regression ใหม่
 
 สิ่งที่ยังเหลือเหมือนเดิม: signed-in visual verification ของ `/guide` ที่ 390px/1280px และ flow `/keys → /guide → Run all → Proof report 5/5`.
+
+
+## Update — mobile viewport fill fix
+
+ตรวจ commit `64983be4eb73bb9378d0f26d408f8ac79a7e1a9a` วันที่ 2026-10-04 แล้ว:
+
+- เพิ่ม media query ที่ความกว้างไม่เกิน 600px ใน `assets/sdkspace-reference-modes.css`
+- สำหรับ `body[data-sdkspace-page]` ยกเลิก padding และกำหนด `min-height:100svh`
+- สำหรับ container `.phone` ยกเลิก max-width, border และ border-radius พร้อมกำหนด `min-height:100svh`; จึงแก้กรอบจำลองโทรศัพท์ที่ทำให้หน้า Home/Intro ไม่เต็มจอบนมือถือ
+- `home.html` และ `loading.html` มี viewport meta, body data attribute และโหลด stylesheet นี้ทั้งคู่ จึงเข้า selector ตามที่ตั้งใจ
+- ตรวจ production `/loading` แล้วหน้า SDKSPACE ยังทำงาน และ stylesheet ที่โหลดจริงมี mobile rule ใหม่ แม้ URL ยังคงเป็น `sdkspace-reference-modes.css?v=1`
+- GitHub API ยังไม่มี workflow run หรือ commit status และ browser ที่ใช้ตรวจมี viewport 1363px จึงยังไม่อ้างว่า visual 390px ผ่านครบถ้วน
+
+ไม่พบ regression ใหม่และไม่แก้ runtime เพิ่ม จุดที่ควรทำต่อคือเพิ่ม mobile viewport test ที่ 390px สำหรับ Home/Intro และตรวจ signed-in `/guide` ตาม acceptance เดิม.

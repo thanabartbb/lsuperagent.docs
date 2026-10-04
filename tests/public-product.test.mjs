@@ -53,7 +53,7 @@ test('published npmjs.sdk-space is identified separately from the API client', a
   assert.match(landing, /lsupergen-sdk/);
 });
 
-test('supplied SDKSPACE references preserve their palettes while guide keeps the two-mode palette', async () => {
+test('SDKSPACE reference colors carry into the guide while Docs mode stays muted purple', async () => {
   const landing = await read('loading.html');
   const guide = await read('guide.html');
   const core = await read('assets/guide-core.css');
@@ -61,10 +61,10 @@ test('supplied SDKSPACE references preserve their palettes while guide keeps the
   const script = await read('assets/theme-modes.js');
 
   for (const [name, html] of [['guide.html', guide]]) {
-    assert.match(html, /\/assets\/theme-modes\.css\?v=2/);
+    assert.match(html, /\/assets\/theme-modes\.css\?v=3/);
     assert.match(html, /\/assets\/theme-modes\.js\?v=1/);
     assert.match(html, /data-theme-toggle/);
-    assert.match(html, /\/assets\/theme\.css\?v=3/);
+    assert.match(html, /\/assets\/theme\.css\?v=4/);
   }
 
   assert.match(landing, /#0d1a2e/);
@@ -73,10 +73,10 @@ test('supplied SDKSPACE references preserve their palettes while guide keeps the
   assert.match(landing, /data-theme-toggle/);
   assert.match(await read('assets/sdkspace-docs-intro.css'), /#050505/);
   assert.match(await read('docs-content/introduction.html'), /sdkspace-intro/);
-  assert.match(guide, /guide-core\.css\?v=3[\s\S]*theme-modes\.css\?v=2/);
-  assert.match(core, /\.tab\{[^}]*background:#000(?:000)?!important;opacity:1!important;/);
-  assert.match(modes, /html, body, body\.sdk-layout \{ background-color: #000000 !important; \}/);
-  assert.match(modes, /\.feature, \.news-card, \.chip, \.step, \.fact, pre,[\s\S]*background: #000000 !important/);
+  assert.match(guide, /guide-core\.css\?v=4[\s\S]*theme-modes\.css\?v=3/);
+  assert.match(core, /\.tab\{[^}]*background:#050812!important;opacity:1!important;/);
+  assert.match(modes, /Normal mode follows the SDKSPACE blue-black reference/);
+  assert.match(modes, /html:not\(\[data-theme="docs"\]\) :is\([\s\S]*background: #090f1b !important/);
   assert.match(modes, /html\[data-theme="docs"\][\s\S]*--mode-accent: #70568f/);
   assert.match(script, /lsuperagent-color-mode/);
   assert.match(script, /addEventListener\('click'/);

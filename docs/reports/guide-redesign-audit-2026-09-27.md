@@ -241,3 +241,18 @@ GitHub API ยังไม่แสดง Actions run หรือ commit status
 ข้อสรุป: custom-domain routing ฟื้นตัวแล้ว และ public/auth boundary ที่ตรวจได้ทำงานตาม contract. เนื่องจากไม่มี application commit ใหม่ระหว่างเหตุขัดข้องกับการฟื้นตัว จึงมีแนวโน้มว่าเป็นการแก้หรือการ propagate ที่ชั้น Cloudflare/domain มากกว่าการเปลี่ยน source code แต่ยังไม่มีหลักฐาน dashboard/deployment log เพียงพอจะระบุสาเหตุสุดท้าย.
 
 ยังไม่ปิดงาน Guide redesign: ต้องใช้ signed-in test session เพื่อตรวจ `/guide` ที่ 390px/1280px และทดสอบ `/keys → /guide → Run all → Proof report 5/5`. ไม่แก้ runtime เพิ่มในรอบนี้เพราะเส้นทาง public และ auth gate ที่ตรวจพบถูกต้อง.
+
+
+## Update — CTA regression selector corrected
+
+ตรวจ commit `67245d3938d400978ece15286883b862d1342de3` วันที่ 2026-10-04 แล้ว:
+
+- แก้เฉพาะ `tests/public-product.test.mjs`; ไม่มี production HTML, CSS, JavaScript, Worker route หรือ deployment config เปลี่ยน
+- regex เดิมใช้ `\\\\.` ภายใน regex literal ทำให้ค้นหาอักขระ backslash ตามด้วยอักขระใด ๆ แทนที่จะจับจุดใน CSS selector จึงไม่ตรงกับ `a.btn-primary` และ `.sdkspace-intro a.btn-primary`
+- regex ใหม่ใช้ `\\.` ซึ่งเป็นรูปแบบที่ถูกต้องสำหรับ literal dot ใน JavaScript regex และยังคงล็อกค่าสี CTA เดิม
+- production `https://agents-sdk.space/loading` ยังเปิดสำเร็จและแสดงหน้า SDKSPACE; ไม่พบการกลับมาของเหตุ 502
+- GitHub API ยังไม่แสดง workflow run หรือ commit status สำหรับ SHA นี้ จึงยืนยันได้เฉพาะความถูกต้องของ diff และ live public route ไม่อ้างว่า test suite ทั้งชุดผ่านบน CI
+
+ไม่แก้ runtime เพิ่ม เพราะ commit นี้แก้ false-negative ใน test เท่านั้นและไม่พบ production regression ใหม่
+
+สิ่งที่ยังเหลือเหมือนเดิม: signed-in visual verification ของ `/guide` ที่ 390px/1280px และ flow `/keys → /guide → Run all → Proof report 5/5`.

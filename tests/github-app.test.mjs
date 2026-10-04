@@ -88,14 +88,14 @@ test('GitHub App actions require an explicit same-origin request and owner-bound
   env.DB.row = { user_key: 'google:user-123', github_login: 'thanabartbb', token_iv: encrypted.iv, token_ciphertext: encrypted.ciphertext, access_expires_at: Date.now() + 3600_000, refresh_expires_at: Date.now() + 86400_000 };
   const originalFetch = globalThis.fetch;
   let calls = 0;
-  globalThis.fetch = async (url) => { calls++; assert.equal(String(url), 'https://api.github.com/user/repos'); return Response.json({ full_name: 'thanabartbb/sample', html_url: 'https://github.com/thanabartbb/sample', private: true, default_branch: 'main' }, { status: 201 }); };
+  globalThis.fetch = async (url, init = {}) => { calls++; assert.equal(String(url), 'https://api.github.com/user/repos'); assert.equal(JSON.parse(init.body).private, true); return Response.json({ full_name: 'thanabartbb/sample', html_url: 'https://github.com/thanabartbb/sample', private: true, default_branch: 'main' }, { status: 201 }); };
   try {
     const crossOrigin = req('/api/github/actions', { method: 'POST', headers: { origin: 'https://attacker.example' }, body: { action: 'create_repository', name: 'sample' } });
     assert.equal((await handleGithubApp(crossOrigin, env, '/api/github/actions', SESSION)).status, 403);
     const missingOrigin = req('/api/github/actions', { method: 'POST', body: { action: 'create_repository', name: 'sample' } });
     assert.equal((await handleGithubApp(missingOrigin, env, '/api/github/actions', SESSION)).status, 403);
     assert.equal(calls, 0);
-    const create = req('/api/github/actions', { method: 'POST', headers: { origin: 'https://agents-sdk.space' }, body: { action: 'create_repository', name: 'sample' } });
+    const create = req('/api/github/actions', { method: 'POST', headers: { origin: 'https://agents-sdk.space' }, body: { action: 'create_repository', name: 'sample', private: false } });
     const response = await handleGithubApp(create, env, '/api/github/actions', SESSION);
     assert.equal(response.status, 201);
     assert.equal((await response.json()).repository.full_name, 'thanabartbb/sample');

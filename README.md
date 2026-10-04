@@ -26,6 +26,8 @@ Last update task: Remove unrelated project material and retired prototypes while
 
 The workspace, docs and AI APIs require the existing signed session. SDK APIs except health require the signed `lsg_` Bearer token. Google/GitHub callbacks remain `/auth/google/callback` and `/auth/github/callback`. GitHub login is identity-only (`read:user user:email`); no repository write token is stored. Session cookies expire after six hours.
 
+GitHub code tools use a separate GitHub App OAuth flow at `/api/github/connect` with callback `/auth/github/connect/callback`. Its expiring user token is AES-GCM encrypted in D1 and is never returned to the browser. Configure `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, and a random `GITHUB_TOKEN_ENCRYPTION_KEY` as Worker secrets. Apply migration `0003_github_app.sql` before enabling it. In code mode, the model can propose creating a private repository or committing a bounded set of files. The user sees the proposal and must explicitly approve it before an authenticated, same-origin request performs the action. Commits are restricted to the connected GitHub login and validated file paths.
+
 OpenAI is the default chat provider; Claude is an optional choice through the same `/api/chat` route when configured. The browser calls same-origin server endpoints and never receives provider secrets. Answers support NDJSON streaming. Attached images/PDFs reach the model but are not stored as files.
 
 ## Data and quota

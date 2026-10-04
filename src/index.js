@@ -626,6 +626,11 @@ const IMAGE_MODEL_OPTIONS = ['gpt-image-2', 'gpt-image-1.5', 'gpt-image-1', 'gpt
 
 function imageModelOptions() { return IMAGE_MODEL_OPTIONS.slice(); }
 
+function webSearchModelOptions(env) {
+  const configured = typeof env.OPENAI_MODEL === 'string' ? env.OPENAI_MODEL.trim() : '';
+  return Array.from(new Set([configured, 'gpt-6-astra', 'gpt-4.1'].filter(Boolean)));
+}
+
 function chatProviders(env) {
   return [
     { id: 'openai', label: 'OpenAI', available: Boolean(env.OPENAI_API_KEY) },
@@ -864,7 +869,8 @@ async function handleChat(request, env, session = null, quotaIdentity = session)
   const stream = body.stream === true && tool !== 'code';
   if (provider !== 'openai' && provider !== 'claude') return json({ ok: false, status: 'validation_error', message: 'ผู้ให้บริการ AI ที่เลือกไม่ถูกต้อง' }, 400);
   if (body.model !== undefined && body.model !== null && typeof body.model !== 'string') return json({ ok: false, status: 'validation_error', message: 'รูปแบบโมเดลไม่ถูกต้อง' }, 400);
-  if (selectedModel && !chatModelOptions(env, provider).includes(selectedModel)) return json({ ok: false, status: 'validation_error', message: 'โมเดลที่เลือกไม่รองรับ' }, 400);
+  const modelOptions = provider === 'openai' && ['research', 'url'].includes(tool) ? webSearchModelOptions(env) : chatModelOptions(env, provider);
+  if (selectedModel && !modelOptions.includes(selectedModel)) return json({ ok: false, status: 'validation_error', message: 'โมเดลนี้ใช้กับเครื่องมือที่เลือกไม่ได้' }, 400);
   if (!message) return json({ ok: false, status: 'validation_error', message: 'กรุณาใส่ข้อความก่อนส่ง' }, 400);
   if (message.length > 120000) return json({ ok: false, status: 'validation_error', message: 'ข้อความยาวเกินขีดจำกัด 120,000 ตัวอักษร กรุณาแบ่งเป็นส่วนย่อย' }, 413);
   if (tool === 'invalid') return json({ ok: false, status: 'validation_error', message: 'โหมดที่ส่งมาไม่ถูกต้อง' }, 400);
@@ -1196,6 +1202,7 @@ export default {
         providers: chatProviders(env),
         models: { openai: chatModelOptions(env, 'openai'), claude: chatModelOptions(env, 'claude') },
         image_models: imageModelOptions(),
+        web_search_models: webSearchModelOptions(env),
         default: 'openai'
       });
     }

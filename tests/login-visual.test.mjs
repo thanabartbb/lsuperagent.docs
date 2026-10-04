@@ -22,7 +22,7 @@ test('login offers email, Google, GitHub, reset and signup without guest access'
   const visible = visibleHtml(html);
   const text = visibleText(html);
 
-  assert.match(text, /LSUPERAGENT/);
+  assert.match(text, /SDKSPACE/);
   assert.match(text, /เข้าสู่ระบบด้วย Google/);
   assert.match(html, /href=["']\/auth\/google\?return_to=\/home["']/i);
   assert.match(html, /href=["']\/auth\/github\?return_to=\/home["']/i);

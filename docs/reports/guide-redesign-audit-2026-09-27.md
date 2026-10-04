@@ -270,3 +270,25 @@ GitHub API ยังไม่แสดง Actions run หรือ commit status
 - GitHub API ยังไม่มี workflow run หรือ commit status และ browser ที่ใช้ตรวจมี viewport 1363px จึงยังไม่อ้างว่า visual 390px ผ่านครบถ้วน
 
 ไม่พบ regression ใหม่และไม่แก้ runtime เพิ่ม จุดที่ควรทำต่อคือเพิ่ม mobile viewport test ที่ 390px สำหรับ Home/Intro และตรวจ signed-in `/guide` ตาม acceptance เดิม.
+
+
+## Update — approved GitHub code tools and private-repository safety gate
+
+ตรวจ merge `6387aae4d4617923073ef9ad4dd1ddec30f4a71a` (PR #24) วันที่ 2026-10-04 แล้ว:
+
+- เพิ่ม GitHub App OAuth แยกจาก login OAuth, เก็บ access/refresh token แบบ AES-GCM encrypted ใน D1 และไม่ส่ง token กลับ browser
+- การสร้าง repo/commit ต้องมี signed session, GitHub connection, same-origin POST และการกดอนุมัติจาก proposal card
+- จำกัด commit ไว้ที่ repository ซึ่ง owner ตรงกับ GitHub login ที่เชื่อม, สูงสุด 20 ไฟล์, 200 KB ต่อไฟล์และรวมไม่เกิน 1 MB; ปฏิเสธ path traversal, duplicate paths และ force update
+- UI แสดง path/content ก่อนอนุมัติด้วย `textContent` ไม่ใช้ HTML injection
+- ต้องมี migration `0003_github_app.sql` และ secrets `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, `GITHUB_TOKEN_ENCRYPTION_KEY` ก่อนเปิดใช้จริง
+
+พบ safety mismatch: tool contract ระบุว่าสร้างเฉพาะ private repository แต่ endpoint เดิมยอมรับ `private:false` จาก request body ได้
+
+แก้แล้ว:
+
+- `6d82e1a6aef0f21f9945643a18c9733fed663cee` — ฝั่ง Worker บังคับ `private:true` เสมอ
+- `c285ccd3d4227c7378c1ce2076e8ac9102d8c709` — เพิ่ม regression test ส่ง `private:false` แล้วตรวจว่า payload ไป GitHub ยังคงเป็น private
+
+Security review ไม่พบ critical issue เพิ่มจาก diff ที่ตรวจ แต่ยังไม่ถือว่า production-ready แบบยืนยันครบ เพราะ GitHub API ไม่แสดง workflow/status และยังไม่ได้ทดสอบ signed-in end-to-end หลัง deploy: connect → proposal → approve → private repo/commit → audit result.
+
+ขั้นถัดไป: apply D1 migration, deploy secrets/config, รัน Node tests บน SHA ล่าสุด และทดสอบด้วย repository ทดสอบที่ไม่มีข้อมูลสำคัญก่อนอนุญาตให้เขียน production repository.

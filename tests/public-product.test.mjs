@@ -205,3 +205,12 @@ test('active site pages share the SDKSPACE name and canonical logo asset', async
   assert.match(nextLayout, /SDKSPACE/);
   assert.doesNotMatch(nextHeader + nextFooter + nextLayout, /LSUPERAGENT/i);
 });
+
+test('SDKSPACE intro pages load the full-screen mobile layout rules', async () => {
+  for (const name of ['home.html', 'loading.html']) {
+    assert.match(await read(name), /sdkspace-reference-modes\.css\?v=2/);
+  }
+  const css = await read('assets/sdkspace-reference-modes.css');
+  const mobileLayout = css.slice(css.lastIndexOf('@media (max-width: 600px){'));
+  assert.match(mobileLayout, /body\[data-sdkspace-page\] > \.phone[\s\S]*max-width:none;[\s\S]*min-height:100svh;[\s\S]*border:0;[\s\S]*border-radius:0;/);
+});

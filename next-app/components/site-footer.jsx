@@ -1,6 +1,6 @@
 export default function SiteFooter(){return (<footer>
 <div className="wrap sdk-frame">
-<a href="https://agents-sdk.space/">{"LSUPERAGENT SDK · agents-sdk.space"}</a>
+<a href="https://agents-sdk.space/">{"SDKSPACE · agents-sdk.space"}</a>
 <nav aria-label="Footer navigation">
 <a href="https://agents-sdk.space/chat">{"Chat"}</a>
 <a href="https://agents-sdk.space/docs">{"Docs"}</a>

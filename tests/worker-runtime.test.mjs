@@ -72,9 +72,42 @@ test('chat rejects malformed history before calling a provider', async () => {
   assert.equal(response.status, 400);
 });
 
+test('chat uses an explicitly selected allowlisted model and rejects unknown models', async () => {
+  await withFetchStub(async (_url, init) => {
+    assert.equal(JSON.parse(init.body).model, 'gpt-4.1');
+    return jsonResponse({ output_text: 'ตอบจากโมเดลที่เลือก' });
+  }, async () => {
+    const response = await worker.fetch(await request('/api/chat', { message: 'hello', provider: 'openai', model: 'gpt-4.1' }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).message, 'ตอบจากโมเดลที่เลือก');
+  });
+
+  let called = false;
+  await withFetchStub(async () => { called = true; return jsonResponse({ output_text: 'unexpected' }); }, async () => {
+    const response = await worker.fetch(await request('/api/chat', { message: 'hello', provider: 'openai', model: 'not-an-enabled-model' }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
+    assert.equal(response.status, 400);
+    assert.equal(called, false);
+  });
+  const incompatible = await worker.fetch(await request('/api/chat', { message: 'research', tool: 'research', model: 'gpt-4o-mini' }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
+  assert.equal(incompatible.status, 400);
+});
+
+test('image route honors an explicitly selected supported image model', async () => {
+  await withFetchStub(async (url, init) => {
+    assert.equal(String(url), 'https://api.openai.com/v1/images/generations');
+    assert.equal(JSON.parse(init.body).model, 'gpt-image-1');
+    return jsonResponse({ data: [{ b64_json: 'aW1hZ2U=' }] });
+  }, async () => {
+    const response = await worker.fetch(await request('/api/image', { prompt: 'วาดแมวดำ', model: 'gpt-image-1' }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).image.data_base64, 'aW1hZ2U=');
+  });
+});
+
 test('research forces web_search and returns normalized sources', async () => {
   await withFetchStub(async (_url, init) => {
     const payload = JSON.parse(init.body);
+    assert.equal(payload.model, 'gpt-4.1');
     assert.deepEqual(payload.tools, [{ type: 'web_search' }]);
     assert.equal(payload.tool_choice, 'required');
     assert.deepEqual(payload.include, ['web_search_call.action.sources']);
@@ -86,7 +119,7 @@ test('research forces web_search and returns normalized sources', async () => {
       ]
     });
   }, async () => {
-    const response = await worker.fetch(await request('/api/chat', { message: 'ค้นคว้าเรื่องนี้', mode: 'research', tool: 'research' }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
+    const response = await worker.fetch(await request('/api/chat', { message: 'ค้นคว้าเรื่องนี้', mode: 'research', tool: 'research', model: 'gpt-4.1' }), { OPENAI_API_KEY: 'test-key', AUTH_SESSION_SECRET: SESSION_SECRET });
     assert.equal(response.status, 200);
     const body = await response.json();
     assert.deepEqual(body.sources, [

@@ -169,3 +169,15 @@ test('SDKSPACE pages share the canonical logo and Docs intro fills the viewport 
   assert.match(fullBleed, /border-radius:0;/);
   assert.match(fullBleed, /min-height:calc\(100svh/);
 });
+
+test('attachment control opens a menu for tools, providers, and selectable models', async () => {
+  const html = await read('chat.html');
+  for (const id of ['chat-tools-menu', 'tool-choice', 'provider', 'model-choice', 'choose-file']) {
+    assert.match(html, new RegExp(`id="${id}"`), `missing chat menu control: ${id}`);
+  }
+  const client = await read('assets/chat.js');
+  assert.ok(client.includes('/api/image'));
+  assert.match(client, /tool: mode/);
+  assert.match(client, /model: modelChoice.value/);
+  assert.match(client, /aria-expanded/);
+});

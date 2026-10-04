@@ -15,10 +15,10 @@ html[data-theme="docs"] {
   --mode-surface: #000000;
   --mode-border: #28242e;
 }
-html:not([data-theme="docs"]) { background: #050812 !important; }
-html:not([data-theme="docs"]) body, html:not([data-theme="docs"]) body.sdk-layout {
-  color: #f3f6fc !important;
-  background: radial-gradient(ellipse 140% 60% at 50% 0%, #0d1a2e 0%, #060a12 45%, #030509 100%) fixed !important;
+html:not([data-theme="docs"]) body.sdk-layout {
+  color: #f3f6fc !important; background-color: #050812 !important;
+  background-image: radial-gradient(ellipse 140% 60% at 50% 0%, #0d1a2e 0%, #060a12 45%, #030509 100%) !important;
+  background-attachment: fixed !important;
 }
 html[data-theme="docs"], html[data-theme="docs"] body, html[data-theme="docs"] body.sdk-layout { background: #000000 !important; }
 html:not([data-theme="docs"]) .theme-toggle { background: #0c1423 !important; border-color: #263751 !important; color: #dbe8f8 !important; }

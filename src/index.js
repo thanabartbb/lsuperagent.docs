@@ -1,6 +1,7 @@
 import { getFeed, SOURCES as FEED_SOURCES } from './feeds.js';
 import { historyEnabled, userKey, listConversations, getConversation, deleteConversation, saveExchange } from './chat-store.js';
 import { takeQuota, quotaHeaders, quotaMessage } from './quota.js';
+import { handleGithubApp } from './github-app.js';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 10;
@@ -106,8 +107,9 @@ function authProviderStatus(env) {
     owner_google_gate: { enabled: true, configured: ownerGoogleConfigured(env), required_provider: 'google', email_env_name: 'OWNER_GOOGLE_EMAIL', sub_env_name: 'OWNER_GOOGLE_SUB' },
     exa_search: { configured: truthySecret(env, 'EXA_API_KEY'), env_name: 'EXA_API_KEY' },
     github: { provider: 'github', client_id: truthySecret(env, 'GITHUB_CLIENT_ID'), client_secret: truthySecret(env, 'GITHUB_CLIENT_SECRET'), ready: githubReady },
+    github_code_tools: { ready: truthySecret(env, 'GITHUB_APP_CLIENT_ID') && truthySecret(env, 'GITHUB_APP_CLIENT_SECRET') && truthySecret(env, 'GITHUB_TOKEN_ENCRYPTION_KEY'), secret_values_exposed: false },
     google: { provider: 'google', client_id: truthySecret(env, 'GOOGLE_CLIENT_ID'), client_secret: truthySecret(env, 'GOOGLE_CLIENT_SECRET'), ready: googleReady },
-    expected_secrets: ['AUTH_SESSION_SECRET', 'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'],
+    expected_secrets: ['AUTH_SESSION_SECRET', 'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'GITHUB_APP_CLIENT_ID', 'GITHUB_APP_CLIENT_SECRET', 'GITHUB_TOKEN_ENCRYPTION_KEY', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'],
     admin_expected_variable: 'ADMIN_ALLOWED_LOGINS',
     owner_expected_variable: 'OWNER_GOOGLE_EMAIL',
     optional_variables: ['PUBLIC_SITE_URL', 'OWNER_GOOGLE_SUB', 'EXA_API_KEY'],
@@ -132,7 +134,11 @@ function authStatusPayload(request, env) {
       dev_status: origin + '/api/dev/status',
       admin_status: origin + '/api/admin/status'
     },
-    ...authProviderStatus(env)
+    ...authProviderStatus(env),
+    github_code_tools: {
+      ...authProviderStatus(env).github_code_tools,
+      callback: origin + '/auth/github/connect/callback'
+    }
   };
 }
 
@@ -514,7 +520,18 @@ function rateLimitHeaders(result) {
   return { 'x-lsuperagen-rate-limit': String(result.limit), 'x-lsuperagen-rate-remaining': String(result.remaining), 'x-lsuperagen-rate-reset': new Date(result.resetAt).toISOString(), ...(result.limited ? { 'retry-after': String(result.retryAfter) } : {}) };
 }
 
-async function createOpenAIResponse(env, model, input, tool, mode, requestId, stream = false) {
+const GITHUB_CHAT_TOOLS = [
+  { type: 'function', name: 'create_repository', description: 'Propose creating a private GitHub repository for the connected account. Never claim it was created until the user approves.', strict: true, parameters: { type: 'object', properties: { name: { type: 'string' }, description: { type: 'string' } }, required: ['name', 'description'], additionalProperties: false } },
+  { type: 'function', name: 'commit_files', description: 'Propose committing the complete generated file set to a repository owned by the connected GitHub account. Never claim it was committed until the user approves.', strict: true, parameters: { type: 'object', properties: { owner: { type: 'string' }, repo: { type: 'string' }, branch: { type: 'string' }, message: { type: 'string' }, files: { type: 'array', minItems: 1, maxItems: 20, items: { type: 'object', properties: { path: { type: 'string' }, content: { type: 'string' } }, required: ['path', 'content'], additionalProperties: false } } }, required: ['owner', 'repo', 'branch', 'message', 'files'], additionalProperties: false } }
+];
+
+export function githubProposal(data) {
+  const call = (data?.output || []).find((item) => item?.type === 'function_call' && ['create_repository', 'commit_files'].includes(item.name));
+  if (!call) return null;
+  try { return { name: call.name, arguments: JSON.parse(call.arguments) }; } catch (_) { return null; }
+}
+
+async function createOpenAIResponse(env, model, input, tool, mode, requestId, stream = false, githubTools = false) {
   const usesWeb = tool === 'research' || tool === 'url';
   const payload = {
     model,
@@ -530,6 +547,7 @@ async function createOpenAIResponse(env, model, input, tool, mode, requestId, st
     payload.tool_choice = 'required';
     payload.include = ['web_search_call.action.sources'];
   }
+  if (githubTools) payload.tools = GITHUB_CHAT_TOOLS;
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: { authorization: 'Bearer ' + env.OPENAI_API_KEY, 'content-type': 'application/json', 'x-client-request-id': requestId },
@@ -831,8 +849,8 @@ async function handleChat(request, env, session = null, quotaIdentity = session)
   const message = history ? history[history.length - 1].content.trim() : typeof body.message === 'string' ? body.message.trim() : '';
   const mode = typeof body.mode === 'string' && body.mode.trim() ? body.mode.trim().slice(0, 32) : 'chat';
   const tool = inferTool(body, request);
-  const stream = body.stream === true;
   const provider = body.provider === undefined || body.provider === null || body.provider === '' ? 'openai' : body.provider;
+  const stream = body.stream === true && tool !== 'code';
   if (provider !== 'openai' && provider !== 'claude') return json({ ok: false, status: 'validation_error', message: 'ผู้ให้บริการ AI ที่เลือกไม่ถูกต้อง' }, 400);
   if (!message) return json({ ok: false, status: 'validation_error', message: 'กรุณาใส่ข้อความก่อนส่ง' }, 400);
   if (message.length > 120000) return json({ ok: false, status: 'validation_error', message: 'ข้อความยาวเกินขีดจำกัด 120,000 ตัวอักษร กรุณาแบ่งเป็นส่วนย่อย' }, 413);
@@ -855,6 +873,10 @@ async function handleChat(request, env, session = null, quotaIdentity = session)
   if (provider === 'claude') return chatWithClaude({ env, history, message, attachments: attachments.items, tool, mode, stream, quota, recordHistory, headers: baseHeaders });
 
   const requestId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+  const githubTools = tool === 'code' && Boolean(session?.provider && session?.id && env.DB && env.GITHUB_APP_CLIENT_ID && env.GITHUB_APP_CLIENT_SECRET && env.GITHUB_TOKEN_ENCRYPTION_KEY)
+    ? Boolean(await env.DB.prepare('SELECT 1 FROM github_connections WHERE user_key = ?').bind(`${session.provider}:${session.id}`).first().catch(() => null))
+    : false;
+  const useStream = stream && !(tool === 'code' && githubTools);
   const webMode = tool === 'research' || tool === 'url';
   const candidates = webMode
     ? Array.from(new Set(['gpt-6-astra', 'gpt-4.1', typeof env.OPENAI_MODEL === 'string' ? env.OPENAI_MODEL.trim() : ''].filter(Boolean)))
@@ -863,13 +885,18 @@ async function handleChat(request, env, session = null, quotaIdentity = session)
   for (const model of candidates) {
     let providerResponse, data;
     try {
-      ({ response: providerResponse, data } = await createOpenAIResponse(env, model, input, tool, mode, requestId, stream));
+      ({ response: providerResponse, data } = await createOpenAIResponse(env, model, input, tool, mode, requestId, useStream, githubTools));
     } catch (_) {
       await quota.refund();
       return json({ ok: false, status: 'service_error', message: 'เชื่อมต่อบริการ AI ไม่สำเร็จ กรุณาลองใหม่' }, 502, baseHeaders);
     }
-    if (providerResponse.ok && stream) return streamChatResponse(providerResponse, baseHeaders, { onComplete: recordHistory, onFail: quota.refund });
+    if (providerResponse.ok && useStream) return streamChatResponse(providerResponse, baseHeaders, { onComplete: recordHistory, onFail: quota.refund });
     if (providerResponse.ok) {
+      const proposal = githubProposal(data);
+      if (proposal) {
+        const extra = recordHistory ? await recordHistory(`เสนอเครื่องมือ GitHub: ${proposal.name}`) : {};
+        return json({ ok: true, status: 'tool_pending', tool_proposal: proposal, ...extra }, 200, baseHeaders);
+      }
       const output = extractOutputText(data);
       if (!output) {
         await quota.refund();
@@ -1133,6 +1160,10 @@ export default {
     if (pathname === '/auth/google') return handleAuthStart('google', request, env);
     if (pathname === '/auth/github/callback') return handleAuthCallback('github', request, env);
     if (pathname === '/auth/google/callback') return handleAuthCallback('google', request, env);
+
+    if (pathname.startsWith('/api/github/') || pathname === '/auth/github/connect/callback') {
+      return handleGithubApp(request, env, pathname, await currentSession(request, env));
+    }
 
     if (request.method === 'OPTIONS' && (pathname === '/api/chat' || pathname === '/api/image' || pathname === '/api/exa/search')) return new Response(null, { status: 204, headers: { 'access-control-allow-origin': url.origin, 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type' } });
     if (pathname === '/api/chat' || pathname === '/api/image') {

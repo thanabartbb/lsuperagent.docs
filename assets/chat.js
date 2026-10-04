@@ -11,7 +11,7 @@
   if (modeLabel) modeLabel.textContent = mode === 'code' ? 'โหมดโค้ด' : 'แชท';
   if (mode === 'code') {
     $('empty').textContent = 'ส่งโจทย์หรือวางโค้ดเพื่อให้ AI ช่วยเขียน ตรวจ และอธิบาย';
-    $('hint').textContent = 'AI ตอบเป็นโค้ดในแชท ยังไม่แก้ไฟล์ใน GitHub · ประวัติแชทยังไม่บันทึกถาวร · อย่าใส่รหัสผ่านหรือ API key';
+    $('hint').textContent = 'AI เสนอสร้าง repo หรือ commit ไป GitHub ได้ ต้องเชื่อมบัญชีที่หน้าเครื่องมือและกดยืนยันทุกครั้ง · อย่าใส่รหัสผ่านหรือ API key';
   }
   const turns = [];
   const MAX_TURNS = 20;
@@ -278,6 +278,44 @@
     return node;
   }
 
+  function githubProposalCard(proposal) {
+    const node = bubble('a', '');
+    node.classList.add('github-tool-proposal');
+    const title = document.createElement('strong');
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    const preview = document.createElement('pre');
+    const approve = document.createElement('button');
+    const result = document.createElement('p');
+    const args = proposal.arguments || {};
+    const creating = proposal.name === 'create_repository';
+    title.textContent = creating ? `ขออนุมัติสร้าง repo ${args.name || ''}` : `ขออนุมัติ commit ${args.owner || ''}/${args.repo || ''}`;
+    summary.textContent = creating ? (args.description || 'repo ส่วนตัว') : `${args.message || 'Commit'} · ${(args.files || []).length} ไฟล์ · branch ${args.branch || 'main'}`;
+    preview.textContent = creating ? JSON.stringify(args, null, 2) : (args.files || []).map((file) => `--- ${file.path} ---\n${file.content}`).join('\n\n');
+    approve.type = 'button';
+    approve.textContent = 'อนุมัติและดำเนินการ';
+    approve.addEventListener('click', async () => {
+      approve.disabled = true;
+      result.textContent = 'กำลังส่งคำสั่งไป GitHub…';
+      try {
+        const response = await fetch('/api/github/actions', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: proposal.name, ...args }) });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) throw new Error(data.error || data.message || `GitHub error (${response.status})`);
+        result.textContent = proposal.name === 'create_repository' ? `สร้าง ${data.repository.full_name} แล้ว` : `Commit ${data.commit?.sha || 'สำเร็จ'} แล้ว`;
+        if (turns[turns.length - 1]?.role === 'assistant') turns[turns.length - 1].content = result.textContent;
+        if (data.repository?.html_url && data.repository.html_url.startsWith('https://github.com/')) {
+          const link = document.createElement('a'); link.href = data.repository.html_url; link.textContent = 'เปิด repo'; link.target = '_blank'; link.rel = 'noopener'; result.append(' · ', link);
+        }
+      } catch (error) {
+        result.textContent = `ทำรายการไม่สำเร็จ: ${error.message}`;
+        approve.disabled = false;
+      }
+    });
+    details.append(summary, preview);
+    node.append(title, details, approve, result);
+    return node;
+  }
+
   // AI provider picker: lists only providers the server has a key for; remembers the choice per browser.
   const PROVIDER_KEY = 'lsuperagent-chat-provider';
   async function loadProviders() {
@@ -387,7 +425,7 @@
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ message: text, messages: turns, mode, stream: true, ...(conversationId ? { conversation_id: conversationId } : {}), ...(files.length ? { attachments: files.map(({ name, data }) => ({ name, data })) } : {}), ...(mode === 'code' ? { tool: 'code' } : {}), provider: model.value || 'openai' }),
+        body: JSON.stringify({ message: text, messages: turns, mode, stream: mode !== 'code', ...(conversationId ? { conversation_id: conversationId } : {}), ...(files.length ? { attachments: files.map(({ name, data }) => ({ name, data })) } : {}), ...(mode === 'code' ? { tool: 'code' } : {}), provider: model.value || 'openai' }),
       });
       // Prefer the daily account quota; fall back to the short burst guard when no quota applies (e.g. owner).
       const dailyLeft = response.headers.get('x-lsuperagen-quota-remaining');
@@ -396,6 +434,27 @@
       const limit = response.headers.get('x-lsuperagen-rate-limit');
       if (dailyLeft !== null && dailyLimit) quota.textContent = 'วันนี้เหลือ ' + dailyLeft + '/' + dailyLimit + ' ข้อความ';
       else if (remaining !== null && limit) quota.textContent = 'เหลือในรอบนี้ ' + remaining + '/' + limit;
+      if (mode === 'code' && (response.headers.get('content-type') || '').includes('application/json')) {
+        const result = await response.json().catch(() => ({}));
+        wait.remove();
+        if (!response.ok || !result.ok) {
+          turns.pop(); restoreFiles();
+          if (response.status === 401) return toLogin();
+          bubble('e', result.message || result.error || 'ส่งข้อความไม่สำเร็จ (' + response.status + ')');
+          return;
+        }
+        if (result.tool_proposal) {
+          const prompt = result.tool_proposal.name === 'create_repository' ? 'ตรวจรายละเอียด repo แล้วกดยืนยันเพื่อสร้าง' : 'ตรวจ path และเนื้อหาไฟล์ในรายละเอียด แล้วกดยืนยันเพื่อ commit';
+          turns.push({ role: 'assistant', content: prompt });
+          githubProposalCard(result.tool_proposal);
+        } else {
+          const answer = result.output || result.message || '';
+          turns.push({ role: 'assistant', content: answer });
+          bubble('a', answer, providerLabel);
+        }
+        if (result.conversation_id) { setConversation(result.conversation_id); if (!historyPanel.hidden) loadHistoryList(); }
+        return;
+      }
       if (!response.ok || !(response.headers.get('content-type') || '').includes('ndjson')) {
         const result = await response.json().catch(() => ({}));
         wait.remove();
@@ -489,7 +548,9 @@
       const probe = await fetch('/api/chats', { credentials: 'same-origin', cache: 'no-store' }).catch(() => null);
       historyAvailable = Boolean(probe && probe.ok);
       historyToggle.hidden = !historyAvailable;
-      if (historyAvailable) $('hint').textContent = 'แชตจะถูกบันทึกในบัญชีของคุณ ลบได้จากปุ่ม "ประวัติ" · อย่าใส่รหัสผ่านหรือ API key';
+      if (historyAvailable) $('hint').textContent = mode === 'code'
+        ? 'แชตบันทึกในบัญชี · เชื่อม GitHub ที่หน้าเครื่องมือ และกดยืนยันทุกครั้งก่อนสร้าง repo หรือ commit · อย่าใส่รหัสผ่านหรือ API key'
+        : 'แชตจะถูกบันทึกในบัญชีของคุณ ลบได้จากปุ่ม "ประวัติ" · อย่าใส่รหัสผ่านหรือ API key';
       if (historyAvailable && conversationId) await openConversation(conversationId);
       else if (conversationId) setConversation(null);
     } catch (_) {

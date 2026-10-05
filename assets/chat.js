@@ -689,7 +689,7 @@
       const probe = await fetch('/api/chats', { credentials: 'same-origin', cache: 'no-store' }).catch(() => null);
       historyAvailable = Boolean(probe && probe.ok);
       historyToggle.hidden = !historyAvailable;
-      if (historyAvailable && mode === 'chat') $('hint').textContent = 'แชตบันทึกในบัญชี · ดูหรือลบได้จากปุ่ม “ประวัติ” · อย่าใส่รหัสผ่านหรือ API key';
+      if (historyAvailable && mode === 'chat') $('hint').textContent = 'กำลังพัฒนา ระบบ LLM  ” 
       if (historyAvailable && conversationId) await openConversation(conversationId);
       else if (conversationId) setConversation(null);
     } catch (_) {

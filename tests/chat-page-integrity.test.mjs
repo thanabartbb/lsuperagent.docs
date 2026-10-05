@@ -8,6 +8,11 @@ test('chat browser script is valid JavaScript', async () => {
   assert.doesNotThrow(() => new Function(source));
 });
 
+test('chat keeps the intended LLM development hint', async () => {
+  const source = await readFile(new URL('../assets/chat.js', import.meta.url), 'utf8');
+  assert.match(source, /\$\('hint'\)\.textContent = 'กำลังพัฒนา ระบบ LLM';/);
+});
+
 test('legacy /chat.html redirects to the canonical /chat page and preserves the query', async () => {
   const response = await worker.fetch(new Request('https://agents-sdk.space/chat.html?mode=code'), {});
   assert.equal(response.status, 308);

@@ -48,6 +48,8 @@ export function startCodexAppServer({
   });
 
   child.on('error', (error) => {
+    exited = true;
+    resolveExit?.();
     fatalError = new Error(`Failed to start Codex app-server: ${error.message}`);
     fatalError.code = 'codex_process_start';
     peer.close(fatalError);

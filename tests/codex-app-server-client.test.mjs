@@ -114,3 +114,19 @@ test('protocol probe succeeds against the controlled fake app-server', async () 
   assert.equal(result.status, 'completed');
   assert.match(result.message, /SDKSPACE_PHASE0_OK/);
 });
+
+test('protocol probe rejects a missing codex binary without hanging', async () => {
+  await assert.rejects(
+    runProtocolProbe({
+      codexBin: '/definitely/missing/codex',
+      workspace,
+      requestTimeoutMs: 100,
+      turnTimeoutMs: 100,
+    }),
+    (error) => {
+      assert.equal(error.code, 'codex_process_start');
+      assert.match(error.message, /failed to start codex app-server/i);
+      return true;
+    },
+  );
+});

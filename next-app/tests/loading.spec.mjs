@@ -25,14 +25,20 @@ test('intro preserves layout, theme persistence, copy, and existing workspace li
   expect(errors).toEqual([]);
 });
 
-test('main and intro share content; workspace routes retain the existing auth boundary', async ({ request }) => {
+test('main and intro share content; migrated home is native while remaining workspace routes retain the existing auth boundary', async ({ request }) => {
   const root = await request.get('/', { maxRedirects: 0 });
   expect(root.status()).toBe(200);
   const intro = await request.get('/loading');
   expect(intro.status()).toBe(200);
   expect(await root.text()).toContain('React following');
   expect(await intro.text()).toContain('React following');
-  for (const path of ['/home', '/login', '/chat?mode=code', '/docs/installation', '/guide', '/tools', '/keys', '/news']) {
+
+  const home = await request.get('/home', { maxRedirects: 0 });
+  expect(home.status()).toBe(200);
+  expect(await home.text()).toContain('Build with');
+  expect(await home.text()).toContain('SDKSPACE');
+
+  for (const path of ['/login', '/chat?mode=code', '/docs/installation', '/guide', '/tools', '/keys', '/news']) {
     const response = await request.get(path, { maxRedirects: 0 });
     expect(response.status()).toBe(307);
     expect(response.headers().location).toBe(`https://agents-sdk.space${path}`);

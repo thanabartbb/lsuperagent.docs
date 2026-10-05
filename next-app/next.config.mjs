@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const workspacePaths = ['home', 'login', 'signup', 'forgot-password', 'chat', 'tools', 'guide', 'keys', 'news', 'exa'];
+const workspacePaths = ['login', 'signup', 'forgot-password', 'chat', 'tools', 'guide', 'keys', 'news', 'exa'];
 const nextConfig = {
   poweredByHeader: false,
   async redirects() {

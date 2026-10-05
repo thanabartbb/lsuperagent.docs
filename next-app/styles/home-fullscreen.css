@@ -1,0 +1,14 @@
+.sdk-home {
+  min-height: 100dvh;
+  width: 100%;
+  display: block;
+  padding: 0;
+}
+
+.home-phone {
+  width: 100%;
+  max-width: none;
+  min-height: 100dvh;
+  border: 0;
+  border-radius: 0;
+}

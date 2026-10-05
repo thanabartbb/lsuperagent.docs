@@ -200,6 +200,16 @@ export default {
     const url = new URL(request.url);
     const pathname = url.pathname.replace(/\/+$/, '') || '/';
 
+    if (pathname === '/chat.html') {
+      return new Response(null, {
+        status: 308,
+        headers: {
+          location: `/chat${url.search}`,
+          'cache-control': 'no-store',
+        },
+      });
+    }
+
     if (pathname === '/api/firebase/config') return handleFirebaseConfig(env);
     if (pathname === '/api/firebase/status') return handleFirebaseStatus(env);
     if (pathname === '/api/auth/firebase/session') return handleFirebaseSession(request, env);

@@ -71,16 +71,23 @@ export function createSdkspaceCodexAdapter({
   const sessions = new Map();
 
   async function createEntry(sessionId, workspacePath) {
-    let client;
+    const entry = {
+      sessionId,
+      workspacePath,
+      client: null,
+      threadId: null,
+      inFlight: true,
+    };
+    sessions.set(sessionId, entry);
     try {
-      client = await clientFactory({ requestTimeoutMs, turnTimeoutMs });
-      await client.initialize();
-      const { threadId } = await client.startThread({ cwd: workspacePath });
-      const entry = { sessionId, workspacePath, client, threadId, inFlight: false };
-      sessions.set(sessionId, entry);
+      entry.client = await clientFactory({ requestTimeoutMs, turnTimeoutMs });
+      await entry.client.initialize();
+      const { threadId } = await entry.client.startThread({ cwd: workspacePath });
+      entry.threadId = threadId;
       return entry;
     } catch (error) {
-      try { await client?.dispose?.(); } catch {}
+      if (sessions.get(sessionId) === entry) sessions.delete(sessionId);
+      try { await entry.client?.dispose?.(); } catch {}
       throw normalizeRuntimeError(error);
     }
   }
@@ -95,34 +102,32 @@ export function createSdkspaceCodexAdapter({
     }
   }
 
-  async function getEntry(sessionId, workspacePath) {
-    const current = sessions.get(sessionId);
-    if (!current) return createEntry(sessionId, workspacePath);
-    if (current.workspacePath === workspacePath) return current;
-    if (current.inFlight) {
-      throw new SdkspaceRuntimeError(
-        'runtime_busy',
-        'A code runtime request is already running for this session.',
-        true,
-      );
-    }
-    await disposeEntry(current);
-    return createEntry(sessionId, workspacePath);
+  function busyError() {
+    return new SdkspaceRuntimeError(
+      'runtime_busy',
+      'A code runtime request is already running for this session.',
+      true,
+    );
   }
 
   async function runCodeTurn(input) {
     const { sessionId, workspacePath, message } = validateTurnInput(input);
-    let entry;
+    let entry = sessions.get(sessionId);
+
+    if (entry?.inFlight) throw busyError();
+
     try {
-      entry = await getEntry(sessionId, workspacePath);
-      if (entry.inFlight) {
-        throw new SdkspaceRuntimeError(
-          'runtime_busy',
-          'A code runtime request is already running for this session.',
-          true,
-        );
+      if (entry && entry.workspacePath !== workspacePath) {
+        await disposeEntry(entry);
+        entry = null;
       }
-      entry.inFlight = true;
+
+      if (!entry) {
+        entry = await createEntry(sessionId, workspacePath);
+      } else {
+        entry.inFlight = true;
+      }
+
       const result = await entry.client.runTurn({ threadId: entry.threadId, text: message });
       return {
         ok: true,
@@ -134,9 +139,14 @@ export function createSdkspaceCodexAdapter({
         message: typeof result.message === 'string' ? result.message : '',
       };
     } catch (error) {
+      if (entry && sessions.get(sessionId) === entry) {
+        await disposeEntry(entry);
+      }
       throw normalizeRuntimeError(error);
     } finally {
-      if (entry) entry.inFlight = false;
+      if (entry && sessions.get(sessionId) === entry) {
+        entry.inFlight = false;
+      }
     }
   }
 

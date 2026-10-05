@@ -222,3 +222,61 @@ test('adapter completes a real child-process app-server turn and returns SDKSPAC
     await adapter.disposeAll();
   }
 });
+
+test('adapter rejects a second turn while the same session is still initializing', async () => {
+  let releaseFactory;
+  const factoryGate = new Promise((resolve) => { releaseFactory = resolve; });
+  let factoryCalls = 0;
+  const clientFactory = async () => {
+    factoryCalls += 1;
+    const index = factoryCalls;
+    await factoryGate;
+    return {
+      async initialize() {},
+      async startThread() { return { threadId: `thread-${index}` }; },
+      async runTurn({ threadId }) { return { threadId, turnId: `turn-${index}`, status: 'completed', message: 'ok' }; },
+      async dispose() {},
+    };
+  };
+  const adapter = createSdkspaceCodexAdapter({ clientFactory });
+  const first = adapter.runCodeTurn({ sessionId: 'race', workspacePath: workspace, message: 'one' });
+  await new Promise((resolve) => setImmediate(resolve));
+  const secondErrorPromise = captureError(adapter.runCodeTurn({ sessionId: 'race', workspacePath: workspace, message: 'two' }));
+  await new Promise((resolve) => setImmediate(resolve));
+  releaseFactory();
+  const secondError = await secondErrorPromise;
+  assertSafeRuntimeError(secondError, 'runtime_busy', true);
+  await first;
+  assert.equal(factoryCalls, 1);
+});
+
+test('adapter evicts a failed runtime session so a retry gets a fresh client', async () => {
+  const clients = [];
+  const clientFactory = async () => {
+    const index = clients.length + 1;
+    const state = { disposed: 0 };
+    const client = {
+      state,
+      async initialize() {},
+      async startThread() { return { threadId: `thread-${index}` }; },
+      async runTurn({ threadId }) {
+        if (index === 1) {
+          const error = new Error('timed out');
+          error.code = 'turn_timeout';
+          throw error;
+        }
+        return { threadId, turnId: `turn-${index}`, status: 'completed', message: 'recovered' };
+      },
+      async dispose() { state.disposed += 1; },
+    };
+    clients.push(client);
+    return client;
+  };
+  const adapter = createSdkspaceCodexAdapter({ clientFactory });
+  const firstError = await captureError(adapter.runCodeTurn({ sessionId: 'retry', workspacePath: workspace, message: 'one' }));
+  assertSafeRuntimeError(firstError, 'runtime_timeout', true);
+  const recovered = await adapter.runCodeTurn({ sessionId: 'retry', workspacePath: workspace, message: 'two' });
+  assert.equal(recovered.message, 'recovered');
+  assert.equal(clients.length, 2);
+  assert.equal(clients[0].state.disposed, 1);
+})

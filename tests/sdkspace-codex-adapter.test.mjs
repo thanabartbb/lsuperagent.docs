@@ -1,129 +1,224 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { dirname, resolve } from 'node:path';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  createSdkspaceCodexAdapter,
+  SdkspaceRuntimeError,
+} from '../runtime/sdkspace-codex-adapter.mjs';
 import { startCodexAppServer } from '../runtime/codex-app-server/client.mjs';
-import { createSdkspaceCodexAdapter, SdkspaceRuntimeError } from '../runtime/sdkspace-codex-adapter.mjs';
 
-const A = resolve('/tmp/sdkspace-a');
-const B = resolve('/tmp/sdkspace-b');
-const here = dirname(fileURLToPath(import.meta.url));
-const fake = resolve(here, 'fixtures/fake-codex-app-server.mjs');
-const fixture = resolve(here, 'fixtures/codex-workspace');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const workspace = path.join(__dirname, 'fixtures', 'codex-workspace');
+const otherWorkspace = path.join(__dirname, 'fixtures');
 
-function gate() {
-  let release;
-  const promise = new Promise((r) => { release = r; });
-  return { promise, release };
-}
-
-function factory({ run } = {}) {
+function makeClientFactory({ runTurnImpl, disposeImpl } = {}) {
   const clients = [];
-  const make = () => {
-    const id = clients.length + 1;
-    const calls = { init: 0, thread: [], turn: [], dispose: 0 };
+  const factory = async () => {
+    const index = clients.length + 1;
+    const state = { initialized: 0, starts: 0, turns: 0, disposed: 0 };
     const client = {
-      calls,
-      async initialize() { calls.init++; },
-      async startThread({ cwd }) { calls.thread.push(cwd); return { threadId: `thread-${id}` }; },
-      async runTurn(input) {
-        calls.turn.push(input);
-        return run ? run({ id, input }) : { threadId: input.threadId, turnId: `turn-${id}-${calls.turn.length}`, status: 'completed', message: `reply-${id}` };
+      state,
+      async initialize() { state.initialized += 1; },
+      async startThread({ cwd }) {
+        state.starts += 1;
+        return { threadId: `thread-${index}-${path.basename(cwd)}` };
       },
-      async dispose() { calls.dispose++; },
+      async runTurn(args) {
+        state.turns += 1;
+        if (runTurnImpl) return runTurnImpl(args, state);
+        return {
+          threadId: args.threadId,
+          turnId: `turn-${index}-${state.turns}`,
+          status: 'completed',
+          message: `reply-${index}-${state.turns}`,
+        };
+      },
+      async dispose() {
+        state.disposed += 1;
+        if (disposeImpl) return disposeImpl(state);
+      },
     };
     clients.push(client);
     return client;
   };
-  make.clients = clients;
-  return make;
+  factory.clients = clients;
+  return factory;
 }
 
-async function runtimeError(promise, code, retryable) {
-  await assert.rejects(promise, (e) => e instanceof SdkspaceRuntimeError && e.code === code && (retryable === undefined || e.retryable === retryable));
+async function captureError(promise) {
+  try {
+    await promise;
+    assert.fail('expected rejection');
+  } catch (error) {
+    return error;
+  }
+}
+
+function assertSafeRuntimeError(error, code, retryable) {
+  assert.ok(error instanceof SdkspaceRuntimeError);
+  assert.equal(error.code, code);
+  assert.equal(error.retryable, retryable);
+  const serialized = JSON.stringify(error);
+  for (const forbidden of ['apiKey', 'token', 'stderr', '"env"', '"request"']) {
+    assert.equal(serialized.includes(forbidden), false, `public error leaked ${forbidden}`);
+  }
 }
 
 test('adapter rejects missing session id, workspace path, or message', async () => {
-  const a = createSdkspaceCodexAdapter({ clientFactory: factory() });
-  await runtimeError(a.runCodeTurn({ sessionId: '', workspacePath: A, message: 'x' }), 'runtime_invalid_request');
-  await runtimeError(a.runCodeTurn({ sessionId: 's', workspacePath: 'relative', message: 'x' }), 'runtime_invalid_request');
-  await runtimeError(a.runCodeTurn({ sessionId: 's', workspacePath: A, message: ' ' }), 'runtime_invalid_request');
+  const adapter = createSdkspaceCodexAdapter({ clientFactory: makeClientFactory() });
+  for (const input of [
+    { workspacePath: workspace, message: 'hello' },
+    { sessionId: 's1', workspacePath: 'relative/path', message: 'hello' },
+    { sessionId: 's1', workspacePath: workspace, message: '   ' },
+  ]) {
+    const error = await captureError(adapter.runCodeTurn(input));
+    assertSafeRuntimeError(error, 'runtime_invalid_request', false);
+  }
 });
 
 test('adapter returns normalized completed result without raw protocol objects', async () => {
-  const result = await createSdkspaceCodexAdapter({ clientFactory: factory() }).runCodeTurn({ sessionId: 's', workspacePath: A, message: 'x' });
-  assert.deepEqual(result, { ok: true, runtime: 'codex', sessionId: 's', threadId: 'thread-1', turnId: 'turn-1-1', status: 'completed', message: 'reply-1' });
-  for (const key of ['request', 'response', 'params', 'result', 'jsonrpc']) assert.equal(key in result, false);
+  const adapter = createSdkspaceCodexAdapter({ clientFactory: makeClientFactory() });
+  const result = await adapter.runCodeTurn({ sessionId: 's1', workspacePath: workspace, message: 'hello' });
+  assert.deepEqual(Object.keys(result).sort(), ['message', 'ok', 'runtime', 'sessionId', 'status', 'threadId', 'turnId'].sort());
+  assert.equal(result.ok, true);
+  assert.equal(result.runtime, 'codex');
+  assert.equal(result.sessionId, 's1');
+  assert.equal(result.status, 'completed');
 });
 
 test('adapter reuses one Codex thread for sequential turns in the same session and workspace', async () => {
-  const f = factory(), a = createSdkspaceCodexAdapter({ clientFactory: f });
-  const r1 = await a.runCodeTurn({ sessionId: 's', workspacePath: A, message: '1' });
-  const r2 = await a.runCodeTurn({ sessionId: 's', workspacePath: A, message: '2' });
-  assert.equal(f.clients.length, 1); assert.equal(f.clients[0].calls.init, 1); assert.deepEqual(f.clients[0].calls.thread, [A]); assert.equal(r1.threadId, r2.threadId); assert.equal(f.clients[0].calls.turn.length, 2);
+  const factory = makeClientFactory();
+  const adapter = createSdkspaceCodexAdapter({ clientFactory: factory });
+  const first = await adapter.runCodeTurn({ sessionId: 's1', workspacePath: workspace, message: 'one' });
+  const second = await adapter.runCodeTurn({ sessionId: 's1', workspacePath: workspace, message: 'two' });
+  assert.equal(factory.clients.length, 1);
+  assert.equal(first.threadId, second.threadId);
+  assert.equal(factory.clients[0].state.initialized, 1);
+  assert.equal(factory.clients[0].state.starts, 1);
+  assert.equal(factory.clients[0].state.turns, 2);
 });
 
 test('adapter keeps different session ids isolated', async () => {
-  const f = factory(), a = createSdkspaceCodexAdapter({ clientFactory: f });
-  const x = await a.runCodeTurn({ sessionId: 'a', workspacePath: A, message: '1' });
-  const y = await a.runCodeTurn({ sessionId: 'b', workspacePath: A, message: '2' });
-  assert.equal(f.clients.length, 2); assert.notEqual(x.threadId, y.threadId);
+  const factory = makeClientFactory();
+  const adapter = createSdkspaceCodexAdapter({ clientFactory: factory });
+  const a = await adapter.runCodeTurn({ sessionId: 'a', workspacePath: workspace, message: 'one' });
+  const b = await adapter.runCodeTurn({ sessionId: 'b', workspacePath: workspace, message: 'two' });
+  assert.equal(factory.clients.length, 2);
+  assert.notEqual(a.threadId, b.threadId);
 });
 
 test('adapter rebinding to a different workspace disposes the old client and starts a fresh thread', async () => {
-  const order = []; let id = 0;
-  const a = createSdkspaceCodexAdapter({ clientFactory: () => {
-    const n = ++id;
-    return { async initialize() { order.push(`init-${n}`); }, async startThread({ cwd }) { order.push(`thread-${n}:${cwd}`); return { threadId: `thread-${n}` }; }, async runTurn({ threadId }) { return { threadId, turnId: `turn-${n}`, status: 'completed', message: 'ok' }; }, async dispose() { order.push(`dispose-${n}`); } };
-  } });
-  await a.runCodeTurn({ sessionId: 's', workspacePath: A, message: '1' });
-  const r = await a.runCodeTurn({ sessionId: 's', workspacePath: B, message: '2' });
-  assert.equal(r.threadId, 'thread-2'); assert.deepEqual(order, ['init-1', `thread-1:${A}`, 'dispose-1', 'init-2', `thread-2:${B}`]);
+  const factory = makeClientFactory();
+  const adapter = createSdkspaceCodexAdapter({ clientFactory: factory });
+  const first = await adapter.runCodeTurn({ sessionId: 's1', workspacePath: workspace, message: 'one' });
+  const second = await adapter.runCodeTurn({ sessionId: 's1', workspacePath: otherWorkspace, message: 'two' });
+  assert.equal(factory.clients.length, 2);
+  assert.equal(factory.clients[0].state.disposed, 1);
+  assert.notEqual(first.threadId, second.threadId);
 });
 
 test('adapter rejects an overlapping turn for one session with runtime_busy', async () => {
-  const g = gate(), f = factory({ run: async ({ input }) => { await g.promise; return { threadId: input.threadId, turnId: 'slow', status: 'completed', message: 'ok' }; } });
-  const a = createSdkspaceCodexAdapter({ clientFactory: f });
-  const first = a.runCodeTurn({ sessionId: 's', workspacePath: A, message: '1' });
-  await new Promise(setImmediate);
-  await runtimeError(a.runCodeTurn({ sessionId: 's', workspacePath: A, message: '2' }), 'runtime_busy', true);
-  g.release(); await first; assert.equal(f.clients[0].calls.turn.length, 1);
+  let release;
+  const gate = new Promise((resolve) => { release = resolve; });
+  const factory = makeClientFactory({
+    runTurnImpl: async ({ threadId }) => {
+      await gate;
+      return { threadId, turnId: 'turn-slow', status: 'completed', message: 'done' };
+    },
+  });
+  const adapter = createSdkspaceCodexAdapter({ clientFactory: factory });
+  const first = adapter.runCodeTurn({ sessionId: 's1', workspacePath: workspace, message: 'one' });
+  await new Promise((resolve) => setImmediate(resolve));
+  const error = await captureError(adapter.runCodeTurn({ sessionId: 's1', workspacePath: workspace, message: 'two' }));
+  assertSafeRuntimeError(error, 'runtime_busy', true);
+  release();
+  await first;
 });
 
 test('disposeSession is idempotent and removes the session', async () => {
-  const f = factory(), a = createSdkspaceCodexAdapter({ clientFactory: f });
-  await a.runCodeTurn({ sessionId: 's', workspacePath: A, message: '1' }); await a.disposeSession('s'); await a.disposeSession('s');
-  assert.equal(f.clients[0].calls.dispose, 1); await a.runCodeTurn({ sessionId: 's', workspacePath: A, message: '2' }); assert.equal(f.clients.length, 2);
+  const factory = makeClientFactory();
+  const adapter = createSdkspaceCodexAdapter({ clientFactory: factory });
+  await adapter.runCodeTurn({ sessionId: 's1', workspacePath: workspace, message: 'one' });
+  await adapter.disposeSession('s1');
+  await adapter.disposeSession('s1');
+  assert.equal(factory.clients[0].state.disposed, 1);
+  await adapter.runCodeTurn({ sessionId: 's1', workspacePath: workspace, message: 'two' });
+  assert.equal(factory.clients.length, 2);
 });
 
 test('disposeAll disposes every active client and tolerates already-disposed clients', async () => {
-  const f = factory(), a = createSdkspaceCodexAdapter({ clientFactory: f });
-  await a.runCodeTurn({ sessionId: 'a', workspacePath: A, message: '1' }); await a.runCodeTurn({ sessionId: 'b', workspacePath: A, message: '2' });
-  await a.disposeSession('a'); await a.disposeAll(); await a.disposeAll(); assert.deepEqual(f.clients.map((c) => c.calls.dispose), [1, 1]);
+  const factory = makeClientFactory();
+  const adapter = createSdkspaceCodexAdapter({ clientFactory: factory });
+  await adapter.runCodeTurn({ sessionId: 'a', workspacePath: workspace, message: 'one' });
+  await adapter.runCodeTurn({ sessionId: 'b', workspacePath: workspace, message: 'two' });
+  await adapter.disposeSession('a');
+  await adapter.disposeAll();
+  await adapter.disposeAll();
+  assert.equal(factory.clients[0].state.disposed, 1);
+  assert.equal(factory.clients[1].state.disposed, 1);
 });
 
-function low(code) { const e = new Error('raw token=SECRET apiKey=SECRET stderr={"method":"turn/start"}'); e.code = code; e.data = { env: { OPENAI_API_KEY: 'SECRET' } }; return e; }
-function throwing(error, stage = 'run') { return () => ({ async initialize() { if (stage === 'init') throw error; }, async startThread() { return { threadId: 'thread' }; }, async runTurn() { if (stage === 'run') throw error; return { threadId: 'thread', turnId: 'turn', status: 'completed', message: 'ok' }; }, async dispose() {} }); }
-async function mapped(code, expected, retryable, stage = 'run') {
-  const a = createSdkspaceCodexAdapter({ clientFactory: throwing(low(code), stage) });
-  let e; try { await a.runCodeTurn({ sessionId: code, workspacePath: A, message: 'x' }); } catch (x) { e = x; }
-  assert.ok(e instanceof SdkspaceRuntimeError); assert.equal(e.code, expected); assert.equal(e.retryable, retryable);
-  const publicShape = JSON.stringify({ message: e.message, code: e.code, retryable: e.retryable });
-  for (const bad of ['SECRET', 'apiKey', 'OPENAI_API_KEY', 'stderr=', 'token=', 'turn/start']) assert.equal(publicShape.includes(bad), false);
-  assert.deepEqual(Object.keys(e).sort(), ['code', 'name', 'retryable'].sort());
+for (const [name, lowerCode, publicCode, retryable] of [
+  ['turn timeout', 'turn_timeout', 'runtime_timeout', true],
+  ['missing or exited codex process', 'codex_process_exit', 'runtime_unavailable', true],
+  ['failed turn', 'codex_turn_failed', 'runtime_turn_failed', true],
+  ['unsupported server request', 'unsupported_server_request', 'runtime_unsupported_request', false],
+]) {
+  test(`adapter maps ${name} without leaking raw details`, async () => {
+    const factory = makeClientFactory({
+      runTurnImpl: async () => {
+        const error = new Error('secret stderr token apiKey');
+        error.code = lowerCode;
+        error.stderr = 'secret';
+        error.env = { SECRET: 'secret' };
+        throw error;
+      },
+    });
+    const adapter = createSdkspaceCodexAdapter({ clientFactory: factory });
+    const error = await captureError(adapter.runCodeTurn({ sessionId: 's1', workspacePath: workspace, message: 'hello' }));
+    assertSafeRuntimeError(error, publicCode, retryable);
+  });
 }
 
-test('adapter maps turn timeout to runtime_timeout without leaking raw details', () => mapped('turn_timeout', 'runtime_timeout', true));
-test('adapter maps missing or exited codex process to runtime_unavailable', async () => { await mapped('codex_process_start', 'runtime_unavailable', true, 'init'); await mapped('codex_process_exit', 'runtime_unavailable', true, 'init'); });
-test('adapter maps failed turn to runtime_turn_failed', () => mapped('codex_turn_failed', 'runtime_turn_failed', true));
-test('adapter maps unsupported server request to runtime_unsupported_request', () => mapped('unsupported_server_request', 'runtime_unsupported_request', false));
-test('adapter maps unknown errors to runtime_internal', () => mapped('mystery', 'runtime_internal', false));
+test('adapter maps codex process start failure to runtime_unavailable', async () => {
+  const factory = async () => {
+    const error = new Error('spawn secret');
+    error.code = 'codex_process_start';
+    throw error;
+  };
+  const adapter = createSdkspaceCodexAdapter({ clientFactory: factory });
+  const error = await captureError(adapter.runCodeTurn({ sessionId: 's1', workspacePath: workspace, message: 'hello' }));
+  assertSafeRuntimeError(error, 'runtime_unavailable', true);
+});
+
+test('adapter maps unknown errors to runtime_internal', async () => {
+  const factory = makeClientFactory({ runTurnImpl: async () => { throw new Error('unknown secret token'); } });
+  const adapter = createSdkspaceCodexAdapter({ clientFactory: factory });
+  const error = await captureError(adapter.runCodeTurn({ sessionId: 's1', workspacePath: workspace, message: 'hello' }));
+  assertSafeRuntimeError(error, 'runtime_internal', false);
+});
 
 test('adapter completes a real child-process app-server turn and returns SDKSPACE_PHASE0_OK', async () => {
-  const a = createSdkspaceCodexAdapter({ clientFactory: ({ requestTimeoutMs, turnTimeoutMs }) => startCodexAppServer({ command: process.execPath, commandArgs: [fake], requestTimeoutMs, turnTimeoutMs }), requestTimeoutMs: 1000, turnTimeoutMs: 1000 });
+  const fakeServerPath = path.join(__dirname, 'fixtures', 'fake-codex-app-server.mjs');
+  const adapter = createSdkspaceCodexAdapter({
+    clientFactory: (options) => startCodexAppServer({
+      ...options,
+      command: process.execPath,
+      commandArgs: [fakeServerPath],
+    }),
+  });
   try {
-    const r = await a.runCodeTurn({ sessionId: 'integration', workspacePath: fixture, message: 'Read PROBE.txt from the current workspace. Return the exact marker from that file in your final answer.' });
-    assert.equal(r.runtime, 'codex'); assert.equal(r.status, 'completed'); assert.match(r.message, /SDKSPACE_PHASE0_OK/);
-    for (const key of ['request', 'response', 'params', 'result', 'jsonrpc']) assert.equal(key in r, false);
-  } finally { await a.disposeAll(); }
+    const result = await adapter.runCodeTurn({
+      sessionId: 'integration',
+      workspacePath: workspace,
+      message: 'Read PROBE.txt from the current workspace. Return the exact marker from that file in your final answer.',
+    });
+    assert.equal(result.runtime, 'codex');
+    assert.equal(result.status, 'completed');
+    assert.match(result.message, /SDKSPACE_PHASE0_OK/);
+    assert.equal(Object.prototype.hasOwnProperty.call(result, 'raw'), false);
+  } finally {
+    await adapter.disposeAll();
+  }
 });

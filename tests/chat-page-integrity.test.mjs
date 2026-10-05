@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import worker from '../src/index.js';
+import worker from '../src/firebase-worker.js';
 
 test('chat browser script is valid JavaScript', async () => {
   const source = await readFile(new URL('../assets/chat.js', import.meta.url), 'utf8');

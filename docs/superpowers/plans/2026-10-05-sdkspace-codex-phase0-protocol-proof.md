@@ -140,7 +140,7 @@ git commit -m "feat: add codex jsonl rpc transport"
 - reply to `turn/start` with `{ turn: { id: 'turn-phase0' } }`,
 - emit one unrelated delta for another turn, then matching deltas `SDKSPACE_` and `PHASE0_OK`, then `turn/completed` with matching `threadId` and a turn object whose status is `completed`.
 
-Support fixture modes selected through environment variables for early exit, no completion, malformed output, failed turn, and server request.
+Support fixture modes selected through environment variables for early exit, no completion, malformed output, failed turn, interrupted turn, and server request.
 
 - [ ] **Step 2: Write lifecycle tests against the fake child process**
 
@@ -168,9 +168,9 @@ Expected: FAIL because `runtime/codex-app-server/client.mjs` does not exist.
 
 Use `node:child_process` `spawn` with stdio pipes. Wrap stdin/stdout with Task 1's peer. Keep stderr only as a bounded diagnostic tail for errors; never include `env` values in thrown messages. Track process `error`, `exit`, and explicit `dispose()`; make disposal idempotent.
 
-- [ ] **Step 5: Implement lifecycle and turn scoping**
+- [ ] **Step 5: Implement lifecycle, turn scoping, and fatal turn timeout**
 
-Implement the exact method contracts above. Filter deltas by both `threadId` and `turnId`. Filter completion by `threadId` and `params.turn.id`. Apply a separate `turnTimeoutMs` timer to the notification wait after `turn/start` returns.
+Implement the exact method contracts above. Filter deltas by both `threadId` and `turnId`. Filter completion by `threadId` and `params.turn.id`. Apply a separate `turnTimeoutMs` timer after `turn/start` returns; when it expires, reject with a stable `turn_timeout` error and dispose/terminate the child process so no hung runtime remains alive.
 
 - [ ] **Step 6: Run Task 1 + Task 2 tests**
 
@@ -198,13 +198,16 @@ git commit -m "feat: prove codex app-server lifecycle"
 
 **Interfaces:**
 - Consumes: `startCodexAppServer` from Task 2.
-- Produces: `runProtocolProbe({ codexBin, workspace, requestTimeoutMs, turnTimeoutMs }) -> Promise<{ ok, threadId, turnId, status, message }>` exported from `scripts/codex-app-server-smoke.mjs`.
+- Produces: `runProtocolProbe({ codexBin, codexArgs, workspace, requestTimeoutMs, turnTimeoutMs }) -> Promise<{ ok, threadId, turnId, status, message }>` exported from `scripts/codex-app-server-smoke.mjs`.
+- `codexBin` defaults to `process.env.CODEX_BIN || 'codex'`.
+- `codexArgs` defaults to `['app-server', '--listen', 'stdio://']`; automated tests may replace it with `[pathToFakeServer]` while using `process.execPath` as `codexBin`.
 - CLI invocation: `CODEX_BIN=/absolute/path/to/codex node scripts/codex-app-server-smoke.mjs`.
 - Optional `CODEX_HOME` is inherited from the operator environment; the script must never print its contents or credential files.
 - Default workspace: repository-local `tests/fixtures/codex-workspace` resolved to an absolute path.
 - Probe prompt: `Read PROBE.txt from the current workspace. Return the exact marker from that file in your final answer.`
 - Success requires: turn status `completed` and returned message contains `SDKSPACE_PHASE0_OK`.
 - CLI exits `0` on success; exits non-zero on binary missing, initialize failure, authentication/runtime error, timeout, unsupported server request, or missing marker.
+- Importing the module from tests must not execute the CLI; only direct execution may run `main()`.
 
 - [ ] **Step 1: Add the controlled workspace marker**
 
@@ -216,7 +219,7 @@ SDKSPACE_PHASE0_OK
 
 - [ ] **Step 2: Write probe orchestration test with the fake server**
 
-Add a test proving `runProtocolProbe` returns `{ ok: true }`, status `completed`, and a message containing `SDKSPACE_PHASE0_OK` when the injected fake command completes the protocol.
+Add a test calling `runProtocolProbe({ codexBin: process.execPath, codexArgs: [pathToFakeServer], workspace: fixtureWorkspace, ... })` and assert it returns `ok: true`, status `completed`, and a message containing `SDKSPACE_PHASE0_OK`.
 
 - [ ] **Step 3: Run the probe test and verify it fails before script implementation**
 
@@ -228,9 +231,11 @@ node --test tests/codex-app-server-client.test.mjs
 
 Expected: FAIL only for the new probe-orchestration test because the smoke module/export does not exist.
 
-- [ ] **Step 4: Implement `runProtocolProbe` and CLI output**
+- [ ] **Step 4: Implement `runProtocolProbe` and guarded CLI output**
 
 The function must initialize, create the read-only ephemeral thread at the absolute fixture workspace path, run the probe turn, validate the marker, and dispose in `finally`.
+
+Guard direct CLI execution so importing `runProtocolProbe` from a test has no side effects.
 
 The CLI success output must be one JSON object with only these fields:
 

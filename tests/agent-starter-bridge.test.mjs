@@ -35,7 +35,9 @@ async function cookieFor(id) {
 
 async function authedRequest(path, id = 'alice', init = {}) {
   const headers = new Headers(init.headers || {});
-  headers.set('cookie', await cookieFor(id));
+  const extraCookie = headers.get('cookie');
+  const sessionCookie = await cookieFor(id);
+  headers.set('cookie', extraCookie ? sessionCookie + '; ' + extraCookie : sessionCookie);
   return new Request(ORIGIN + path, { ...init, headers });
 }
 
@@ -83,7 +85,7 @@ test('agent proxy rejects the shared default instance and only forwards the sign
   const response = await worker.fetch(await authedRequest(
     '/agents/chat-agent/' + encodeURIComponent(config.name) + '?resume=1',
     'alice',
-    { headers: { authorization: 'Bearer must-not-leak', origin: ORIGIN, 'x-test-bridge': 'kept' } }
+    { headers: { authorization: 'Bearer must-not-leak', origin: ORIGIN, 'x-test-bridge': 'kept', cookie: 'agent_oauth=keep-me' } }
   ), env);
 
   assert.equal(response.status, 200);
@@ -91,7 +93,7 @@ test('agent proxy rejects the shared default instance and only forwards the sign
   assert.ok(forwarded);
   assert.equal(new URL(forwarded.url).pathname, '/agents/chat-agent/' + config.name);
   assert.equal(new URL(forwarded.url).search, '?resume=1');
-  assert.equal(forwarded.headers.get('cookie'), null);
+  assert.equal(forwarded.headers.get('cookie'), 'agent_oauth=keep-me');
   assert.equal(forwarded.headers.get('authorization'), null);
   assert.equal(forwarded.headers.get('origin'), ORIGIN);
   assert.equal(forwarded.headers.get('x-test-bridge'), 'kept');
@@ -120,10 +122,14 @@ test('MCP OAuth callback routes can be forwarded without leaking the SDKSPACE se
     }
   };
 
-  const response = await worker.fetch(await authedRequest('/oauth/callback?code=abc&state=xyz', 'alice'), env);
+  const response = await worker.fetch(await authedRequest(
+    '/oauth/callback?code=abc&state=xyz',
+    'alice',
+    { headers: { cookie: 'agent_oauth=keep-me' } }
+  ), env);
   assert.equal(response.status, 200);
   assert.equal(new URL(forwarded.url).pathname, '/oauth/callback');
-  assert.equal(forwarded.headers.get('cookie'), null);
+  assert.equal(forwarded.headers.get('cookie'), 'agent_oauth=keep-me');
 });
 
 test('wrangler declares the internal service binding to agent-starter as real TOML lines', async () => {

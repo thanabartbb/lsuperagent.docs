@@ -16,39 +16,29 @@ run_worker_first = true
 binding = "AGENT_STARTER"
 service = "agent-starter"
 
-{
-  // ...
-  "unsafe": {
-    "bindings": [
-      {
+
         "name": "AGENT_STARTER",
         "type": "service",
         "service": "agent-starter",
         "environment": "production"
-      },
-      {
+      
+      
         "name": "durable_objec_agents",
         "type": "durable_object_namespace",
         "class_name": "ChatAgent",
         "script_name": "agent-starter",
         "namespace_id": "76c920e8f4fb46e2a8332ac8ce04c0b2"
-      }
-    ]
-  },
+      
+
   "d1_databases": [
     {
       "binding": "DB",
       "database_id": "cd8c2695-040b-443c-8bbd-6d798d72a0d5"
-    }
-  ],
+    
   "analytics_engine_datasets": [
     {
       "binding": "PUBLIC_AGENT",
       "dataset": "DB2"
-    }
-  ],
-  // ...
-}
 
 # Chat history (src/chat-store.js). Schema: migrations/0001_chat_history.sql
 [[d1_databases]]

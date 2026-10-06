@@ -257,7 +257,19 @@ async function handleAgentRuntimeProxy(request, env, pathname) {
   }
 
   const headers = new Headers(request.headers);
-  headers.delete('cookie');
+  const rawCookie = headers.get('cookie') || '';
+  if (rawCookie) {
+    const forwardedCookies = rawCookie
+      .split(';')
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .filter((part) => {
+        const name = part.split('=', 1)[0];
+        return name !== AUTH_COOKIE && name !== AUTH_STATE_COOKIE;
+      });
+    if (forwardedCookies.length) headers.set('cookie', forwardedCookies.join('; '));
+    else headers.delete('cookie');
+  }
   headers.delete('authorization');
   headers.set('x-sdkspace-agent-bridge', 'v1');
   return env.AGENT_STARTER.fetch(new Request(request, { headers }));

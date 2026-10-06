@@ -126,7 +126,11 @@ test('MCP OAuth callback routes can be forwarded without leaking the SDKSPACE se
   assert.equal(forwarded.headers.get('cookie'), null);
 });
 
-test('wrangler declares the internal service binding to agent-starter', async () => {
+test('wrangler declares the internal service binding to agent-starter as real TOML lines', async () => {
   const wrangler = await readFile(new URL('../wrangler.toml', import.meta.url), 'utf8');
-  assert.match(wrangler, /\[\[services\]\][\s\S]*binding\s*=\s*"AGENT_STARTER"[\s\S]*service\s*=\s*"agent-starter"/);
+  assert.equal(wrangler.includes('\\n[[services]]'), false);
+  assert.match(
+    wrangler,
+    /^\[\[services\]\]\nbinding\s*=\s*"AGENT_STARTER"\nservice\s*=\s*"agent-starter"$/m
+  );
 });

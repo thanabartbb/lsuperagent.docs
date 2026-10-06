@@ -212,6 +212,56 @@ function safeReturnTo(value) {
 }
 
 async function currentSession(request, env) { return verifySignedToken(cookieValue(request, AUTH_COOKIE), env, 'auth_session'); }
+
+function agentRuntimeBindingReady(env) {
+  return Boolean(env.AGENT_STARTER && typeof env.AGENT_STARTER.fetch === 'function');
+}
+
+async function agentRuntimeInstance(session, env) {
+  const provider = String(session?.provider || 'unknown').trim().toLowerCase();
+  const subject = String(session?.id || session?.email || session?.login || '').trim().toLowerCase();
+  const signature = await hmacSign(`agent-runtime-v1:${provider}:${subject}`, env.AUTH_SESSION_SECRET || 'missing-session-secret');
+  return 'u_' + signature.slice(0, 32);
+}
+
+async function handleAgentRuntimeConfig(request, env) {
+  if (request.method !== 'GET') return json({ ok: false, error: 'method_not_allowed', message: 'Use GET' }, 405, { allow: 'GET' });
+  const session = await currentSession(request, env);
+  if (!session) return json({ ok: false, error: 'authentication_required', message: 'กรุณาเข้าสู่ระบบก่อนเชื่อม Agent runtime' }, 401);
+  return json({
+    ok: true,
+    transport: 'cloudflare-agents',
+    agent: 'ChatAgent',
+    name: await agentRuntimeInstance(session, env),
+    path: '/agents',
+    connected: agentRuntimeBindingReady(env),
+    service_binding: 'AGENT_STARTER',
+    legacy_chat: '/api/chat'
+  });
+}
+
+async function handleAgentRuntimeProxy(request, env, pathname) {
+  const session = await currentSession(request, env);
+  if (!session) return json({ ok: false, error: 'authentication_required', message: 'กรุณาเข้าสู่ระบบก่อนเชื่อม Agent runtime' }, 401);
+  if (!agentRuntimeBindingReady(env)) return json({ ok: false, error: 'agent_runtime_unavailable', message: 'Agent runtime service binding is not available' }, 503);
+
+  if (pathname.startsWith('/agents/')) {
+    const match = /^\/agents\/chat-agent\/([^/]+)(?:\/|$)/.exec(pathname);
+    if (!match) return json({ ok: false, error: 'agent_route_not_allowed', message: 'Only the ChatAgent runtime is exposed through SDKSPACE' }, 404);
+    let requestedInstance = '';
+    try { requestedInstance = decodeURIComponent(match[1]); } catch (_) { return json({ ok: false, error: 'invalid_agent_instance' }, 400); }
+    const expectedInstance = await agentRuntimeInstance(session, env);
+    if (requestedInstance !== expectedInstance) {
+      return json({ ok: false, error: 'agent_instance_mismatch', message: 'Use /api/agent-runtime/config to obtain the current signed-in Agent instance' }, 403);
+    }
+  }
+
+  const headers = new Headers(request.headers);
+  headers.delete('cookie');
+  headers.delete('authorization');
+  headers.set('x-sdkspace-agent-bridge', 'v1');
+  return env.AGENT_STARTER.fetch(new Request(request, { headers }));
+}
 function adminAllowlist(env) { return splitEnvList(env.ADMIN_ALLOWED_LOGINS); }
 
 function adminIdentityCandidates(session) {
@@ -1188,6 +1238,9 @@ export default {
     if (pathname.startsWith('/api/github/') || pathname === '/auth/github/connect/callback') {
       return handleGithubApp(request, env, pathname, await currentSession(request, env));
     }
+
+    if (pathname === '/api/agent-runtime/config') return handleAgentRuntimeConfig(request, env);
+    if (pathname.startsWith('/agents/') || pathname.startsWith('/oauth/')) return handleAgentRuntimeProxy(request, env, pathname);
 
     if (request.method === 'OPTIONS' && (pathname === '/api/chat' || pathname === '/api/image' || pathname === '/api/exa/search')) return new Response(null, { status: 204, headers: { 'access-control-allow-origin': url.origin, 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type' } });
     if (pathname === '/api/chat' || pathname === '/api/image') {

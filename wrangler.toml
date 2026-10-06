@@ -11,6 +11,11 @@ html_handling = "drop-trailing-slash"
 not_found_handling = "404-page"
 run_worker_first = true
 
+# Internal Cloudflare Agent runtime. The browser stays on agents-sdk.space.
+[[services]]
+binding = "AGENT_STARTER"
+service = "agent-starter"
+
 # Chat history (src/chat-store.js). Schema: migrations/0001_chat_history.sql
 [[d1_databases]]
 binding = "DB"

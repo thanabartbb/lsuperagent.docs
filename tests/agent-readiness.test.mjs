@@ -31,3 +31,9 @@ test('discovery, sitemap and unknown API errors are machine readable',async()=>{
  const bad=await worker.fetch(request('/openapi.json',{},'POST'),{});assert.equal(bad.status,405);
  const cli=await worker.fetch(request('/sdkspace-cli.mjs'),{});assert.equal(cli.status,200);assert.match(await cli.text(),/SDKSPACE_API_KEY/);
 });
+
+test('public headings do not absorb paragraphs and developer links stay actionable',async()=>{
+ const html=await (await worker.fetch(request('/'),{})).text();
+ assert.match(html,/<h2[^>]*>What you can do<\/h2>\s*<p>Sign in/);
+ assert.match(html,/<a href="\/openapi.json">OpenAPI<\/a>/);
+});

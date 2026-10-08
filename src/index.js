@@ -280,7 +280,7 @@ async function handleAgentRuntimeProxy(request, env, pathname) {
 async function handleAgentUI(request, env, pathname) {
   if (!['GET', 'HEAD'].includes(request.method)) return json({error:'method_not_allowed'}, 405, {allow:'GET, HEAD'});
   const session = await currentSession(request, env);
-  if (!session) return pathname === '/agent-chat' ? redirectTo('/login?returnTo=%2Fagent-chat', 302) : json({error:'authentication_required'}, 401);
+  if (!session) return pathname === '/agent-chat' ? redirectTo('/login?return_to=%2Fagent-chat', 302) : json({error:'authentication_required'}, 401);
   if (!agentRuntimeBindingReady(env)) return json({error:'agent_runtime_unavailable'}, 503);
   const asset = pathname === '/agent-chat' ? '/' : agentAssetPath(pathname);
   if (!asset) return json({error:'not_found'}, 404);
@@ -301,7 +301,13 @@ async function handleAgentUI(request, env, pathname) {
       body = adaptAgentHtml(await upstream.text());
     } else if (asset.endsWith('.js')) {
       headers.set('content-type','text/javascript; charset=utf-8');
-      body = adaptAgentScript(await upstream.text(), await agentRuntimeInstance(session, env));
+      const entryResponse = await env.AGENT_STARTER.fetch(new Request('https://agent-starter.internal/'));
+      if (!entryResponse.ok) throw new Error('Missing UI entry');
+      const entryHtml = await entryResponse.text();
+      const entry = /src="(\/assets\/[^" ]+\.js)"/.exec(entryHtml)?.[1];
+      if (!entry) throw new Error('Missing UI module');
+      const script = await upstream.text();
+      body = asset === entry ? adaptAgentScript(script, await agentRuntimeInstance(session, env)) : script;
     } else body = upstream.body;
     return new Response(request.method === 'HEAD' ? null : body, {headers});
   } catch (_) { return json({error:'agent_ui_build_incompatible', message:'Agent Starter UI requires a compatible build. Existing /chat remains available.'}, 503); }

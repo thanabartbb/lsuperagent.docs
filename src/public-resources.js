@@ -60,7 +60,7 @@ function homepageMarkup(){return `<a class="lp-skip" href="#lp-main">ข้า�
   {
     method: <span class="str">"POST"</span>,
     headers: {
-      <span class="str">"Authorization"</span>: <span class="str">`Bearer ${process.env.SDKSPACE_API_KEY}`</span>,
+      <span class="str">"Authorization"</span>: <span class="str">"Bearer " + process.env.SDKSPACE_API_KEY</span>,
       <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span>
     },
     body: JSON.stringify({

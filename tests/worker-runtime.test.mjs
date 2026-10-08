@@ -265,10 +265,16 @@ test('authenticated entry and OAuth login default to home while direct chat stay
   const encodedPayload = state.split('.')[0].replace(/-/g, '+').replace(/_/g, '/');
   assert.equal(JSON.parse(atob(encodedPayload)).return_to, '/home');
 
+  let assetPath = '';
   const chat = await worker.fetch(new Request('https://agents-sdk.space/chat', { headers: { cookie } }), {
-    ...env, ASSETS: { fetch: async () => new Response('<!doctype html><title>Chat</title>', { headers: { 'content-type': 'text/html' } }) },
+    ...env, ASSETS: { fetch: async (assetRequest) => {
+      assetPath = new URL(assetRequest.url).pathname;
+      return new Response('<!doctype html><title>Chat</title>', { headers: { 'content-type': 'text/html' } });
+    } },
   });
   assert.equal(chat.status, 200);
+  assert.equal(assetPath, '/chat.html');
+  assert.equal(chat.headers.get('x-lsuperagen-control'), 'legacy-chat-fallback-v1');
 });
 
 test('public intro page is readable without login and keeps workspace guarded', async () => {

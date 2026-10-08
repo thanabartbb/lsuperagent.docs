@@ -140,3 +140,38 @@ test('wrangler declares the internal service binding to agent-starter as real TO
     /^\[\[services\]\]\nbinding\s*=\s*"AGENT_STARTER"\nservice\s*=\s*"agent-starter"$/m
   );
 });
+
+
+test('Agent Starter UI is gated and adapts its real asset paths with a per-user agent name', async () => {
+  const calls = [];
+  const env = { AUTH_SESSION_SECRET: SESSION_SECRET, AGENT_STARTER: { fetch: async req => {
+    calls.push(req);
+    const path = new URL(req.url).pathname;
+    return new Response(path === '/' ? '<title>Agent Starter</title><script type="module" src="/assets/index-build.js"></script><link href="/assets/index-build.css"><div id="root"></div>' : 'const agent=On({agent:`ChatAgent`,onOpen:()=>{}});', {headers:{'content-type':path === '/' ? 'text/html' : 'text/javascript'}});
+  }}};
+  const anon = await worker.fetch(new Request(ORIGIN+'/agent-chat'), env);
+  assert.equal(anon.status,302);
+  assert.match(anon.headers.get('location'), /login/);
+  assert.equal(calls.length,0);
+  const html = await worker.fetch(await authedRequest('/agent-chat'),env);
+  assert.equal(html.status,200);
+  assert.match(await html.text(), /\/agent-ui\/assets\/index-build.js/);
+  assert.equal(html.headers.get('cache-control'),'private, no-store');
+  const a = await worker.fetch(await authedRequest('/agent-ui/assets/index-build.js','alice'),env);
+  const b = await worker.fetch(await authedRequest('/agent-ui/assets/index-build.js','bob'),env);
+  const sa = await a.text(), sb = await b.text();
+  assert.match(sa, /name:"u_[A-Za-z0-9_-]+",host:location.host/);
+  assert.notEqual(sa,sb);
+  assert.equal(calls.every(req=>!req.headers.has('cookie') && !req.headers.has('authorization')),true);
+  const head = await worker.fetch(await authedRequest('/agent-chat','alice',{method:'HEAD'}),env);
+  assert.equal(await head.text(),'');
+});
+
+test('Agent UI rejects unsupported builds, paths and methods without exposing shared default chat', async () => {
+  const env = {AUTH_SESSION_SECRET:SESSION_SECRET,AGENT_STARTER:{fetch:async()=>new Response('changed build')}};
+  assert.equal((await worker.fetch(await authedRequest('/agent-ui/assets/index-new.js'),env)).status,503);
+  assert.equal((await worker.fetch(await authedRequest('/agent-ui/secrets'),env)).status,404);
+  assert.equal((await worker.fetch(await authedRequest('/agent-chat','alice',{method:'POST'}),env)).status,405);
+  assert.equal((await worker.fetch(await authedRequest('/agent-chat'),{AUTH_SESSION_SECRET:SESSION_SECRET})).status,503);
+  assert.equal((await worker.fetch(new Request(ORIGIN+'/agent-ui/assets/index-new.js'),env)).status,401);
+});

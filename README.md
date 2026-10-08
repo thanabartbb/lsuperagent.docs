@@ -63,3 +63,9 @@ Anonymous `/` now serves product information in raw HTML or Markdown through Acc
 The downloadable CLI uses Node 20+ with no dependencies. Function definitions require a host HTTP dispatcher and a signed SDK key; they do not imply a public MCP server. Unknown `/api/` routes return JSON 404. Generation burst headers now expose RateLimit-* alongside existing quota headers.
 
 Cloudflare Access/WAF challenges are upstream of this Worker and require separate account-level review. Do not disable protection globally to improve a scan. Brand/search discoverability and scanner scores must be verified after publication; locally passing tests do not guarantee all external checks pass.
+
+## Agent Starter chat UI
+
+`/agent-chat` presents the existing `agent-starter` UI on SDKSPACE using the internal service binding. Home links to it; `/chat` remains the classic chat. UI assets use `/agent-ui/assets/` and require a session. The adapter inserts the server-derived per-user Agent instance into the supported bundle; it never uses the shared default instance. Responses are private/no-store, and no auth cookie or token is passed when fetching UI assets. Unsupported upstream builds fail closed with JSON 503; update the adapter from source when changing the starter build. Agent Starter retains its own provider/tool configuration and usage policy; the classic chat quota is not applied to its runtime.
+
+Docker Hub supplies images, not an execution environment. Running containers requires an explicitly provisioned Containers service or another isolated runner, plus per-user quotas, image policy and runtime limits. No Docker execution capability is claimed or enabled by this UI integration.

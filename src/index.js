@@ -1,3 +1,4 @@
+import { adaptAgentHtml, adaptAgentScript, agentAssetPath } from './agent-ui.js';
 import { errorPayload } from './api-errors.js';
 import { publicResource } from './public-resources.js';
 import { getFeed, SOURCES as FEED_SOURCES } from './feeds.js';
@@ -275,6 +276,35 @@ async function handleAgentRuntimeProxy(request, env, pathname) {
   headers.delete('authorization');
   headers.set('x-sdkspace-agent-bridge', 'v1');
   return env.AGENT_STARTER.fetch(new Request(request, { headers }));
+}
+async function handleAgentUI(request, env, pathname) {
+  if (!['GET', 'HEAD'].includes(request.method)) return json({error:'method_not_allowed'}, 405, {allow:'GET, HEAD'});
+  const session = await currentSession(request, env);
+  if (!session) return pathname === '/agent-chat' ? redirectTo('/login?returnTo=%2Fagent-chat', 302) : json({error:'authentication_required'}, 401);
+  if (!agentRuntimeBindingReady(env)) return json({error:'agent_runtime_unavailable'}, 503);
+  const asset = pathname === '/agent-chat' ? '/' : agentAssetPath(pathname);
+  if (!asset) return json({error:'not_found'}, 404);
+  try {
+    const upstream = await env.AGENT_STARTER.fetch(new Request('https://agent-starter.internal' + asset));
+    if (!upstream.ok) return json({error:'agent_ui_unavailable'}, 502);
+    const headers = new Headers({
+      'content-type': upstream.headers.get('content-type') || 'application/octet-stream',
+      'cache-control': 'private, no-store',
+      'x-content-type-options': 'nosniff',
+      'x-frame-options': 'DENY',
+      'referrer-policy': 'same-origin'
+    });
+    let body;
+    if (asset === '/') {
+      headers.set('content-type','text/html; charset=utf-8');
+      headers.set('content-security-policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' " + new URL(request.url).origin.replace('https:', 'wss:') + "; frame-ancestors 'none'");
+      body = adaptAgentHtml(await upstream.text());
+    } else if (asset.endsWith('.js')) {
+      headers.set('content-type','text/javascript; charset=utf-8');
+      body = adaptAgentScript(await upstream.text(), await agentRuntimeInstance(session, env));
+    } else body = upstream.body;
+    return new Response(request.method === 'HEAD' ? null : body, {headers});
+  } catch (_) { return json({error:'agent_ui_build_incompatible', message:'Agent Starter UI requires a compatible build. Existing /chat remains available.'}, 503); }
 }
 function adminAllowlist(env) { return splitEnvList(env.ADMIN_ALLOWED_LOGINS); }
 
@@ -1253,6 +1283,7 @@ export default {
       return handleGithubApp(request, env, pathname, await currentSession(request, env));
     }
 
+    if (pathname === '/agent-chat' || pathname.startsWith('/agent-ui/')) return handleAgentUI(request, env, pathname);
     if (pathname === '/api/agent-runtime/config') return handleAgentRuntimeConfig(request, env);
     if (pathname.startsWith('/agents/') || pathname.startsWith('/oauth/')) return handleAgentRuntimeProxy(request, env, pathname);
 

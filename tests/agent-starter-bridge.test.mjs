@@ -161,7 +161,9 @@ test('Agent Starter UI is gated and adapts its real asset paths with a per-user 
   assert.equal(calls.length,0);
   const html = await worker.fetch(await authedRequest('/chat'),env);
   assert.equal(html.status,200);
-  assert.match(await html.text(), /\/agent-ui\/assets\/index-build.js/);
+  const page = await html.text();
+  assert.match(page, /\/agent-ui\/assets\/index-build.js/);
+  assert.match(page, /id="sdkspace-chat-viewport"/);
   assert.equal(html.headers.get('cache-control'),'private, no-store');
   const a = await worker.fetch(await authedRequest('/agent-ui/assets/index-build.js','alice'),env);
   const b = await worker.fetch(await authedRequest('/agent-ui/assets/index-build.js','bob'),env);

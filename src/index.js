@@ -395,6 +395,11 @@ async function handleMcp(request) {
     'access-control-allow-headers': 'content-type, accept, mcp-protocol-version, mcp-method, mcp-name',
     'access-control-max-age': '86400', 'cache-control': 'no-store'
   } });
+  const origin = request.headers.get('origin');
+  if (origin) {
+    const allowedOrigins = new Set([new URL(request.url).origin, 'https://agents-sdk.space', 'https://agent-starter.thanabartb.workers.dev']);
+    if (!allowedOrigins.has(origin)) return new Response(null, { status: 403, headers: { 'cache-control': 'no-store' } });
+  }
   if (request.method !== 'POST') return new Response(null, { status: 405, headers: { allow: 'POST, OPTIONS', 'cache-control': 'no-store' } });
   if (!/^application\/json(?:\s*;|\s*$)/i.test(request.headers.get('content-type') || '')) return mcpError(null, -32700, 'Content-Type must be application/json', 415);
   const length = Number(request.headers.get('content-length') || 0);

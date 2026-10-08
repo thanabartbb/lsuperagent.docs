@@ -280,9 +280,9 @@ async function handleAgentRuntimeProxy(request, env, pathname) {
 async function handleAgentUI(request, env, pathname) {
   if (!['GET', 'HEAD'].includes(request.method)) return json({error:'method_not_allowed'}, 405, {allow:'GET, HEAD'});
   const session = await currentSession(request, env);
-  if (!session) return pathname === '/agent-chat' ? redirectTo('/login?return_to=%2Fagent-chat', 302) : json({error:'authentication_required'}, 401);
+  if (!session) return pathname === '/chat' ? redirectTo('/login?return_to=%2Fchat', 302) : json({error:'authentication_required'}, 401);
   if (!agentRuntimeBindingReady(env)) return json({error:'agent_runtime_unavailable'}, 503);
-  const asset = pathname === '/agent-chat' ? '/' : agentAssetPath(pathname);
+  const asset = pathname === '/chat' ? '/' : agentAssetPath(pathname);
   if (!asset) return json({error:'not_found'}, 404);
   try {
     const upstream = await env.AGENT_STARTER.fetch(new Request('https://agent-starter.internal' + asset));
@@ -310,7 +310,7 @@ async function handleAgentUI(request, env, pathname) {
       body = asset === entry ? adaptAgentScript(script, await agentRuntimeInstance(session, env)) : script;
     } else body = upstream.body;
     return new Response(request.method === 'HEAD' ? null : body, {headers});
-  } catch (_) { return json({error:'agent_ui_build_incompatible', message:'Agent Starter UI requires a compatible build. Existing /chat remains available.'}, 503); }
+  } catch (_) { return json({error:'agent_ui_build_incompatible', message:'Agent Starter UI requires a compatible build. Please try again later.'}, 503); }
 }
 function adminAllowlist(env) { return splitEnvList(env.ADMIN_ALLOWED_LOGINS); }
 
@@ -1289,7 +1289,9 @@ export default {
       return handleGithubApp(request, env, pathname, await currentSession(request, env));
     }
 
-    if (pathname === '/agent-chat' || pathname.startsWith('/agent-ui/')) return handleAgentUI(request, env, pathname);
+    if (pathname === '/agent-chat') return redirectTo('/chat' + url.search, 308);
+    if (pathname === '/chat.html') return redirectTo('/chat' + url.search, 308);
+    if (pathname === '/chat' || pathname.startsWith('/agent-ui/')) return handleAgentUI(request, env, pathname);
     if (pathname === '/api/agent-runtime/config') return handleAgentRuntimeConfig(request, env);
     if (pathname.startsWith('/agents/') || pathname.startsWith('/oauth/')) return handleAgentRuntimeProxy(request, env, pathname);
 

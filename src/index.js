@@ -281,12 +281,12 @@ async function handleAgentUI(request, env, pathname) {
   if (!['GET', 'HEAD'].includes(request.method)) return json({error:'method_not_allowed'}, 405, {allow:'GET, HEAD'});
   const session = await currentSession(request, env);
   if (!session) return pathname === '/chat' ? redirectTo('/login?return_to=%2Fchat', 302) : json({error:'authentication_required'}, 401);
-  if (!agentRuntimeBindingReady(env)) return json({error:'agent_runtime_unavailable'}, 503);
+  if (!agentRuntimeBindingReady(env)) return pathname === '/chat' ? legacyChatFallback(request, env) : json({error:'agent_runtime_unavailable'}, 503);
   const asset = pathname === '/chat' ? '/' : agentAssetPath(pathname);
   if (!asset) return json({error:'not_found'}, 404);
   try {
     const upstream = await env.AGENT_STARTER.fetch(new Request('https://agent-starter.internal' + asset));
-    if (!upstream.ok) return json({error:'agent_ui_unavailable'}, 502);
+    if (!upstream.ok) return pathname === '/chat' ? legacyChatFallback(request, env) : json({error:'agent_ui_unavailable'}, 502);
     const headers = new Headers({
       'content-type': upstream.headers.get('content-type') || 'application/octet-stream',
       'cache-control': 'private, no-store',
@@ -310,8 +310,198 @@ async function handleAgentUI(request, env, pathname) {
       body = asset === entry ? adaptAgentScript(script, await agentRuntimeInstance(session, env)) : script;
     } else body = upstream.body;
     return new Response(request.method === 'HEAD' ? null : body, {headers});
-  } catch (_) { return json({error:'agent_ui_build_incompatible', message:'Agent Starter UI requires a compatible build. Please try again later.'}, 503); }
+  } catch (_) { return pathname === '/chat' ? legacyChatFallback(request, env) : json({error:'agent_ui_build_incompatible', message:'Agent Starter UI requires a compatible build. Please try again later.'}, 503); }
 }
+async function legacyChatFallback(request, env) {
+  if (!env.ASSETS || typeof env.ASSETS.fetch !== 'function') return json({ error: 'chat_unavailable' }, 503);
+  const url = new URL(request.url);
+  url.pathname = '/chat.html';
+  const response = await env.ASSETS.fetch(new Request(url.toString(), { method: request.method, headers: request.headers }));
+  const headers = htmlHeaders(response, 'legacy-chat-fallback-v1');
+  headers.set('cache-control', 'private, no-store');
+  return new Response(request.method === 'HEAD' ? null : response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
+const MCP_PROTOCOL_VERSION = '2025-11-25';
+const MCP_STATELESS_VERSION = '2026-07-28';
+const MCP_SERVER_INFO = { name: 'sdkspace', version: '1.0.0' };
+const MCP_CACHE_TTL_MS = 30000;
+const MCP_TOOLS = [
+  {
+    name: 'sdkspace_overview',
+    description: 'อธิบายว่า SDKSPACE คืออะไรและผู้ใช้เริ่มต้นใช้งานอย่างไร',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false }
+  },
+  {
+    name: 'sdkspace_capabilities',
+    description: 'แสดงความสามารถและเส้นทาง API สาธารณะของ SDKSPACE พร้อมบอกว่าเส้นทางใดต้องลงชื่อเข้าใช้',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false }
+  },
+  {
+    name: 'sdkspace_connection_check',
+    description: 'ตรวจว่า MCP server ของ SDKSPACE พร้อมตอบสนองและมีเครื่องมือกี่รายการ',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false }
+  }
+];
+
+function mcpEnvelope(request, result, modern = false) {
+  const headers = new Headers({
+    'content-type': 'application/json; charset=utf-8',
+    'cache-control': modern ? 'public, max-age=30' : 'no-store',
+    'access-control-allow-origin': '*',
+    'access-control-allow-methods': 'POST, OPTIONS',
+    'access-control-allow-headers': 'content-type, accept, mcp-protocol-version, mcp-method, mcp-name',
+    'access-control-max-age': '86400',
+    'x-content-type-options': 'nosniff'
+  });
+  const payload = modern
+    ? { jsonrpc: '2.0', id: request.id, result: { resultType: 'complete', ...result }, _meta: { 'io.modelcontextprotocol/serverInfo': MCP_SERVER_INFO } }
+    : { jsonrpc: '2.0', id: request.id, result };
+  return new Response(JSON.stringify(payload), { headers });
+}
+
+function mcpError(id, code, message, status = 200) {
+  return new Response(JSON.stringify({ jsonrpc: '2.0', id: id ?? null, error: { code, message } }), {
+    status,
+    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'access-control-allow-origin': '*', 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type, accept, mcp-protocol-version, mcp-method, mcp-name', 'x-content-type-options': 'nosniff' }
+  });
+}
+
+function mcpToolPayload(name) {
+  if (name === 'sdkspace_overview') {
+    return {
+      name: 'SDKSPACE',
+      description: 'พื้นที่ทำงานสำหรับใช้ AI และ SDK ของ lsuperagen',
+      getting_started: [
+        { step: 1, action: 'สร้างบัญชีหรือเข้าสู่ระบบที่ https://agents-sdk.space/login' },
+        { step: 2, action: 'เปิด /chat เพื่อสนทนา เขียนโค้ด ค้นคว้า หรืออ่าน URL' },
+        { step: 3, action: 'เปิด /guide เพื่อดู SDK และสร้าง API key สำหรับเชื่อมแอป' }
+      ],
+      public_pages: ['/guide', '/docs', '/v1/health'],
+      note: 'MCP นี้ให้ข้อมูลสาธารณะเท่านั้น ไม่เข้าถึงประวัติแชท บัญชี หรือคีย์ของผู้ใช้'
+    };
+  }
+  if (name === 'sdkspace_capabilities') {
+    return {
+      capabilities: [
+        { name: 'AI chat', path: '/api/chat', method: 'POST', authentication: 'signed-in session', description: 'สนทนา เขียนโค้ด ค้นคว้า และอ่าน URL' },
+        { name: 'Image generation', path: '/api/image', method: 'POST', authentication: 'signed-in session', description: 'สร้างภาพด้วย AI' },
+        { name: 'SDK health', path: '/v1/health', method: 'GET', authentication: 'public', description: 'ตรวจสถานะ API' },
+        { name: 'SDK chat', path: '/v1/chat', method: 'POST', authentication: 'signed lsg_ SDK key', description: 'เรียก AI chat จากแอปที่เชื่อมต่อ' },
+        { name: 'SDK image', path: '/v1/image', method: 'POST', authentication: 'signed lsg_ SDK key', description: 'เรียกสร้างภาพจากแอปที่เชื่อมต่อ' },
+        { name: 'Developer guide', path: '/guide', method: 'GET', authentication: 'signed-in session', description: 'อ่านคู่มือ SDK และจัดการ API key' }
+      ],
+      limits: 'การเรียก API ที่สร้างเนื้อหาต้องมี session หรือ SDK key และอยู่ภายใต้โควตาของบัญชี'
+    };
+  }
+  if (name === 'sdkspace_connection_check') {
+    return {
+      ok: true,
+      server: MCP_SERVER_INFO.name,
+      protocols: [MCP_STATELESS_VERSION, MCP_PROTOCOL_VERSION],
+      tools_available: MCP_TOOLS.length,
+      checked_at: new Date().toISOString()
+    };
+  }
+  return null;
+}
+
+async function handleMcp(request) {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'access-control-allow-origin': '*',
+        'access-control-allow-methods': 'POST, OPTIONS',
+        'access-control-allow-headers': 'content-type, accept, mcp-protocol-version, mcp-method, mcp-name',
+        'access-control-max-age': '86400',
+        'cache-control': 'no-store'
+      }
+    });
+  }
+  if (request.method !== 'POST') {
+    return new Response(null, { status: 405, headers: { allow: 'POST, OPTIONS', 'cache-control': 'no-store' } });
+  }
+  if (!/^application\/json(?:\s*;|\s*$)/i.test(request.headers.get('content-type') || '')) {
+    return mcpError(null, -32700, 'Content-Type must be application/json', 415);
+  }
+  const length = Number(request.headers.get('content-length') || 0);
+  if (length > 65536) return mcpError(null, -32600, 'Request body is too large', 413);
+
+  let payload;
+  try {
+    const body = await request.text();
+    if (new TextEncoder().encode(body).byteLength > 65536) return mcpError(null, -32600, 'Request body is too large', 413);
+    payload = JSON.parse(body);
+  } catch (_) {
+    return mcpError(null, -32700, 'Parse error');
+  }
+  if (!payload || Array.isArray(payload) || payload.jsonrpc !== '2.0' || typeof payload.method !== 'string') {
+    return mcpError(payload?.id, -32600, 'Invalid JSON-RPC request');
+  }
+
+  const modern = request.headers.get('mcp-protocol-version') === MCP_STATELESS_VERSION;
+  if (modern) {
+    const methodHeader = request.headers.get('mcp-method');
+    const nameHeader = request.headers.get('mcp-name');
+    if (methodHeader !== payload.method) return mcpError(payload.id, -32600, 'Mcp-Method must match the JSON-RPC method', 400);
+    if (nameHeader !== null && payload.method === 'tools/call' && nameHeader !== payload.params?.name) {
+      return mcpError(payload.id, -32600, 'Mcp-Name must match the tool name', 400);
+    }
+  }
+
+  if (payload.method.startsWith('notifications/')) return new Response(null, { status: 202, headers: { 'cache-control': 'no-store', 'access-control-allow-origin': '*' } });
+  if (!Object.prototype.hasOwnProperty.call(payload, 'id')) return mcpError(null, -32600, 'Requests must include an id');
+
+  if (payload.method === 'initialize') {
+    const requested = payload.params?.protocolVersion;
+    const version = requested === '2025-06-18' ? '2025-06-18' : MCP_PROTOCOL_VERSION;
+    return mcpEnvelope(payload, {
+      protocolVersion: version,
+      capabilities: { tools: { listChanged: false } },
+      serverInfo: MCP_SERVER_INFO,
+      instructions: 'SDKSPACE MCP provides public, read-only information about the SDKSPACE product and API capabilities.'
+    });
+  }
+  if (payload.method === 'ping') return mcpEnvelope(payload, {});
+  if (payload.method === 'server/discover') {
+    return mcpEnvelope(payload, {
+      supportedVersions: [MCP_STATELESS_VERSION],
+      capabilities: { tools: { listChanged: false } },
+      instructions: 'SDKSPACE MCP provides public, read-only information about the SDKSPACE product and API capabilities.',
+      ttlMs: MCP_CACHE_TTL_MS,
+      cacheScope: 'public'
+    }, true);
+  }
+  if (payload.method === 'tools/list') {
+    const cursor = payload.params?.cursor;
+    if (cursor) return mcpEnvelope(payload, modern ? { tools: [], nextCursor: null, ttlMs: MCP_CACHE_TTL_MS, cacheScope: 'public' } : { tools: [] }, modern);
+    return mcpEnvelope(payload, modern
+      ? { tools: MCP_TOOLS, ttlMs: MCP_CACHE_TTL_MS, cacheScope: 'public' }
+      : { tools: MCP_TOOLS }, modern);
+  }
+  if (payload.method === 'tools/call') {
+    const result = mcpToolPayload(payload.params?.name);
+    if (!result) return mcpEnvelope(payload, {
+      content: [{ type: 'text', text: 'Unknown tool: ' + String(payload.params?.name || '') }],
+      isError: true,
+      ...(modern ? { ttlMs: MCP_CACHE_TTL_MS, cacheScope: 'public' } : {})
+    }, modern);
+    const toolResult = {
+      content: [{ type: 'text', text: JSON.stringify(result) }],
+      ...(modern ? { resultType: 'complete', ttlMs: MCP_CACHE_TTL_MS, cacheScope: 'public' } : {})
+    };
+    if (modern) return new Response(JSON.stringify({
+      jsonrpc: '2.0',
+      id: payload.id,
+      result: { resultType: 'complete', ...toolResult },
+      _meta: { 'io.modelcontextprotocol/serverInfo': MCP_SERVER_INFO }
+    }), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=30', 'access-control-allow-origin': '*', 'x-content-type-options': 'nosniff' } });
+    return mcpEnvelope(payload, toolResult);
+  }
+  return mcpError(payload.id, -32601, 'Method not found: ' + payload.method);
+}
+
 function adminAllowlist(env) { return splitEnvList(env.ADMIN_ALLOWED_LOGINS); }
 
 function adminIdentityCandidates(session) {
@@ -1288,6 +1478,8 @@ export default {
     if (pathname.startsWith('/api/github/') || pathname === '/auth/github/connect/callback') {
       return handleGithubApp(request, env, pathname, await currentSession(request, env));
     }
+
+    if (pathname === '/mcp') return handleMcp(request);
 
     if (pathname === '/agent-chat') return redirectTo('/chat' + url.search, 308);
     if (pathname === '/chat.html') return redirectTo('/chat' + url.search, 308);

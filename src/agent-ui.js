@@ -16,5 +16,5 @@ export function adaptAgentScript(script, instance) {
   return script.replace(seam, 'agent:' + String.fromCharCode(96) + 'ChatAgent' + String.fromCharCode(96) + ',name:' + JSON.stringify(instance) + ',host:location.host,onOpen:');
 }
 export function agentAssetPath(path) {
-  return /^\/agent-ui\/assets\/[A-Za-z0-9_.-]+\.(?:js|css|woff2?|svg|png|webp)$/.test(path) ? path.replace('/agent-ui', '') : null;
+  return /^\/agent-ui\/assets\/[A-Za-z0-9_.-]+\.(?:js|css|woff2?|svg|png|jpe?g|webp)$/.test(path) ? path.replace('/agent-ui', '') : null;
 }

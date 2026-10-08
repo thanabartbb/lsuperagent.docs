@@ -37,7 +37,55 @@ const functions = [{type:'function',function:{name:'sdkspace_generate_text',desc
 const cli = `#!/usr/bin/env node\nconst command=process.argv[2]||'health';\nconst routes={health:['GET','/v1/health'],me:['GET','/v1/me'],chat:['POST','/v1/chat'],image:['POST','/v1/image']};\nif(!routes[command]){console.error('Usage: node sdkspace-cli.mjs health|me|chat <message>|image <prompt>');process.exit(1);}\nconst [method,path]=routes[command];\nconst headers={'accept':'application/json'};\nif(command!=='health'){if(!process.env.SDKSPACE_API_KEY){console.error('Set SDKSPACE_API_KEY in your environment');process.exit(1);}headers.authorization='Bearer '+process.env.SDKSPACE_API_KEY;}\nlet body;\nif(method==='POST'){const value=process.argv.slice(3).join(' ');if(!value){console.error('Provide a message or prompt');process.exit(1);}headers['content-type']='application/json';body=JSON.stringify(command==='chat'?{message:value,stream:false}:{prompt:value});}\ntry{const res=await fetch('https://agents-sdk.space'+path,{method,headers,body,signal:AbortSignal.timeout(120000)});console.log(await res.text());if(!res.ok)process.exitCode=1;}catch(e){console.error(e.message);process.exitCode=1;}\n`;
 const escape = value => value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function markdownHtml(text){return text.replace(/^(#{1,2} [^\n]+)\n/gm, '$1\n\n').split('\n\n').map(block=>block.startsWith('# ')?`<h1>${escape(block.slice(2))}</h1>`:block.startsWith('## ')?`<h2 id="${escape(block.slice(3).toLowerCase().replace(/[^a-z0-9]+/g,'-'))}">${escape(block.slice(3))}</h2>`:`<p>${escape(block).replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2">$1</a>')}</p>`).join('\n');}
-function html(path,title,text){const schema=[{'@context':'https://schema.org','@type':'SoftwareApplication',name:'SDKSPACE',description,url:origin,applicationCategory:'DeveloperApplication',operatingSystem:'Web',publisher:{'@type':'Organization',name:'SDKSPACE',url:origin,sameAs:[repo]}},{'@context':'https://schema.org','@type':'Organization',name:'SDKSPACE',url:origin,description,sameAs:[repo],contactPoint:{'@type':'ContactPoint',contactType:'Product support',url:origin+'/contact'}}];return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)}</title><meta name="description" content="${escape(description)}"><link rel="canonical" href="${origin+path}"><meta property="og:type" content="website"><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(description)}"><meta property="og:url" content="${origin+path}"><meta property="og:image" content="${origin}/assets/sdkspace-logo.svg"><link rel="stylesheet" href="/assets/theme.css?v=4"><script type="application/ld+json">${JSON.stringify(schema)}</script><style>body{margin:0;font:17px/1.7 system-ui;background:#050812;color:#fff}header,main,footer{max-width:880px;margin:auto;padding:24px}a{color:#4da3ff}nav{display:flex;flex-wrap:wrap;gap:20px}h1{font-size:clamp(28px,5vw,44px)}h2{margin-top:32px}p{overflow-wrap:anywhere}</style></head><body><header><nav aria-label="Main navigation"><a href="/">SDKSPACE</a><a href="/developers">Developers</a><a href="/login">Sign in</a><a href="/home">Workspace</a></nav></header><main id="main">${markdownHtml(text)}</main><footer><nav aria-label="Footer"><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a><a href="${repo}">GitHub</a></nav></footer></body></html>`;}
+function homepageMarkup(){return `<a class="lp-skip" href="#lp-main">ข้ามไปยังเนื้อหาหลัก</a>
+<header class="lp-header"><div class="lp-header-inner">
+<a class="lp-brand" href="/" aria-label="SDKSPACE หน้าแรก"><img src="/assets/sdkspace-logo.svg" alt="" width="34" height="34"><span>SDK<span class="lp-brand-mark">SPACE</span></span></a>
+<nav class="lp-nav" aria-label="เมนูหลัก"><a href="/developers">นักพัฒนา</a><a href="/about">เกี่ยวกับ</a><a href="${repo}">GitHub <span aria-hidden="true">↗</span></a><a class="lp-signin" href="/login">เข้าสู่ระบบ</a></nav>
+<details class="lp-mobile-menu"><summary aria-label="เปิดเมนู"><span class="lp-menu-icon" aria-hidden="true"></span></summary><nav class="lp-mobile-nav" aria-label="เมนูหลัก"><a href="/developers">เอกสารนักพัฒนา</a><a href="/about">เกี่ยวกับ SDKSPACE</a><a href="${repo}">GitHub ↗</a><a href="/login">เข้าสู่ระบบ</a></nav></details>
+</div></header>
+<main id="lp-main">
+<section class="lp-hero"><div class="lp-hero-inner">
+<p class="lp-kicker">AI WORKSPACE · DEVELOPER API</p>
+<p class="lp-byline">พื้นที่ทำงานของ <strong>SDKSPACE</strong></p>
+<h1>AI สำหรับงานประจำวัน<span>พร้อมต่อยอดเป็น Agent</span></h1>
+<p class="lp-lead">แชท เขียนและช่วยดูโค้ด ค้นคว้าพร้อมแหล่งที่มา อ่าน URL และสร้างภาพในพื้นที่เดียว นักพัฒนาสามารถเชื่อมต่อ API โดยเก็บคีย์ไว้ฝั่งเซิร์ฟเวอร์</p>
+<div class="lp-actions"><a class="lp-button lp-button-primary" href="/login">เริ่มใช้งาน <span class="lp-button-arrow" aria-hidden="true">↗</span></a><a class="lp-button" href="/developers">ดูเอกสาร API</a></div>
+<p class="lp-hero-note">การใช้งานต้องเข้าสู่ระบบ · ฟีเจอร์ขึ้นอยู่กับการเชื่อมต่อและโควตาบัญชี</p>
+</div></section>
+<section class="lp-code-section" aria-labelledby="lp-api-title"><div class="lp-code-inner">
+<div class="lp-code-copy"><span class="lp-overline">เริ่มต้นสำหรับนักพัฒนา</span><h2 id="lp-api-title">เชื่อมต่อ API ได้ในไม่กี่บรรทัด</h2><p>สร้างคีย์ API ในบัญชี แล้วเรียกใช้งานจากเซิร์ฟเวอร์ของคุณ เก็บคีย์เป็น secret และอย่าใส่ไว้ในโค้ดฝั่งเบราว์เซอร์</p><a href="/developers">อ่านคู่มือนักพัฒนา <span aria-hidden="true">→</span></a></div>
+<div class="lp-code-window"><div class="lp-code-top"><span class="lp-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="lp-code-label">server.mjs</span></div><div class="lp-code-scroll" tabindex="0" aria-label="ตัวอย่างโค้ด เลื่อนได้ในแนวนอน"><pre><code><span class="cmt">// เรียก SDKSPACE จากเซิร์ฟเวอร์ของคุณ</span>
+<span class="kw">const</span> response = <span class="kw">await</span> fetch(
+  <span class="str">"https://agents-sdk.space/v1/chat"</span>,
+  {
+    method: <span class="str">"POST"</span>,
+    headers: {
+      <span class="str">"Authorization"</span>: <span class="str">"Bearer " + process.env.SDKSPACE_API_KEY</span>,
+      <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span>
+    },
+    body: JSON.stringify({
+      message: <span class="str">"สรุปประเด็นสำคัญให้หน่อย"</span>,
+      mode: <span class="str">"chat"</span>,
+      stream: <span class="kw">false</span>
+    })
+  }
+);
+
+<span class="kw">const</span> result = <span class="kw">await</span> response.json();
+<span class="fn">console.log</span>(result);</code></pre></div></div>
+</div></section>
+<section class="lp-section" id="capabilities" aria-labelledby="lp-capabilities-title"><div class="lp-section-heading"><span class="lp-overline">ในพื้นที่เดียว</span><h2 id="lp-capabilities-title">เริ่มจากงานที่คุณทำอยู่</h2><p>เลือกใช้ผ่าน Workspace หรือเชื่อมต่อ API ตามรูปแบบงานของคุณ</p></div>
+<div class="lp-features">
+<article class="lp-feature"><div class="lp-feature-icon" aria-hidden="true">AI</div><h3>แชทและเขียน</h3><p>ช่วยคิดคำตอบ ร่างเนื้อหา และปรับข้อความให้เหมาะกับงาน</p></article>
+<article class="lp-feature"><div class="lp-feature-icon" aria-hidden="true">{ }</div><h3>ช่วยดูโค้ด</h3><p>อธิบายโค้ดและช่วยทำงานพัฒนาผ่านเครื่องมือที่เปิดใช้งาน</p></article>
+<article class="lp-feature"><div class="lp-feature-icon" aria-hidden="true">⌕</div><h3>ค้นคว้าและอ่าน URL</h3><p>ค้นข้อมูลพร้อมแหล่งอ้างอิง หรือส่ง URL ให้ช่วยอ่านและสรุป</p></article>
+<article class="lp-feature"><div class="lp-feature-icon" aria-hidden="true">✳</div><h3>สร้างภาพ</h3><p>สร้างภาพจากคำอธิบาย โดยใช้โควตาของบัญชีที่เข้าสู่ระบบ</p></article>
+</div></section>
+<section class="lp-bottom-cta" aria-labelledby="lp-start-title"><h2 id="lp-start-title">พร้อมเริ่มใช้งานหรือยัง?</h2><p>เข้าสู่ Workspace หรืออ่านวิธีเชื่อมต่อ API</p><div class="lp-actions"><a class="lp-button lp-button-primary" href="/login">ไปยัง Workspace <span class="lp-button-arrow" aria-hidden="true">↗</span></a><a class="lp-button" href="/developers">เปิดเอกสาร API</a></div></section>
+</main>
+<footer class="lp-footer"><div class="lp-footer-inner"><a class="lp-footer-brand" href="/">SDKSPACE</a><nav class="lp-footer-links" aria-label="ข้อมูลเพิ่มเติม"><a href="/about">เกี่ยวกับ</a><a href="/developers">เอกสาร API</a><a href="/privacy">ความเป็นส่วนตัว</a><a href="/contact">ติดต่อ</a><a href="${repo}">GitHub</a></nav></div><p class="lp-footer-note">SDKSPACE เป็นโครงการอิสระ การใช้งาน AI ขึ้นอยู่กับการเชื่อมต่อและข้อจำกัดของบัญชี</p></footer>`;}
+function html(path,title,text){const isHome=path==='/';const schema=[{'@context':'https://schema.org','@type':'SoftwareApplication',name:'SDKSPACE',description,url:origin,applicationCategory:'DeveloperApplication',operatingSystem:'Web',publisher:{'@type':'Organization',name:'SDKSPACE',url:origin,sameAs:[repo]}},{'@context':'https://schema.org','@type':'Organization',name:'SDKSPACE',url:origin,description,sameAs:[repo],contactPoint:{'@type':'ContactPoint',contactType:'Product support',url:origin+'/contact'}}];const pageStyles=isHome?'<link rel="stylesheet" href="/assets/homepage.css?v=1">':'<style>body{margin:0;font:17px/1.7 system-ui;background:#050812;color:#fff}header,main,footer{max-width:880px;margin:auto;padding:24px}a{color:#4da3ff}nav{display:flex;flex-wrap:wrap;gap:20px}h1{font-size:clamp(28px,5vw,44px)}h2{margin-top:32px}p{overflow-wrap:anywhere}</style>';const pageBody=isHome?homepageMarkup():`<header><nav aria-label="Main navigation"><a href="/">SDKSPACE</a><a href="/developers">Developers</a><a href="/login">Sign in</a><a href="/home">Workspace</a></nav></header><main id="main">${markdownHtml(text)}</main><footer><nav aria-label="Footer"><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a><a href="${repo}">GitHub</a></nav></footer>`;return `<!doctype html><html lang="${isHome?'th':'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)}</title><meta name="description" content="${escape(description)}"><link rel="canonical" href="${origin+path}"><meta property="og:type" content="website"><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(description)}"><meta property="og:url" content="${origin+path}"><meta property="og:image" content="${origin}/assets/sdkspace-logo.svg"><link rel="stylesheet" href="/assets/theme.css?v=4">${pageStyles}<script type="application/ld+json">${JSON.stringify(schema)}</script></head><body${isHome?' class="lp-page"':''}>${pageBody}</body></html>`;}
+
 function wantsMarkdown(request){const types=(request.headers.get('accept')||'').split(',').map(value=>{const [type,...parameters]=value.trim().split(';');const q=parameters.find(p=>p.trim().startsWith('q='));return {type,q:q?Number(q.trim().slice(2)):1};});return Math.max(0,...types.filter(t=>t.type==='text/markdown').map(t=>t.q))>0 && Math.max(0,...types.filter(t=>t.type==='text/markdown').map(t=>t.q))>=Math.max(0,...types.filter(t=>t.type==='text/html').map(t=>t.q));}
 export function publicResource(request,path){
  if(path==='/index.html')path='/';

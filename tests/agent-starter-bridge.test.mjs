@@ -175,3 +175,10 @@ test('Agent UI rejects unsupported builds, paths and methods without exposing sh
   assert.equal((await worker.fetch(await authedRequest('/agent-chat'),{AUTH_SESSION_SECRET:SESSION_SECRET})).status,503);
   assert.equal((await worker.fetch(new Request(ORIGIN+'/agent-ui/assets/index-new.js'),env)).status,401);
 });
+
+test('Agent UI forwards lazy code-highlighting chunks without changing them', async () => {
+  const env = {AUTH_SESSION_SECRET:SESSION_SECRET,AGENT_STARTER:{fetch:async req => new Response(new URL(req.url).pathname === '/' ? '<script src="/assets/index-build.js"></script><div id="root"></div>' : 'export const language="javascript";', {headers:{'content-type':'text/javascript'}})}};
+  const result = await worker.fetch(await authedRequest('/agent-ui/assets/javascript-chunk.js'),env);
+  assert.equal(result.status,200);
+  assert.equal(await result.text(),'export const language="javascript";');
+});

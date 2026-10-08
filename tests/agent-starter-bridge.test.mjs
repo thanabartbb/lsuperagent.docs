@@ -41,6 +41,12 @@ async function authedRequest(path, id = 'alice', init = {}) {
   return new Request(ORIGIN + path, { ...init, headers });
 }
 
+test('legacy Agent Chat URL redirects to the single full-screen /chat entry', async () => {
+  const response = await worker.fetch(new Request(ORIGIN + '/agent-chat?source=bookmark'), {});
+  assert.equal(response.status, 308);
+  assert.equal(response.headers.get('location'), '/chat?source=bookmark');
+});
+
 test('agent runtime config is session-gated and returns an opaque per-user instance', async () => {
   const env = { AUTH_SESSION_SECRET: SESSION_SECRET, AGENT_STARTER: { fetch: async () => new Response('unused') } };
 
@@ -149,11 +155,11 @@ test('Agent Starter UI is gated and adapts its real asset paths with a per-user 
     const path = new URL(req.url).pathname;
     return new Response(path === '/' ? '<title>Agent Starter</title><script type="module" src="/assets/index-build.js"></script><link href="/assets/index-build.css"><div id="root"></div>' : 'const agent=On({agent:`ChatAgent`,onOpen:()=>{}});', {headers:{'content-type':path === '/' ? 'text/html' : 'text/javascript'}});
   }}};
-  const anon = await worker.fetch(new Request(ORIGIN+'/agent-chat'), env);
+  const anon = await worker.fetch(new Request(ORIGIN+'/chat'), env);
   assert.equal(anon.status,302);
   assert.match(anon.headers.get('location'), /login/);
   assert.equal(calls.length,0);
-  const html = await worker.fetch(await authedRequest('/agent-chat'),env);
+  const html = await worker.fetch(await authedRequest('/chat'),env);
   assert.equal(html.status,200);
   assert.match(await html.text(), /\/agent-ui\/assets\/index-build.js/);
   assert.equal(html.headers.get('cache-control'),'private, no-store');
@@ -163,7 +169,7 @@ test('Agent Starter UI is gated and adapts its real asset paths with a per-user 
   assert.match(sa, /name:"u_[A-Za-z0-9_-]+",host:location.host/);
   assert.notEqual(sa,sb);
   assert.equal(calls.every(req=>!req.headers.has('cookie') && !req.headers.has('authorization')),true);
-  const head = await worker.fetch(await authedRequest('/agent-chat','alice',{method:'HEAD'}),env);
+  const head = await worker.fetch(await authedRequest('/chat','alice',{method:'HEAD'}),env);
   assert.equal(await head.text(),'');
 });
 
@@ -171,8 +177,8 @@ test('Agent UI rejects unsupported builds, paths and methods without exposing sh
   const env = {AUTH_SESSION_SECRET:SESSION_SECRET,AGENT_STARTER:{fetch:async()=>new Response('changed build')}};
   assert.equal((await worker.fetch(await authedRequest('/agent-ui/assets/index-new.js'),env)).status,503);
   assert.equal((await worker.fetch(await authedRequest('/agent-ui/secrets'),env)).status,404);
-  assert.equal((await worker.fetch(await authedRequest('/agent-chat','alice',{method:'POST'}),env)).status,405);
-  assert.equal((await worker.fetch(await authedRequest('/agent-chat'),{AUTH_SESSION_SECRET:SESSION_SECRET})).status,503);
+  assert.equal((await worker.fetch(await authedRequest('/chat','alice',{method:'POST'}),env)).status,405);
+  assert.equal((await worker.fetch(await authedRequest('/chat'),{AUTH_SESSION_SECRET:SESSION_SECRET})).status,503);
   assert.equal((await worker.fetch(new Request(ORIGIN+'/agent-ui/assets/index-new.js'),env)).status,401);
 });
 

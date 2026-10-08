@@ -1,3 +1,4 @@
+import { errorPayload } from './api-errors.js';
 import legacyWorker from './index.js';
 import {
   createLegacySessionCookie,
@@ -11,7 +12,7 @@ import {
 } from './firebase-core.mjs';
 
 function json(data, status = 200, headers = {}) {
-  return new Response(JSON.stringify(data, null, 2), {
+  return new Response(JSON.stringify(errorPayload(data, status), null, 2), {
     status,
     headers: {
       'content-type': 'application/json; charset=utf-8',

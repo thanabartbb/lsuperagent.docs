@@ -1,3 +1,4 @@
+import { errorPayload } from './api-errors.js';
 import { publicResource } from './public-resources.js';
 import { getFeed, SOURCES as FEED_SOURCES } from './feeds.js';
 import { historyEnabled, userKey, listConversations, getConversation, deleteConversation, saveExchange } from './chat-store.js';
@@ -45,7 +46,7 @@ const TOOL_LABELS = {
 const PUBLIC_PRODUCT_V2 = true;
 
 function json(data, status = 200, headers = {}) {
-  return new Response(JSON.stringify(data, null, 2), {
+  return new Response(JSON.stringify(errorPayload(data, status), null, 2), {
     status,
     headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers }
   });

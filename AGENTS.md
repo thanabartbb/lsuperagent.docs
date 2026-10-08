@@ -12,7 +12,7 @@ Current owner instructions take priority. Read `README.md`, `wrangler.toml` and 
 - Entry: `src/firebase-worker.js` delegates to `src/index.js`.
 - Frontend: static HTML/CSS/JS. Shared colors and layout live in `assets/theme.css`, `assets/theme-modes.css`, `assets/layout.css` and `assets/editorial.css`.
 - Email/password uses Firebase Identity Toolkit. Google/GitHub OAuth and six-hour signed sessions use the existing Worker handlers. GitHub login does not grant repository write access.
-- `/` sends anonymous users to `/login` and signed-in users to `/home`. Successful login defaults to `/home`.
+- `/` serves public product HTML/Markdown for anonymous requests; signed-in HTML requests go to `/home`. Successful login still defaults to `/home`. Public discovery and trust resources live in `src/public-resources.js`; private workspace routes retain authentication.
 - `/home`, `/chat`, `/tools`, `/guide`, `/news`, `/exa`, `/keys`, `/docs` and docs fragments require a signed session. `/dev` and `/dev-code-drop` retain the owner Google gate. `/control` still goes to `/dev`.
 - Chat/image/search run server-side. OpenAI is the default chat provider; Claude is optional through the existing `/api/chat` handler. Exa uses `POST /api/exa/search`.
 - D1 binding `DB`, database `agentssdkspace`: chat history and usage quota; keep `migrations/` and account ownership checks. Attachments reach the model; history stores names only.

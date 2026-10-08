@@ -1,3 +1,4 @@
+import { publicResource } from './public-resources.js';
 import { getFeed, SOURCES as FEED_SOURCES } from './feeds.js';
 import { historyEnabled, userKey, listConversations, getConversation, deleteConversation, saveExchange } from './chat-store.js';
 import { takeQuota, quotaHeaders, quotaMessage } from './quota.js';
@@ -579,7 +580,7 @@ function checkRateLimit(request, tool) {
 }
 
 function rateLimitHeaders(result) {
-  return { 'x-lsuperagen-rate-limit': String(result.limit), 'x-lsuperagen-rate-remaining': String(result.remaining), 'x-lsuperagen-rate-reset': new Date(result.resetAt).toISOString(), ...(result.limited ? { 'retry-after': String(result.retryAfter) } : {}) };
+  return { 'ratelimit-limit': String(result.limit), 'ratelimit-remaining': String(result.remaining), 'ratelimit-reset': String(result.retryAfter), 'ratelimit-policy': '10;w=600', 'x-lsuperagen-rate-limit': String(result.limit), 'x-lsuperagen-rate-remaining': String(result.remaining), 'x-lsuperagen-rate-reset': new Date(result.resetAt).toISOString(), ...(result.limited ? { 'retry-after': String(result.retryAfter) } : {}) };
 }
 
 const GITHUB_CHAT_TOOLS = [
@@ -1134,7 +1135,7 @@ const SDK_CORS_HEADERS = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET, POST, OPTIONS',
   'access-control-allow-headers': 'authorization, content-type, accept',
-  'access-control-expose-headers': 'retry-after, x-lsuperagen-rate-limit, x-lsuperagen-rate-remaining, x-lsuperagen-rate-reset',
+  'access-control-expose-headers': 'ratelimit-limit, ratelimit-remaining, ratelimit-reset, ratelimit-policy, retry-after, x-lsuperagen-rate-limit, x-lsuperagen-rate-remaining, x-lsuperagen-rate-reset',
   'access-control-max-age': '600'
 };
 
@@ -1229,9 +1230,9 @@ export default {
     const url = new URL(request.url);
     const pathname = url.pathname.replace(/\/+$/, '') || '/';
 
-    if (pathname === '/' || pathname === '/index.html') {
-      return redirectTo(await currentSession(request, env) ? '/home' : '/login', 302);
-    }
+    if ((pathname === '/' || pathname === '/index.html') && !request.headers.get('accept')?.includes('text/markdown') && await currentSession(request, env)) return redirectTo('/home', 302);
+    const publicResponse = publicResource(request, pathname);
+    if (publicResponse) return publicResponse;
     const legacyPublic = new Set(['/auth-all','/auth-all.html','/examples','/examples.html','/getting-started','/getting-started.html','/api','/api.html','/guides','/guides.html','/changelog','/changelog.html','/workspace','/workspace.html','/provider-connect','/provider-connect.html','/secret-handoff','/secret-handoff.html','/endpoints','/endpoints.html','/system-registry','/system-registry.html']);
     if (legacyPublic.has(pathname)) return redirectTo(await currentSession(request, env) ? '/home' : '/login', 302);
     if (pathname === '/admin' || pathname === '/admin.html') return redirectTo('/dev', 302, { 'x-lsuperagen-admin-gate': 'redirect-to-dev-v1' });
@@ -1315,6 +1316,7 @@ export default {
       return new Response(shell.body, { status: shell.status, headers: htmlHeaders(shell, 'docs-shell-v1') });
     }
 
+    if (pathname.startsWith('/api/')) return json({ ok: false, error: 'not_found', message: 'Unknown API endpoint. See /openapi.json.' }, 404);
     const response = await fetchAsset(request, env, pathname);
     if (!(response.headers.get('content-type') || '').includes('text/html')) return response;
     const html = await response.text();

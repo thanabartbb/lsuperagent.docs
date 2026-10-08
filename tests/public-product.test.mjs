@@ -106,9 +106,9 @@ test('large code input is no longer constrained to the audited 4000 character ce
   assert.ok(Number(match[1]) >= 30000, `message limit is still too small: ${match[1]}`);
 });
 
-test('login is the sole public entry and starts Google OAuth without guest bypass', async () => {
+test('public resources are separate from Google OAuth login without guest chat bypass', async () => {
   const source = await read('src/index.js');
-  assert.match(source, /pathname\s*===\s*['"]\/['"][\s\S]{0,360}\/login/);
+  assert.match(source, /publicResource\(request, pathname\)/);
   const login = visibleHtml(await read('login.html'));
   assert.match(login, /href="\/auth\/google\?return_to=\/home"/);
   assert.equal(/Guest|ทดลองแชท/i.test(login), false, 'login must not offer an unauthenticated bypass');

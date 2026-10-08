@@ -327,41 +327,30 @@ const MCP_STATELESS_VERSION = '2026-07-28';
 const MCP_SERVER_INFO = { name: 'sdkspace', version: '1.0.0' };
 const MCP_CACHE_TTL_MS = 30000;
 const MCP_TOOLS = [
-  {
-    name: 'sdkspace_overview',
-    description: 'อธิบายว่า SDKSPACE คืออะไรและผู้ใช้เริ่มต้นใช้งานอย่างไร',
-    inputSchema: { type: 'object', properties: {}, additionalProperties: false }
-  },
-  {
-    name: 'sdkspace_capabilities',
-    description: 'แสดงความสามารถและเส้นทาง API สาธารณะของ SDKSPACE พร้อมบอกว่าเส้นทางใดต้องลงชื่อเข้าใช้',
-    inputSchema: { type: 'object', properties: {}, additionalProperties: false }
-  },
-  {
-    name: 'sdkspace_connection_check',
-    description: 'ตรวจว่า MCP server ของ SDKSPACE พร้อมตอบสนองและมีเครื่องมือกี่รายการ',
-    inputSchema: { type: 'object', properties: {}, additionalProperties: false }
-  }
+  { name: 'sdkspace_overview', description: 'อธิบายว่า SDKSPACE คืออะไรและผู้ใช้เริ่มต้นใช้งานอย่างไร', inputSchema: { type: 'object', properties: {}, additionalProperties: false } },
+  { name: 'sdkspace_capabilities', description: 'แสดงความสามารถและเส้นทาง API สาธารณะของ SDKSPACE พร้อมบอกว่าเส้นทางใดต้องลงชื่อเข้าใช้', inputSchema: { type: 'object', properties: {}, additionalProperties: false } },
+  { name: 'sdkspace_connection_check', description: 'ตรวจว่า MCP server ของ SDKSPACE พร้อมตอบสนองและมีเครื่องมือกี่รายการ', inputSchema: { type: 'object', properties: {}, additionalProperties: false } }
 ];
 
 function mcpEnvelope(request, result, modern = false) {
-  const headers = new Headers({
-    'content-type': 'application/json; charset=utf-8',
-    'cache-control': modern ? 'public, max-age=30' : 'no-store',
-    'access-control-allow-origin': '*',
-    'access-control-allow-methods': 'POST, OPTIONS',
-    'access-control-allow-headers': 'content-type, accept, mcp-protocol-version, mcp-method, mcp-name',
-    'access-control-max-age': '86400',
-    'x-content-type-options': 'nosniff'
+  const responseResult = modern
+    ? { resultType: 'complete', ...result, _meta: { 'io.modelcontextprotocol/serverInfo': MCP_SERVER_INFO } }
+    : result;
+  return new Response(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: responseResult }), {
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': modern ? 'public, max-age=30' : 'no-store',
+      'access-control-allow-origin': '*',
+      'access-control-allow-methods': 'POST, OPTIONS',
+      'access-control-allow-headers': 'content-type, accept, mcp-protocol-version, mcp-method, mcp-name',
+      'access-control-max-age': '86400',
+      'x-content-type-options': 'nosniff'
+    }
   });
-  const payload = modern
-    ? { jsonrpc: '2.0', id: request.id, result: { resultType: 'complete', ...result }, _meta: { 'io.modelcontextprotocol/serverInfo': MCP_SERVER_INFO } }
-    : { jsonrpc: '2.0', id: request.id, result };
-  return new Response(JSON.stringify(payload), { headers });
 }
 
-function mcpError(id, code, message, status = 200) {
-  return new Response(JSON.stringify({ jsonrpc: '2.0', id: id ?? null, error: { code, message } }), {
+function mcpError(id, code, message, status = 200, data) {
+  return new Response(JSON.stringify({ jsonrpc: '2.0', id: id ?? null, error: { code, message, ...(data ? { data } : {}) } }), {
     status,
     headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'access-control-allow-origin': '*', 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type, accept, mcp-protocol-version, mcp-method, mcp-name', 'x-content-type-options': 'nosniff' }
   });
@@ -395,36 +384,24 @@ function mcpToolPayload(name) {
     };
   }
   if (name === 'sdkspace_connection_check') {
-    return {
-      ok: true,
-      server: MCP_SERVER_INFO.name,
-      protocols: [MCP_STATELESS_VERSION, MCP_PROTOCOL_VERSION],
-      tools_available: MCP_TOOLS.length,
-      checked_at: new Date().toISOString()
-    };
+    return { ok: true, server: MCP_SERVER_INFO.name, protocols: [MCP_STATELESS_VERSION, MCP_PROTOCOL_VERSION], tools_available: MCP_TOOLS.length, checked_at: new Date().toISOString() };
   }
   return null;
 }
 
 async function handleMcp(request) {
-  if (request.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'access-control-allow-origin': '*',
-        'access-control-allow-methods': 'POST, OPTIONS',
-        'access-control-allow-headers': 'content-type, accept, mcp-protocol-version, mcp-method, mcp-name',
-        'access-control-max-age': '86400',
-        'cache-control': 'no-store'
-      }
-    });
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: {
+    'access-control-allow-origin': '*', 'access-control-allow-methods': 'POST, OPTIONS',
+    'access-control-allow-headers': 'content-type, accept, mcp-protocol-version, mcp-method, mcp-name',
+    'access-control-max-age': '86400', 'cache-control': 'no-store'
+  } });
+  const origin = request.headers.get('origin');
+  if (origin) {
+    const allowedOrigins = new Set([new URL(request.url).origin, 'https://agents-sdk.space', 'https://agent-starter.thanabartb.workers.dev']);
+    if (!allowedOrigins.has(origin)) return new Response(null, { status: 403, headers: { 'cache-control': 'no-store' } });
   }
-  if (request.method !== 'POST') {
-    return new Response(null, { status: 405, headers: { allow: 'POST, OPTIONS', 'cache-control': 'no-store' } });
-  }
-  if (!/^application\/json(?:\s*;|\s*$)/i.test(request.headers.get('content-type') || '')) {
-    return mcpError(null, -32700, 'Content-Type must be application/json', 415);
-  }
+  if (request.method !== 'POST') return new Response(null, { status: 405, headers: { allow: 'POST, OPTIONS', 'cache-control': 'no-store' } });
+  if (!/^application\/json(?:\s*;|\s*$)/i.test(request.headers.get('content-type') || '')) return mcpError(null, -32700, 'Content-Type must be application/json', 415);
   const length = Number(request.headers.get('content-length') || 0);
   if (length > 65536) return mcpError(null, -32600, 'Request body is too large', 413);
 
@@ -433,27 +410,37 @@ async function handleMcp(request) {
     const body = await request.text();
     if (new TextEncoder().encode(body).byteLength > 65536) return mcpError(null, -32600, 'Request body is too large', 413);
     payload = JSON.parse(body);
-  } catch (_) {
-    return mcpError(null, -32700, 'Parse error');
-  }
-  if (!payload || Array.isArray(payload) || payload.jsonrpc !== '2.0' || typeof payload.method !== 'string') {
-    return mcpError(payload?.id, -32600, 'Invalid JSON-RPC request');
-  }
+  } catch (_) { return mcpError(null, -32700, 'Parse error'); }
+  if (!payload || Array.isArray(payload) || payload.jsonrpc !== '2.0' || typeof payload.method !== 'string') return mcpError(payload?.id, -32600, 'Invalid JSON-RPC request');
 
-  const modern = request.headers.get('mcp-protocol-version') === MCP_STATELESS_VERSION;
+  const meta = payload.params?._meta;
+  const headerVersion = request.headers.get('mcp-protocol-version');
+  const modern = headerVersion === MCP_STATELESS_VERSION;
   if (modern) {
-    const methodHeader = request.headers.get('mcp-method');
-    const nameHeader = request.headers.get('mcp-name');
-    if (methodHeader !== payload.method) return mcpError(payload.id, -32600, 'Mcp-Method must match the JSON-RPC method', 400);
-    if (nameHeader !== null && payload.method === 'tools/call' && nameHeader !== payload.params?.name) {
-      return mcpError(payload.id, -32600, 'Mcp-Name must match the tool name', 400);
+    if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return mcpError(payload.id, -32602, 'Required MCP request metadata is missing', 400);
+    if (meta['io.modelcontextprotocol/protocolVersion'] !== MCP_STATELESS_VERSION ||
+        !meta['io.modelcontextprotocol/clientCapabilities'] ||
+        typeof meta['io.modelcontextprotocol/clientCapabilities'] !== 'object' ||
+        Array.isArray(meta['io.modelcontextprotocol/clientCapabilities'])) {
+      return mcpError(payload.id, -32602, 'Required MCP request metadata is invalid', 400);
     }
+    if (request.headers.get('mcp-method') !== payload.method ||
+        headerVersion !== meta['io.modelcontextprotocol/protocolVersion']) {
+      return mcpError(payload.id, -32020, 'MCP request headers do not match the JSON-RPC body', 400);
+    }
+    const name = payload.params?.name;
+    const nameHeader = request.headers.get('mcp-name');
+    if (payload.method === 'tools/call' && nameHeader !== name) return mcpError(payload.id, -32020, 'Mcp-Name must match params.name', 400);
+    if (payload.method !== 'tools/call' && nameHeader !== null) return mcpError(payload.id, -32020, 'Unexpected Mcp-Name header', 400);
   }
 
-  if (payload.method.startsWith('notifications/')) return new Response(null, { status: 202, headers: { 'cache-control': 'no-store', 'access-control-allow-origin': '*' } });
+  if (payload.method.startsWith('notifications/')) {
+    if (modern) return mcpError(payload.id, -32601, 'Notifications are not supported by the stateless endpoint', 404);
+    return new Response(null, { status: 202, headers: { 'cache-control': 'no-store', 'access-control-allow-origin': '*' } });
+  }
   if (!Object.prototype.hasOwnProperty.call(payload, 'id')) return mcpError(null, -32600, 'Requests must include an id');
 
-  if (payload.method === 'initialize') {
+  if (payload.method === 'initialize' && !modern) {
     const requested = payload.params?.protocolVersion;
     const version = requested === '2025-06-18' ? '2025-06-18' : MCP_PROTOCOL_VERSION;
     return mcpEnvelope(payload, {
@@ -463,11 +450,10 @@ async function handleMcp(request) {
       instructions: 'SDKSPACE MCP provides public, read-only information about the SDKSPACE product and API capabilities.'
     });
   }
-  if (payload.method === 'ping') return mcpEnvelope(payload, {});
-  if (payload.method === 'server/discover') {
+  if (payload.method === 'server/discover' && modern) {
     return mcpEnvelope(payload, {
       supportedVersions: [MCP_STATELESS_VERSION],
-      capabilities: { tools: { listChanged: false } },
+      capabilities: { tools: {} },
       instructions: 'SDKSPACE MCP provides public, read-only information about the SDKSPACE product and API capabilities.',
       ttlMs: MCP_CACHE_TTL_MS,
       cacheScope: 'public'
@@ -476,30 +462,18 @@ async function handleMcp(request) {
   if (payload.method === 'tools/list') {
     const cursor = payload.params?.cursor;
     if (cursor) return mcpEnvelope(payload, modern ? { tools: [], nextCursor: null, ttlMs: MCP_CACHE_TTL_MS, cacheScope: 'public' } : { tools: [] }, modern);
-    return mcpEnvelope(payload, modern
-      ? { tools: MCP_TOOLS, ttlMs: MCP_CACHE_TTL_MS, cacheScope: 'public' }
-      : { tools: MCP_TOOLS }, modern);
+    return mcpEnvelope(payload, modern ? { tools: MCP_TOOLS, ttlMs: MCP_CACHE_TTL_MS, cacheScope: 'public' } : { tools: MCP_TOOLS }, modern);
   }
   if (payload.method === 'tools/call') {
     const result = mcpToolPayload(payload.params?.name);
-    if (!result) return mcpEnvelope(payload, {
-      content: [{ type: 'text', text: 'Unknown tool: ' + String(payload.params?.name || '') }],
-      isError: true,
-      ...(modern ? { ttlMs: MCP_CACHE_TTL_MS, cacheScope: 'public' } : {})
-    }, modern);
-    const toolResult = {
-      content: [{ type: 'text', text: JSON.stringify(result) }],
-      ...(modern ? { resultType: 'complete', ttlMs: MCP_CACHE_TTL_MS, cacheScope: 'public' } : {})
-    };
-    if (modern) return new Response(JSON.stringify({
-      jsonrpc: '2.0',
-      id: payload.id,
-      result: { resultType: 'complete', ...toolResult },
-      _meta: { 'io.modelcontextprotocol/serverInfo': MCP_SERVER_INFO }
-    }), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=30', 'access-control-allow-origin': '*', 'x-content-type-options': 'nosniff' } });
-    return mcpEnvelope(payload, toolResult);
+    if (!result) return mcpEnvelope(payload, modern
+      ? { content: [{ type: 'text', text: 'Unknown tool: ' + String(payload.params?.name || '') }], isError: true, ttlMs: MCP_CACHE_TTL_MS, cacheScope: 'public' }
+      : { content: [{ type: 'text', text: 'Unknown tool: ' + String(payload.params?.name || '') }], isError: true }, modern);
+    return mcpEnvelope(payload, modern
+      ? { content: [{ type: 'text', text: JSON.stringify(result) }], ttlMs: MCP_CACHE_TTL_MS, cacheScope: 'public' }
+      : { content: [{ type: 'text', text: JSON.stringify(result) }] }, modern);
   }
-  return mcpError(payload.id, -32601, 'Method not found: ' + payload.method);
+  return mcpError(payload.id, -32601, 'Method not found: ' + payload.method, 404);
 }
 
 function adminAllowlist(env) { return splitEnvList(env.ADMIN_ALLOWED_LOGINS); }

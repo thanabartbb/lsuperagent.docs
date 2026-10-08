@@ -73,6 +73,12 @@ test('MCP endpoint is read-only, handles preflight, and rejects invalid requests
   assert.equal(options.status, 204);
   assert.equal(options.headers.get('access-control-allow-origin'), '*');
 
+  const rejectedOrigin = await worker.fetch(mcpRequest(
+    { jsonrpc: '2.0', id: 1, method: 'tools/list' },
+    { origin: 'https://untrusted.example' }
+  ), {});
+  assert.equal(rejectedOrigin.status, 403);
+
   const get = await worker.fetch(new Request(BASE + '/mcp'), {});
   assert.equal(get.status, 405);
   assert.equal(get.headers.get('allow'), 'POST, OPTIONS');

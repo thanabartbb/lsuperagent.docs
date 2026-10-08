@@ -38,33 +38,34 @@ test('legacy MCP clients initialize, list public tools, and call a tool', async 
 
 test('stateless MCP discovery and tool calls include the required envelope', async () => {
   const discover = await worker.fetch(mcpRequest(
-    { jsonrpc: '2.0', id: 'discover', method: 'server/discover' },
-    { 'mcp-protocol-version': '2026-07-28', 'mcp-method': 'server/discover', 'mcp-name': '' }
+    { jsonrpc: '2.0', id: 'discover', method: 'server/discover', params: { _meta: { 'io.modelcontextprotocol/protocolVersion': '2026-07-28', 'io.modelcontextprotocol/clientInfo': { name: 'test', version: '1' }, 'io.modelcontextprotocol/clientCapabilities': {} } } },
+    { 'mcp-protocol-version': '2026-07-28', 'mcp-method': 'server/discover' }
   ), {});
   assert.equal(discover.status, 200);
   const discovery = await discover.json();
   assert.equal(discovery.result.resultType, 'complete');
   assert.ok(discovery.result.supportedVersions.includes('2026-07-28'));
   assert.equal(discovery.result.cacheScope, 'public');
-  assert.equal(discovery._meta['io.modelcontextprotocol/serverInfo'].name, 'sdkspace');
+  assert.equal(discovery.result._meta['io.modelcontextprotocol/serverInfo'].name, 'sdkspace');
 
   const list = await worker.fetch(mcpRequest(
-    { jsonrpc: '2.0', id: 'list', method: 'tools/list' },
-    { 'mcp-protocol-version': '2026-07-28', 'mcp-method': 'tools/list', 'mcp-name': '' }
+    { jsonrpc: '2.0', id: 'list', method: 'tools/list', params: { _meta: { 'io.modelcontextprotocol/protocolVersion': '2026-07-28', 'io.modelcontextprotocol/clientCapabilities': {} } } },
+    { 'mcp-protocol-version': '2026-07-28', 'mcp-method': 'tools/list' }
   ), {});
   const tools = await list.json();
   assert.equal(tools.result.resultType, 'complete');
   assert.equal(tools.result.tools.length, 3);
   assert.equal(tools.result.cacheScope, 'public');
+  assert.equal(tools.result._meta['io.modelcontextprotocol/serverInfo'].name, 'sdkspace');
 
   const call = await worker.fetch(mcpRequest(
-    { jsonrpc: '2.0', id: 'call', method: 'tools/call', params: { name: 'sdkspace_overview', arguments: {} } },
+    { jsonrpc: '2.0', id: 'call', method: 'tools/call', params: { name: 'sdkspace_overview', arguments: {}, _meta: { 'io.modelcontextprotocol/protocolVersion': '2026-07-28', 'io.modelcontextprotocol/clientCapabilities': {} } } },
     { 'mcp-protocol-version': '2026-07-28', 'mcp-method': 'tools/call', 'mcp-name': 'sdkspace_overview' }
   ), {});
   const result = await call.json();
   assert.equal(result.result.resultType, 'complete');
   assert.match(result.result.content[0].text, /SDKSPACE/);
-  assert.equal(result._meta['io.modelcontextprotocol/serverInfo'].name, 'sdkspace');
+  assert.equal(result.result._meta['io.modelcontextprotocol/serverInfo'].name, 'sdkspace');
 });
 
 test('MCP endpoint is read-only, handles preflight, and rejects invalid requests', async () => {
@@ -77,8 +78,15 @@ test('MCP endpoint is read-only, handles preflight, and rejects invalid requests
   assert.equal(get.headers.get('allow'), 'POST, OPTIONS');
 
   const mismatch = await worker.fetch(mcpRequest(
-    { jsonrpc: '2.0', id: 1, method: 'tools/list' },
+    { jsonrpc: '2.0', id: 1, method: 'tools/list', params: { _meta: { 'io.modelcontextprotocol/protocolVersion': '2026-07-28', 'io.modelcontextprotocol/clientCapabilities': {} } } },
     { 'mcp-protocol-version': '2026-07-28', 'mcp-method': 'tools/call' }
   ), {});
   assert.equal(mismatch.status, 400);
+  assert.equal((await mismatch.json()).error.code, -32020);
+
+  const modernInitialize = await worker.fetch(mcpRequest(
+    { jsonrpc: '2.0', id: 'init', method: 'initialize', params: { _meta: { 'io.modelcontextprotocol/protocolVersion': '2026-07-28', 'io.modelcontextprotocol/clientCapabilities': {} } } },
+    { 'mcp-protocol-version': '2026-07-28', 'mcp-method': 'initialize' }
+  ), {});
+  assert.equal(modernInitialize.status, 404);
 });

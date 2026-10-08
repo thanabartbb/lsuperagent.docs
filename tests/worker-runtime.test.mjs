@@ -212,10 +212,10 @@ test('large code input accepts substantially more than the old 4k limit', async 
   });
 });
 
-test('root opens the login entry when no session exists', async () => {
+test('root publishes product information when no session exists', async () => {
   const response = await worker.fetch(new Request('https://agents-sdk.space/'), {});
-  assert.equal(response.status, 302);
-  assert.equal(new URL(response.headers.get('location'), 'https://agents-sdk.space').pathname, '/login');
+  assert.equal(response.status, 200);
+  assert.match(await response.text(), /SDKSPACE — AI workspace/);
 });
 
 test('login keeps the clean /login path for Cloudflare HTML handling', async () => {

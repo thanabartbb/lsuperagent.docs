@@ -4,7 +4,8 @@ export function adaptAgentHtml(html) {
   return html.replaceAll('="/assets/', '="/agent-ui/assets/')
     .replace('<title>Agent Starter</title>', '<title>Agent Chat · SDKSPACE</title>')
     .replace('href="/favicon.ico"', 'href="/assets/sdkspace-logo.svg"')
-    .replace('localStorage.getItem("theme") || "light"', 'localStorage.getItem("theme") || "dark"');
+    .replace('localStorage.getItem("theme") || "light"', 'localStorage.getItem("theme") || "dark"')
+    .replace('</head>', `<style id="sdkspace-chat-viewport">\n:root{color-scheme:dark}html,body{width:100%;height:100%;min-height:100%;margin:0!important;overflow:hidden}body{height:100dvh;min-height:100dvh}#root{display:flex;width:100%;height:100%;min-height:0;flex:1 1 auto;flex-direction:column}#root>*{width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;flex:1 1 auto;margin:0!important;border-radius:0!important}\n</style></head>`);
 }
 export function adaptAgentScript(script, instance) {
   const seam = 'agent:`ChatAgent`,onOpen:';

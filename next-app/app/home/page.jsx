@@ -46,7 +46,7 @@ export default function HomePage() {
             <p className="home-lede">Chat, create images and connect your application through the SDK. Start with the guide, then test a real request.</p>
 
             <div className="home-cta">
-              <a className="home-primary" href="/chat">Open Chat <Arrow /></a>
+              <button className="home-primary" type="button" disabled>Coming Soon</button>
               <a className="home-play" href="/guide" aria-label="Open Playground">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8z" /></svg>
               </a>
@@ -85,13 +85,13 @@ export default function HomePage() {
           </section>
 
           <section className="home-grid" aria-label="SDKSPACE benefits">
-            <article className="home-mini">
+            <a className="home-mini" href="/chat" aria-label="Build Faster — Open Agent Chat">
               <div className="home-mini-icon">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h6l-1 8 9-12h-6z" /></svg>
               </div>
               <div className="home-mini-title">Build Faster</div>
-              <div className="home-mini-desc">Start with a real API request, then build the workflow you need.</div>
-            </article>
+              <div className="home-mini-desc">Open Agent Chat to build and test your workflow.</div>
+            </a>
 
             <a className="home-mini" href="/docs">
               <div className="home-mini-icon">

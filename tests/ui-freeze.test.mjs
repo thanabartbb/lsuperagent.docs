@@ -31,6 +31,22 @@ test('UI freeze rejects replacement, removal and rename of existing pages', () =
     { status: 'A', file: 'login-new.html' }]).length, 1);
 });
 
+test('backend router edits cannot delete lines or add unrelated middleware', () => {
+  assert.equal(evaluateDiff([{ status: 'M', file: 'src/index.js' }], [
+    { status: '-', line: "if (pathname === '/api/chat') return handleChat(request, env);" }
+  ]).length, 1);
+  assert.equal(evaluateDiff([{ status: 'M', file: 'src/index.js' }], [
+    { status: '+', line: "if (pathname === '/') return redirectTo('/loading');" }
+  ]).length, 1);
+  assert.equal(evaluateDiff([{ status: 'M', file: 'src/index.js' }], [
+    { status: '+', line: "if (pathname.startsWith('/api/')) return newUi(request);" }
+  ]).length, 1);
+  assert.deepEqual(evaluateDiff([{ status: 'M', file: 'src/index.js' }], [
+    { status: '+', line: "import { handleSandboxApi } from './openai-agent-sessions.js';" },
+    { status: '+', line: "if (pathname === '/api/sandbox/sessions') return handleSandboxApi(request, env);" }
+  ]), []);
+});
+
 test('UI freeze rejects edits to existing UI routing, even in backend file', () => {
   for (const line of [
     "if (pathname === '/chat') return handleAgentUI(request, env, pathname);",

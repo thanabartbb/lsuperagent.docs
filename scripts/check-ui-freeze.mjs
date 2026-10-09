@@ -26,17 +26,28 @@ export function isProtectedUIRouterChange(line) {
   return uiRoutes.test(line) || uiHandlers.test(line);
 }
 
+export function isSafeBackendRouterAddition(line) {
+  const trimmed = line.trim();
+  if (!trimmed || trimmed.startsWith('//')) return true;
+  // Router changes may ONLY import a backend module or add a fresh /api/ route.
+  // Complex logic belongs in new modules, keeping existing routes untouched.
+  if (/^import\s+(?:\{[^}]+\}|[A-Za-z_$][\w$]*)\s+from\s+['"]\.\/[A-Za-z0-9._/-]+\.m?js['"];?$/.test(trimmed)) return true;
+  return /^if\s*\(\s*pathname\s*(?:===\s*['"]\/api\/[a-z0-9/_-]+['"]|\.startsWith\(['"]\/api\/[a-z0-9/_-]+['"]\))\s*\)\s*return\s+/.test(trimmed);
+}
+
 export function evaluateDiff(changed, routerLines = []) {
   const violations = [];
   for (const { status, file } of changed) {
-    // New pages may be added, but no tracked UI file can be removed, renamed
-    // or modified, even via CSS-only changes.
+    // Adding new pages is permitted; already-tracked UI must remain unchanged.
     if (status !== 'A' && isProtectedExistingUIPath(file)) {
       violations.push('Existing UI is locked: ' + status + ' ' + file);
     }
   }
-  for (const line of routerLines) {
-    if (isProtectedUIRouterChange(line)) violations.push('Existing UI route/adapter changed: ' + line.slice(0, 200));
+  for (const change of routerLines) {
+    const { status, line } = typeof change === 'string' ? { status: '+', line: change } : change;
+    if (status === '-' || isProtectedUIRouterChange(line) || !isSafeBackendRouterAddition(line)) {
+      violations.push('Router restricted to additive backend API routes: ' + status + ' ' + line.slice(0, 200));
+    }
   }
   return violations;
 }
@@ -61,7 +72,7 @@ function changedRouterLines(base, head) {
   return patch.split('\n')
     .filter(line => (line.startsWith('+') && !line.startsWith('+++'))
                  || (line.startsWith('-') && !line.startsWith('---')))
-    .map(line => line.slice(1));
+    .map(line => ({ status: line[0], line: line.slice(1) }));
 }
 
 const invoked = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);

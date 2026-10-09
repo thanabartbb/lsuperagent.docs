@@ -1,0 +1,33 @@
+/* Docs uses the /loading reference: black canvas, muted blue, rounded cards. */
+.sdk-docs{background:#000;color:#e6e6e6}
+.sdk-docs .topbar{background:#050505;border-bottom:1px solid #1c1c1c;height:76px;--top:76px}
+.sdk-docs .brand{gap:8px;font-size:20px;font-weight:800;letter-spacing:.2px}
+.sdk-docs .brand img{width:24px;height:24px}
+.sdk-docs .brand .space{color:#5a7ea0}
+.sdk-docs .docs-home-link{font-size:13px;border:1px solid #2c4356;border-radius:999px;padding:9px 14px;margin-right:8px;color:#e6e6e6}
+.sdk-docs .sidebar,.sdk-docs .toc{top:76px;height:calc(100dvh - 76px)}
+.sdk-docs .content{max-width:100%;min-width:0}
+.sdk-docs .content>h1{font-size:clamp(30px,5vw,48px);line-height:1.18;color:#f0f0f0}
+.sdk-docs .content>h1 .line2{color:#5a7ea0}
+.sdk-docs .card,.sdk-docs .callout,.sdk-docs .pager a{background:#0a0a0a;border-color:#232323;border-radius:20px}
+.sdk-docs .card:hover,.sdk-docs .pager a:hover{border-color:#4a7291}
+.sdk-docs .sdkspace-intro{display:block;background:transparent;padding:0}
+.sdk-docs .sdkspace-intro .phone{max-width:none;border:0;border-radius:0;background:transparent}
+.sdk-docs .sdkspace-intro .sdkspace-content{padding:20px 0 24px}
+.sdk-docs .sdkspace-intro .hero{padding-bottom:30px}
+.sdk-docs .sdkspace-intro .lede{max-width:480px;color:#a3aab3;line-height:1.7}
+.sdk-docs .sdkspace-intro .sdkspace-title{border:0;margin:0;padding:0;font-size:clamp(30px,5vw,44px)}
+.sdk-docs .sdkspace-intro .lib-desc,.sdk-docs .sdkspace-intro .mini-desc{color:#a3aab3}
+.sdk-docs .sdkspace-intro .mini-card{min-width:0}
+.sdk-docs .sdkspace-intro a.btn-primary{color:#eef2f5}
+.sdk-docs .sdkspace-intro a.btn-ghost{color:#dcdcdc}
+.sdk-docs .sdkspace-intro .top-strip{display:none}
+.sdk-docs .sdkspace-intro .dome-glow{opacity:.35}
+@media(max-width:860px){
+ .sdk-docs .topbar{padding:0 20px}
+ .sdk-docs .content{padding:28px 20px 64px}
+ .sdk-docs .sidebar{inset:76px 0 0;height:auto}
+ .sdk-docs .sdkspace-intro .sdkspace-content{padding-top:12px}
+ .sdk-docs .docs-home-link{display:none}
+}
+@media(prefers-reduced-motion:reduce){.sdkspace-intro *{animation:none!important;transition:none!important}}

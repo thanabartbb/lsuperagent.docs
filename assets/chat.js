@@ -731,6 +731,7 @@
                 && Date.now() - saved.savedAt < AUTH_DRAFT_TTL_MS) {
               mode = supportedModes.includes(saved.mode) ? saved.mode : 'chat';
               updateModeUI();
+              if (availableProviders.length) syncProviderOptions(model.value);
               input.value = saved.text;
               input.dispatchEvent(new Event('input'));
               $('hint').textContent = 'เข้าสู่ระบบแล้ว กดส่งข้อความอีกครั้ง';

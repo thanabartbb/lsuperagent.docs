@@ -32,19 +32,14 @@ modeButton?.addEventListener('click', () => {
     const response = await fetch('/api/auth/session', { cache: 'no-store' });
     if (!response.ok) throw new Error('session_unavailable');
     const data = await response.json();
-    if (!data.authenticated && document.body.dataset.sdkspacePage === 'home') {
-      location.replace('/login?return_to=/home');
-      return;
-    }
+    // Browsing the existing home is public; private APIs still require an account.
+    if (!data.authenticated) return;
     document.querySelector('[data-signout]').hidden = !data.authenticated;
     if (data.authenticated && document.body.dataset.sdkspacePage === 'home') {
       who.hidden = false;
       who.textContent = data.user?.email || data.user?.login || 'Signed in';
     }
   } catch {
-    if (document.body.dataset.sdkspacePage === 'home') {
-      who.hidden = false;
-      who.textContent = 'ตรวจสอบบัญชีไม่สำเร็จ กรุณาลองโหลดหน้าใหม่';
-    }
+    // Network errors must not prevent visitors from browsing home.
   }
 })();

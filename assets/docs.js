@@ -99,7 +99,7 @@ async function show(slug, { push = false, hash = '' } = {}) {
   renderSidebar(slug);
   setMenu(false);
   if (!page) {
-    document.title = 'ไม่พบหน้า · LSUPERAGENT Docs';
+    document.title = 'ไม่พบหน้า · SDKSPACE Docs';
     content.innerHTML = `<h1>ไม่พบหน้านี้</h1><p class="lead">ไม่มีเอกสาร <code>${slug}</code> ลองเลือกจากเมนู หรือกลับไปที่ <a href="/docs/introduction">การแนะนำ</a></p>`;
     toc.innerHTML = '';
     return;
@@ -114,7 +114,7 @@ async function show(slug, { push = false, hash = '' } = {}) {
   } else {
     content.innerHTML = '<h1>โหลดเอกสารไม่สำเร็จ</h1><p class="lead">กรุณาลองโหลดหน้าใหม่อีกครั้ง</p>';
   }
-  document.title = `${page.title} · LSUPERAGENT Docs`;
+  document.title = `${page.title} · SDKSPACE Docs`;
   enhance();
   renderPager(slug);
   if (hash) document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView();

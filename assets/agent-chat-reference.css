@@ -1,0 +1,148 @@
+/* Visual-only SDKSPACE mobile chat shell for the existing Agent Starter React app.
+   Deliberately scoped; no edits to websocket, useAgentChat, history or upload logic. */
+html.sdkspace-agent-reference { color-scheme: dark; background: #111 !important; }
+html.sdkspace-agent-reference body { margin: 0; background: #111 !important; color: #f5f5f5; overflow: hidden; }
+html.sdkspace-agent-reference #root > div { background: #111 !important; height: 100dvh !important; min-height: 0 !important; }
+html.sdkspace-agent-reference #root > div > header {
+  position: relative; z-index: 10; min-height: 58px;
+  padding: 10px 14px 10px 64px !important; background: #121212 !important;
+  border-color: #202020 !important; color: #f7f7f7;
+}
+html.sdkspace-agent-reference #root > div > header > div {
+  width: 100%; max-width: none !important; gap: 14px;
+}
+html.sdkspace-agent-reference #root > div > header h1 {
+  font-size: 0 !important; letter-spacing: -.02em; color: #f4f4f4 !important;
+}
+html.sdkspace-agent-reference #root > div > header h1 > span { display: none !important; }
+html.sdkspace-agent-reference #root > div > header h1::after { content: "SDKSPACE"; font-size: 15px !important; }
+html.sdkspace-agent-reference #root > div > header button { border-color: #242424 !important; }
+html.sdkspace-agent-reference #root > div > .flex-1.overflow-y-auto {
+  background: #111 !important; scrollbar-width: thin; scrollbar-color: #393939 transparent;
+  overscroll-behavior: contain;
+}
+html.sdkspace-agent-reference #root > div > .flex-1.overflow-y-auto > div {
+  width: 100%; max-width: 920px !important; margin-inline: auto;
+  padding: 24px 18px 28px !important; min-height: 0;
+}
+html.sdkspace-agent-reference #root > div > .flex-1.overflow-y-auto > div.sdkspace-empty-view {
+  min-height: 100%; display: flex !important; flex-direction: column;
+  justify-content: center; align-items: center;
+}
+html.sdkspace-agent-reference [data-sdkspace-empty-heading] {
+  font-size: clamp(24px, 5.5vw, 36px) !important; font-weight: 650 !important;
+  text-align: center; letter-spacing: -.035em; color: #f8f8f8 !important;
+}
+html.sdkspace-agent-reference .sdkspace-empty-view button {
+  background: #171717 !important; color: #a8a8a8 !important;
+  border: 1px solid #242424 !important; border-radius: 18px !important;
+  padding: 10px 14px !important; font-size: 13px !important;
+  white-space: normal; text-align: left;
+}
+html.sdkspace-agent-reference .sdkspace-empty-view button:hover {
+  color: #f5f5f5 !important; border-color: #444 !important;
+}
+html.sdkspace-agent-reference #root > div > div.border-t {
+  position: relative; z-index: 8; border: 0 !important;
+  background: #111 !important;
+  padding: 0 12px calc(12px + env(safe-area-inset-bottom)) !important;
+}
+html.sdkspace-agent-reference #root > div > div.border-t > form {
+  max-width: 920px !important; margin: 0 auto;
+  padding: 0 !important; position: relative;
+}
+html.sdkspace-agent-reference #root > div > div.border-t > form > div:has(> textarea),
+html.sdkspace-agent-reference #root > div > div.border-t > form > div:has(textarea) {
+  display: grid !important; grid-template-columns: 42px minmax(0, 1fr) 42px;
+  grid-template-rows: minmax(65px, auto) 36px; align-items: end !important;
+  gap: 4px 7px !important; min-height: 144px; width: 100%;
+  padding: 16px 14px 11px !important; margin: 0 !important;
+  background: #181818 !important; border: 1px solid #262626 !important;
+  border-radius: 23px !important; box-shadow: 0 8px 38px #0005 !important;
+}
+html.sdkspace-agent-reference #root > div > div.border-t textarea {
+  grid-column: 1 / -1; grid-row: 1; width: 100%; max-height: 170px;
+  min-height: 60px; align-self: start; background: transparent !important;
+  color: #f5f5f5 !important; font-size: 16px !important; line-height: 1.5 !important;
+  border: 0 !important; padding: 2px 4px !important; outline: none !important;
+  box-shadow: none !important; resize: none !important;
+}
+html.sdkspace-agent-reference #root > div > div.border-t textarea::placeholder { color: #777 !important; }
+html.sdkspace-agent-reference #root > div > div.border-t button[aria-label="Attach images"] {
+  grid-column: 1; grid-row: 2; align-self: center; justify-self: start;
+  background: #191919 !important; border-radius: 13px; color: #aaa;
+}
+html.sdkspace-agent-reference #root > div > div.border-t button[aria-label="Send message"],
+html.sdkspace-agent-reference #root > div > div.border-t button[aria-label="Stop generation"] {
+  grid-column: 3; grid-row: 2; justify-self: end; align-self: center;
+  background: #292929 !important; border-radius: 100%; color: white !important;
+}
+html.sdkspace-agent-reference #root > div > div.border-t > div.flex.justify-center { display: none !important; }
+#sdkspace-agent-ui-extras { position: fixed; z-index: 30; inset: 0; pointer-events: none; font: 14px/1.4 system-ui,sans-serif; }
+#sdkspace-agent-ui-extras button { cursor: pointer; font: inherit; }
+#sdkspace-agent-ui-extras button:focus-visible, #sdkspace-agent-ui-extras a:focus-visible {
+  outline: 2px solid #70b4ff; outline-offset: 3px;
+}
+#sdkspace-agent-menu-trigger {
+  position: absolute; top: 9px; left: 12px; height: 42px; width: 42px;
+  pointer-events: auto; border: 1px solid #252525;
+  background: #151515; color: #fafafa; border-radius: 12px;
+  display: grid; place-items: center;
+}
+#sdkspace-agent-menu-trigger svg { width: 21px; height: 21px; }
+#sdkspace-agent-current-model {
+  position: absolute; bottom: calc(26px + env(safe-area-inset-bottom));
+  left: max(95px, calc((100vw - 920px) / 2 + 94px));
+  padding: 5px 10px !important; border: 1px solid #242424;
+  background: #1b1b1b; color: #cacaca; border-radius: 20px;
+  pointer-events: auto; max-width: min(240px, 55vw);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#sdkspace-agent-model-panel {
+  position: absolute; bottom: calc(69px + env(safe-area-inset-bottom));
+  left: max(86px, calc((100vw - 920px) / 2 + 85px));
+  pointer-events: auto; width: min(340px, calc(100vw - 106px)); padding: 16px;
+  background: #1d1d1d; color: #f2f2f2; border: 1px solid #303030;
+  border-radius: 19px; box-shadow: 0 20px 50px #0009;
+}
+#sdkspace-agent-model-panel[hidden], #sdkspace-agent-history[hidden] { display: none !important; }
+#sdkspace-agent-model-panel strong { display: block; margin-bottom: 8px; }
+#sdkspace-agent-model-panel p { color: #a9a9a9; font-size: 12px; margin: 9px 0 0; }
+#sdkspace-agent-model-panel .sdkspace-model-active {
+  display: block; padding: 12px; border-radius: 12px; background: #111;
+  color: #fff; border: 1px solid #313131;
+}
+#sdkspace-agent-history { position: absolute; inset: 0; pointer-events: auto; display: flex; }
+#sdkspace-agent-history-backdrop { position: absolute; inset: 0; background: #0009; border: 0; width: 100%; height: 100%; }
+#sdkspace-agent-history aside {
+  position: relative; z-index: 1; width: min(340px, 90vw);
+  height: 100%; background: #161616; color: #eee; display: flex;
+  flex-direction: column; gap: 8px; padding: 24px 16px calc(20px + env(safe-area-inset-bottom));
+  box-shadow: 18px 0 60px #0007; overflow-y: auto;
+}
+#sdkspace-agent-history h2 { font-size: 17px; margin: 0 0 18px; font-weight: 650; }
+#sdkspace-agent-history aside > button, #sdkspace-agent-history aside > a {
+  display: flex; min-height: 47px; align-items: center; text-align: left;
+  color: #e9e9e9; text-decoration: none; padding: 12px;
+  border: 1px solid transparent; border-radius: 13px; background: none;
+}
+#sdkspace-agent-history aside > button:hover, #sdkspace-agent-history aside > a:hover {
+  border-color: #333; background: #202020;
+}
+#sdkspace-agent-history .sdkspace-history-label { color: #8d8d8d; font-size: 12px; padding: 24px 12px 8px; }
+#sdkspace-agent-history .sdkspace-history-note { color: #aaa; font-size: 12px; line-height: 1.55; padding: 0 12px; margin: 0; }
+#sdkspace-agent-history .sdkspace-account { margin-top: auto; border-top: 1px solid #303030; padding: 16px 10px 0; overflow-wrap: anywhere; font-size: 13px; }
+@media(max-width: 640px) {
+  html.sdkspace-agent-reference #root > div > header { min-height: 58px; padding: 10px 9px 10px 60px !important; }
+  html.sdkspace-agent-reference #root > div > header > div { min-width: 0; }
+  html.sdkspace-agent-reference #root > div > header > div > div:first-child { min-width: 0; }
+  html.sdkspace-agent-reference #root > div > header > div > div:last-child { gap: 4px !important; overflow-x: auto; max-width: 50%; }
+  html.sdkspace-agent-reference #root > div > header h1 { white-space: nowrap; }
+  html.sdkspace-agent-reference #root > div > header h1::after { font-size: 13px !important; }
+  html.sdkspace-agent-reference #root > div > .flex-1.overflow-y-auto > div { padding: 14px 14px 22px !important; }
+  html.sdkspace-agent-reference #root > div > .flex-1.overflow-y-auto > div.sdkspace-empty-view { justify-content: center; }
+  html.sdkspace-agent-reference #root > div > div.border-t { padding: 0 12px calc(14px + env(safe-area-inset-bottom)) !important; }
+  html.sdkspace-agent-reference #root > div > div.border-t > form > div:has(textarea) { min-height: 145px; padding: 13px 13px 10px !important; }
+  #sdkspace-agent-current-model { bottom: calc(23px + env(safe-area-inset-bottom)); left: 73px; max-width: min(225px, 57vw); }
+  #sdkspace-agent-model-panel { left: 14px; bottom: calc(77px + env(safe-area-inset-bottom)); width: min(350px, calc(100vw - 28px)); }
+}

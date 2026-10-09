@@ -70,19 +70,20 @@ async function init(args) {
   const source = fileURLToPath(new URL(`../templates/${template}/`, import.meta.url));
   if (!(await stat(source)).isDirectory()) failure(`Template files not found: ${template}`);
   const temp = await mkdtemp(path.join(process.cwd(), '.sdkspace-create-'));
+  const staged = path.join(temp, 'payload');
   try {
-    await cp(source, temp, { recursive: true, force: false, errorOnExist: true });
-    const pkgPath = path.join(temp, 'package.json');
+    await cp(source, staged, { recursive: true, force: false, errorOnExist: true });
+    const pkgPath = path.join(staged, 'package.json');
     const pkg = JSON.parse(await readFile(pkgPath, 'utf8'));
     pkg.name = name;
     await writeFile(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-    await rename(path.join(temp, 'gitignore.template'), path.join(temp, '.gitignore'));
+    await rename(path.join(staged, 'gitignore.template'), path.join(staged, '.gitignore'));
     for (const filename of template === 'worker' ? ['README.md', 'wrangler.toml'] : ['README.md']) {
-      const f = path.join(temp, filename);
+      const f = path.join(staged, filename);
       await writeFile(f, (await readFile(f, 'utf8')).replaceAll('__PROJECT_NAME__', name));
     }
     if (existsSync(target)) failure(`Target already exists: ${target}. No files were overwritten.`);
-    await rename(temp, target);
+    await rename(staged, target);
     console.log(`Created ${name} from SDKSPACE ${template} template.\ncd ${name}\nnpm install\nSee README.md for credentials and launch steps.`);
   } finally { await rm(temp, { recursive: true, force: true }); }
 }

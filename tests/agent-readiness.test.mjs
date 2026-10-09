@@ -59,10 +59,10 @@ test('OpenAPI has unique operation descriptions, examples and correct health pac
  assert.ok(spec.paths['/v1/chat'].post.responses[429].headers['Retry-After']);
  const docs=await (await worker.fetch(request('/developers'),{})).text();assert.match(docs,/Quickstart/);assert.match(docs,/Read-only sandbox/);
 });
-test('prepared npm CLI matches the live download and rejects missing credentials without networking',async()=>{
+test('npm scaffolder and live standalone CLI both preserve signed SDK API commands',async()=>{
  const {readFile}=await import('node:fs/promises');const {spawnSync}=await import('node:child_process');
  const file=new URL('../packages/sdkspace-cli/bin/sdkspace-cli.mjs',import.meta.url);
- const source=await readFile(file,'utf8');assert.equal(source,await (await worker.fetch(request('/sdkspace-cli.mjs'),{})).text());
+ const source=await readFile(file,'utf8');const standalone=await (await worker.fetch(request('/sdkspace-cli.mjs'),{})).text();assert.match(source,/sdkspace init/);assert.match(source,/\/v1\/chat/);assert.match(standalone,/\/v1\/chat/);assert.match(standalone,/SDKSPACE_API_KEY/);
  const env={...process.env};delete env.SDKSPACE_API_KEY;
  for(const args of [['me'],['unknown']]){const r=spawnSync(process.execPath,[file.pathname,...args],{env,encoding:'utf8'});assert.equal(r.status,1);assert.ok(r.stderr.length>0);}
  const pkg=JSON.parse(await readFile(new URL('../packages/sdkspace-cli/package.json',import.meta.url),'utf8'));assert.equal(pkg.homepage,'https://agents-sdk.space/developers');assert.equal(pkg.bin.sdkspace,'bin/sdkspace-cli.mjs');

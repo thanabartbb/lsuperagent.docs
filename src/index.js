@@ -281,7 +281,9 @@ async function handleAgentRuntimeProxy(request, env, pathname) {
 async function handleAgentUI(request, env, pathname) {
   if (!['GET', 'HEAD'].includes(request.method)) return json({error:'method_not_allowed'}, 405, {allow:'GET, HEAD'});
   const session = await currentSession(request, env);
-  if (!session) return pathname === '/chat' ? redirectTo('/login?return_to=%2Fchat', 302) : json({error:'authentication_required'}, 401);
+  if (!session) return pathname === '/chat' ? legacyChatFallback(request, env) : json({error:'authentication_required'}, 401);
+  // Resume the guest's draft in classic chat; signed-in /chat normally retains Agent Starter.
+  if (pathname === '/chat' && new URL(request.url).searchParams.get('resume_draft') === '1') return legacyChatFallback(request, env);
   if (!agentRuntimeBindingReady(env)) return pathname === '/chat' ? legacyChatFallback(request, env) : json({error:'agent_runtime_unavailable'}, 503);
   const asset = pathname === '/chat' ? '/' : agentAssetPath(pathname);
   if (!asset) return json({error:'not_found'}, 404);
@@ -1494,8 +1496,6 @@ export default {
     }
 
     const workspacePaths = new Map([
-      ['/home', '/home'], ['/home.html', '/home'],
-      ['/chat', '/chat'], ['/chat.html', '/chat'],
       ['/tools', '/tools'], ['/tools.html', '/tools'],
       ['/exa', '/exa'], ['/exa.html', '/exa'],
       ['/guide', '/guide'], ['/guide.html', '/guide'],

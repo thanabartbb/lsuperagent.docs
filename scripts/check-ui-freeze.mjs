@@ -32,7 +32,7 @@ export function isSafeBackendRouterAddition(line) {
   // Router changes may ONLY import a backend module or add a fresh /api/ route.
   // Complex logic belongs in new modules, keeping existing routes untouched.
   if (/^import\s+(?:\{[^}]+\}|[A-Za-z_$][\w$]*)\s+from\s+['"]\.\/[A-Za-z0-9._/-]+\.m?js['"];?$/.test(trimmed)) return true;
-  return /^if\s*\(\s*pathname\s*(?:===\s*['"]\/api\/[a-z0-9/_-]+['"]|\.startsWith\(['"]\/api\/[a-z0-9/_-]+['"]\))\s*\)\s*return\s+/.test(trimmed);
+  return /^if\s*\(\s*pathname\s*(?:===\s*['"]\/api\/[a-z0-9_-][a-z0-9/_-]*['"]|\.startsWith\(['"]\/api\/[a-z0-9_-][a-z0-9/_-]*['"]\))\s*\)\s*return\s+/.test(trimmed);
 }
 
 export function evaluateDiff(changed, routerLines = []) {

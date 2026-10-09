@@ -11,7 +11,11 @@ html.sdkspace-agent-reference #root > div > header {
 html.sdkspace-agent-reference #root > div > header > div {
   width: 100%; max-width: none !important; gap: 14px;
 }
-html.sdkspace-agent-reference #root > div > header h1 { font-size: 15px !important; letter-spacing: -.02em; color: #f4f4f4 !important; }
+html.sdkspace-agent-reference #root > div > header h1 {
+  font-size: 0 !important; letter-spacing: -.02em; color: #f4f4f4 !important;
+}
+html.sdkspace-agent-reference #root > div > header h1 > span { display: none !important; }
+html.sdkspace-agent-reference #root > div > header h1::after { content: "SDKSPACE"; font-size: 15px !important; }
 html.sdkspace-agent-reference #root > div > header button { border-color: #242424 !important; }
 html.sdkspace-agent-reference #root > div > .flex-1.overflow-y-auto {
   background: #111 !important; scrollbar-width: thin; scrollbar-color: #393939 transparent;
@@ -133,7 +137,8 @@ html.sdkspace-agent-reference #root > div > div.border-t > div.flex.justify-cent
   html.sdkspace-agent-reference #root > div > header > div { min-width: 0; }
   html.sdkspace-agent-reference #root > div > header > div > div:first-child { min-width: 0; }
   html.sdkspace-agent-reference #root > div > header > div > div:last-child { gap: 4px !important; overflow-x: auto; max-width: 50%; }
-  html.sdkspace-agent-reference #root > div > header h1 { font-size: 13px !important; white-space: nowrap; }
+  html.sdkspace-agent-reference #root > div > header h1 { white-space: nowrap; }
+  html.sdkspace-agent-reference #root > div > header h1::after { font-size: 13px !important; }
   html.sdkspace-agent-reference #root > div > .flex-1.overflow-y-auto > div { padding: 14px 14px 22px !important; }
   html.sdkspace-agent-reference #root > div > .flex-1.overflow-y-auto > div.sdkspace-empty-view { justify-content: center; }
   html.sdkspace-agent-reference #root > div > div.border-t { padding: 0 12px calc(14px + env(safe-area-inset-bottom)) !important; }

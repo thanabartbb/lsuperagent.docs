@@ -116,8 +116,8 @@ test('public resources are separate from Google OAuth login without guest chat b
 
 test('static root fallback also points to the login entry', async () => {
   const index = await read('index.html');
-  assert.match(index, /url=\/login/);
-  assert.doesNotMatch(index, /url=\/chat/);
+  assert.match(index, /url=\/home/);
+  assert.doesNotMatch(index, /url=\/login/);
 });
 
 test('authenticated chat can sign out while the existing tools shell remains guarded', async () => {

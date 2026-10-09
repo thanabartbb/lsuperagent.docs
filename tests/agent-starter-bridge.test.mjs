@@ -155,9 +155,14 @@ test('Agent Starter UI is gated and adapts its real asset paths with a per-user 
     const path = new URL(req.url).pathname;
     return new Response(path === '/' ? '<title>Agent Starter</title><script type="module" src="/assets/index-build.js"></script><link href="/assets/index-build.css"><div id="root"></div>' : 'const agent=On({agent:`ChatAgent`,onOpen:()=>{}});', {headers:{'content-type':path === '/' ? 'text/html' : 'text/javascript'}});
   }}};
-  const anon = await worker.fetch(new Request(ORIGIN+'/chat'), env);
-  assert.equal(anon.status,302);
-  assert.match(anon.headers.get('location'), /login/);
+  const anon = await worker.fetch(new Request(ORIGIN+'/chat'), {
+    ...env, ASSETS: { fetch: async req => {
+      assert.equal(new URL(req.url).pathname, '/chat.html');
+      return new Response('<!doctype html><title>Classic Chat</title>', { headers: { 'content-type': 'text/html' } });
+    } }
+  });
+  assert.equal(anon.status,200);
+  assert.match(await anon.text(), /Classic Chat/);
   assert.equal(calls.length,0);
   const html = await worker.fetch(await authedRequest('/chat'),env);
   assert.equal(html.status,200);

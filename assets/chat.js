@@ -24,6 +24,9 @@
     writer: 'ร่างหรือปรับเนื้อหาให้ตรงเป้าหมาย แล้วคัดลอกคำตอบไปใช้',
     image: 'อธิบายภาพที่ต้องการสร้าง · ใช้โมเดลสร้างภาพของ OpenAI'
   };
+  const AUTH_DRAFT_KEY = 'sdkspace.auth.pending_chat.v1';
+  const AUTH_DRAFT_TTL_MS = 30 * 60 * 1000;
+  let signedIn = false;
   let availableProviders = [];
   let modelsByProvider = {};
   let availableImageModels = [];
@@ -260,13 +263,17 @@
   function syncControls() {
     send.disabled = sending || preparing > 0 || input.disabled;
     attachButton.disabled = sending || input.disabled;
-    if (attachFileButton) attachFileButton.disabled = sending || input.disabled || mode === 'image';
+    if (attachFileButton) attachFileButton.disabled = sending || input.disabled || !signedIn || mode === 'image';
   }
 
   // Batches are prepared one after another, so the 4-file limit is checked against settled results.
   let intake = Promise.resolve();
   function addFiles(files) {
     if (sending) return intake;
+    if (!signedIn) {
+      bubble('e', 'กรุณาเข้าสู่ระบบก่อนแนบไฟล์');
+      return intake;
+    }
     preparing += 1;
     syncControls();
     intake = intake.then(() => addFilesNow(files)).catch(() => {}).finally(() => {
@@ -443,11 +450,21 @@
     try { if (modelChoice.value) localStorage.setItem(key, modelChoice.value); else localStorage.removeItem(key); } catch (_) { /* storage may be blocked */ }
   });
 
-  function toLogin() {
-    location.replace('/login?return_to=%2Fchat');
+  function toLogin(draftText = '') {
+    if (draftText) {
+      try {
+        // Only the visitor's typed text, not attachments or credentials.
+        sessionStorage.setItem(AUTH_DRAFT_KEY, JSON.stringify({
+          text: draftText.slice(0, 12000), mode, savedAt: Date.now()
+        }));
+      } catch (_) { /* storage may be unavailable */ }
+    }
+    const returnTo = draftText ? '/chat?resume_draft=1' : '/chat';
+    location.assign('/login?return_to=' + encodeURIComponent(returnTo));
   }
 
   $('signout').addEventListener('click', () => {
+    if (!signedIn) return toLogin();
     location.assign('/auth/logout');
   });
 
@@ -471,6 +488,11 @@
   $('composer').addEventListener('submit', async (event) => {
     event.preventDefault();
     if (send.disabled || preparing > 0) return;
+    // Browse freely; authentication is required only when trying to send.
+    if (!signedIn) {
+      if (input.value.trim()) toLogin(input.value.trim());
+      return;
+    }
     if (mode === 'image' && pending.length) {
       bubble('e', 'โหมดสร้างภาพรับคำสั่งข้อความก่อน กรุณานำไฟล์แนบออก');
       return;
@@ -547,7 +569,7 @@
         if (!response.ok || !result.ok || !result.image?.data_base64) {
           turns.pop();
           restoreFiles();
-          if (response.status === 401) return toLogin();
+          if (response.status === 401) return toLogin(text);
           bubble('e', result.message || 'สร้างภาพไม่สำเร็จ (' + response.status + ')');
           return;
         }
@@ -571,7 +593,7 @@
         wait.remove();
         if (!response.ok || !result.ok) {
           turns.pop(); restoreFiles();
-          if (response.status === 401) return toLogin();
+          if (response.status === 401) return toLogin(text);
           bubble('e', result.message || result.error || 'ส่งข้อความไม่สำเร็จ (' + response.status + ')');
           return;
         }
@@ -601,7 +623,7 @@
         wait.remove();
         turns.pop();
         restoreFiles();
-        if (response.status === 401) return toLogin();
+        if (response.status === 401) return toLogin(text);
         bubble('e', result.message || 'ส่งข้อความไม่สำเร็จ (' + response.status + ')');
         return;
       }
@@ -681,19 +703,46 @@
     try {
       const response = await fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store' });
       const session = await response.json();
-      if (!session.authenticated) return toLogin();
-      $('who').textContent = session.user?.name || session.user?.email || 'Signed in';
+      signedIn = Boolean(response.ok && session.authenticated);
+      if (!signedIn) {
+        $('signout').textContent = 'เข้าสู่ระบบ';
+        $('who').textContent = '';
+        if (conversationId) setConversation(null);
+      } else {
+        $('who').textContent = session.user?.name || session.user?.email || 'Signed in';
+      }
       await loadProviders();
       input.disabled = false;
       syncControls();
-      const probe = await fetch('/api/chats', { credentials: 'same-origin', cache: 'no-store' }).catch(() => null);
-      historyAvailable = Boolean(probe && probe.ok);
-      historyToggle.hidden = !historyAvailable;
-      if (historyAvailable && mode === 'chat') $('hint').textContent = 'กำลังพัฒนา ระบบ LLM';
-      if (historyAvailable && conversationId) await openConversation(conversationId);
-      else if (conversationId) setConversation(null);
+      if (signedIn) {
+        const probe = await fetch('/api/chats', { credentials: 'same-origin', cache: 'no-store' }).catch(() => null);
+        historyAvailable = Boolean(probe && probe.ok);
+        historyToggle.hidden = !historyAvailable;
+        if (historyAvailable && mode === 'chat') $('hint').textContent = 'กำลังพัฒนา ระบบ LLM';
+        if (historyAvailable && conversationId) await openConversation(conversationId);
+        else if (conversationId) setConversation(null);
+        if (new URLSearchParams(location.search).get('resume_draft') === '1') {
+          try {
+            const saved = JSON.parse(sessionStorage.getItem(AUTH_DRAFT_KEY) || 'null');
+            sessionStorage.removeItem(AUTH_DRAFT_KEY);
+            if (saved && typeof saved.text === 'string' && saved.text.length <= 12000
+                && saved.text.trim() && Number.isFinite(saved.savedAt)
+                && Date.now() - saved.savedAt >= 0
+                && Date.now() - saved.savedAt < AUTH_DRAFT_TTL_MS) {
+              mode = supportedModes.includes(saved.mode) ? saved.mode : 'chat';
+              updateModeUI();
+              input.value = saved.text;
+              input.dispatchEvent(new Event('input'));
+              $('hint').textContent = 'เข้าสู่ระบบแล้ว กดส่งข้อความอีกครั้ง';
+            }
+          } catch (_) { /* ignore malformed or unavailable session storage */ }
+        }
+      }
     } catch (_) {
-      bubble('e', 'ตรวจสอบการเข้าสู่ระบบไม่ได้ ลองรีเฟรชหน้า');
+      // Session probe outages should not prevent visitors from typing.
+      $('signout').textContent = 'เข้าสู่ระบบ';
+      input.disabled = false;
+      syncControls();
     }
   })();
 })();

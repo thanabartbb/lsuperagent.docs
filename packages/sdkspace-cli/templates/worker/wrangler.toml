@@ -1,0 +1,4 @@
+name = "__PROJECT_NAME__"
+main = "src/index.mjs"
+compatibility_date = "2026-09-30"
+workers_dev = true

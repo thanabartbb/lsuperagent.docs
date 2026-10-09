@@ -1,0 +1,18 @@
+# Independent sandbox Worker. NEVER replace root wrangler.toml with this file.
+name = "sdkspace-sandbox"
+main = "src/index.js"
+compatibility_date = "2026-09-30"
+workers_dev = true
+
+[[containers]]
+class_name = "ExecutorSandbox"
+image = "./Dockerfile"
+max_instances = 5
+
+[[durable_objects.bindings]]
+name = "EXECUTOR"
+class_name = "ExecutorSandbox"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ExecutorSandbox"]

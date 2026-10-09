@@ -34,8 +34,10 @@ test('discovery, sitemap and unknown API errors are machine readable',async()=>{
 
 test('public headings do not absorb paragraphs and developer links stay actionable',async()=>{
  const html=await (await worker.fetch(request('/'),{})).text();
- assert.match(html,/<h2[^>]*>What you can do<\/h2>\s*<p>Sign in/);
- assert.match(html,/<a href="\/openapi.json">OpenAPI<\/a>/);
+  assert.match(html, /<h2 id="lp-capabilities-title">เริ่มจากงานที่คุณทำอยู่<\/h2>/);
+  assert.match(html, /<a href="\/developers">/);
+  const docs = await (await worker.fetch(request('/developers'),{})).text();
+  assert.match(docs, /<a href="\/openapi.json">OpenAPI<\/a>/);
 });
 
 test('API errors have stable codes and actionable resolution hints',async()=>{

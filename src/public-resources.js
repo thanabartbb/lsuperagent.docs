@@ -49,7 +49,7 @@ function homepageMarkup(){return `<a class="lp-skip" href="#lp-main">ข้า�
 <p class="lp-byline">พื้นที่ทำงานของ <strong>SDKSPACE</strong></p>
 <h1>AI สำหรับงานประจำวัน<span>พร้อมต่อยอดเป็น Agent</span></h1>
 <p class="lp-lead">แชท เขียนและช่วยดูโค้ด ค้นคว้าพร้อมแหล่งที่มา อ่าน URL และสร้างภาพในพื้นที่เดียว นักพัฒนาสามารถเชื่อมต่อ API โดยเก็บคีย์ไว้ฝั่งเซิร์ฟเวอร์</p>
-<div class="lp-actions"><a class="lp-button lp-button-primary" href="/login">เริ่มใช้งาน <span class="lp-button-arrow" aria-hidden="true">↗</span></a><a class="lp-button" href="/developers">ดูเอกสาร API</a></div>
+<div class="lp-actions"><a class="lp-button lp-button-primary" href="/chat">เริ่มใช้งาน <span class="lp-button-arrow" aria-hidden="true">↗</span></a><a class="lp-button" href="/developers">ดูเอกสาร API</a></div>
 <p class="lp-hero-note">การใช้งานต้องเข้าสู่ระบบ · ฟีเจอร์ขึ้นอยู่กับการเชื่อมต่อและโควตาบัญชี</p>
 </div></section>
 <section class="lp-code-section" aria-labelledby="lp-api-title"><div class="lp-code-inner">

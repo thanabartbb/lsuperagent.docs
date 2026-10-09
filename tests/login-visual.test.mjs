@@ -40,10 +40,10 @@ test('reset page invokes the existing password reset endpoint', async () => {
   assert.match(source, /attachPasswordReset\(resetForm\)/);
 });
 
-test('authenticated home is guarded by the worker and links to chat', async () => {
+test('home can be visited before login and links to chat', async () => {
   const worker = await read('src/index.js');
   const home = await read('home.html');
-  assert.match(worker, /\['\/home', '\/home'\]/);
+  assert.match(worker, /legacyChatFallback\(request, env\)/);
   assert.match(home, /href="\/chat"/);
   assert.match(home, /sdkspace-navigation\.js/);
   assert.match(await read('assets/sdkspace-navigation.js'), /\/api\/auth\/session/);

@@ -230,12 +230,17 @@ test('login keeps the clean /login path for Cloudflare HTML handling', async () 
   assert.equal(requestedPath, '/login');
 });
 
-test('workspace requires a valid user session', async () => {
-  const response = await worker.fetch(new Request('https://agents-sdk.space/chat'), {});
-  assert.equal(response.status, 302);
-  const location = new URL(response.headers.get('location'), 'https://agents-sdk.space');
-  assert.equal(location.pathname, '/login');
-  assert.equal(location.searchParams.get('return_to'), '/chat');
+test('visitors can open the existing classic chat without a session', async () => {
+  let assetPath = '';
+  const response = await worker.fetch(new Request('https://agents-sdk.space/chat'), {
+    ASSETS: { fetch: async request => {
+      assetPath = new URL(request.url).pathname;
+      return new Response('<!doctype html><title>Chat</title>', { headers: { 'content-type': 'text/html' } });
+    } }
+  });
+  assert.equal(response.status, 200);
+  assert.equal(assetPath, '/chat.html');
+  assert.equal(response.headers.get('location'), null);
 });
 
 test('Exa search page is included in the authenticated workspace', async () => {
@@ -277,14 +282,16 @@ test('authenticated entry and OAuth login default to home while direct chat stay
   assert.equal(chat.headers.get('x-lsuperagen-control'), 'legacy-chat-fallback-v1');
 });
 
-test('public intro page is readable without login and keeps workspace guarded', async () => {
+test('public intro and home are accessible before login', async () => {
   const response = await worker.fetch(new Request('https://agents-sdk.space/loading'), {
     ASSETS: { fetch: async () => new Response('<!doctype html><title>LSUPERAGENT</title>', { headers: { 'content-type': 'text/html' } }) },
   });
   assert.equal(response.status, 200);
-  const home = await worker.fetch(new Request('https://agents-sdk.space/home'), {});
-  assert.equal(home.status, 302);
-  assert.equal(new URL(home.headers.get('location'), 'https://agents-sdk.space').pathname, '/login');
+  const home = await worker.fetch(new Request('https://agents-sdk.space/home'), {
+    ASSETS: { fetch: async () => new Response('<!doctype html><title>Home</title>', { headers: { 'content-type': 'text/html' } }) }
+  });
+  assert.equal(home.status, 200);
+  assert.equal(home.headers.get('location'), null);
 });
 
 test('AI APIs reject requests without a signed user session', async () => {

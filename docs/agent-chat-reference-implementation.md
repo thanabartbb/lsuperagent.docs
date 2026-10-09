@@ -40,11 +40,33 @@ not as live source code or proof of backend capabilities.
    gracefully does nothing if the expected React DOM structure isn't available.
    Runtime visual QA on the actual `agent-starter` build is needed before deploy.
 
+## Public visitor mode and why the classic UI appeared
+
+The owner observed a signed-out `/chat` showing the older boxed Classic UI.
+This matches the current production router: `!currentSession` returns the
+classic fallback so public browsing works before login. It is not evidence
+that `agent-starter` was deleted, nor that the proposed PR #46 UI was deployed.
+
+This branch additionally supplies a **visitor-only stylesheet** at
+`assets/chat-visitor-reference.css`. The existing `legacyChatFallback`
+injects the stylesheet and a scoped body class **only for anonymous GET
+/chat**. It presents a dark full-height, borderless Agent-inspired chat
+layout while retaining the classic input's existing login-on-first-send,
+model configuration controls, attachment flow, and auth protections.
+
+Anonymous visitors are not granted per-user Cloudflare Agent instances.
+Signed-in users are still routed to the real `AGENT_STARTER` Agent via
+the original server-side proxy. A missing/unhealthy service binding still
+uses the original classic fallback for signed-in users. For real-world
+troubleshooting, inspect the `x-lsuperagen-control` response header
+(`legacy-chat-fallback-v1` means fallback) and the current login session.
+
 ## Change scope and rollout
 - Added: `assets/agent-chat-reference.css`,
   `assets/agent-chat-reference.js`, focused tests, and this document.
-- Modified: only `src/agent-ui.js` to inject the two new static assets.
-- Not modified: `src/index.js`, `src/firebase-worker.js`,
+- Added: `assets/chat-visitor-reference.css` and `tests/agent-chat-visitor-surface.test.mjs` for public browse.
+- Modified: `src/agent-ui.js` to inject signed-in Agent theme and `src/index.js` to inject visitor theme only for anonymous GET /chat.
+- Not modified: `src/firebase-worker.js`,
   `wrangler.toml`, `chat.html`, `assets/chat.js`, CSS for other pages,
   login, D1, any OpenAI or Cloudflare executor source.
 - No merge, deployment, Cloudflare secret/DNS change or UI cutover has been

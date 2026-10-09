@@ -5,6 +5,7 @@ import { getFeed, SOURCES as FEED_SOURCES } from './feeds.js';
 import { historyEnabled, userKey, listConversations, getConversation, deleteConversation, saveExchange } from './chat-store.js';
 import { takeQuota, quotaHeaders, quotaMessage } from './quota.js';
 import { handleGithubApp } from './github-app.js';
+import { handleSandboxApi } from './openai-agent-sessions.js';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 10;
@@ -1459,6 +1460,7 @@ export default {
     if (pathname === '/chat.html') return redirectTo('/chat' + url.search, 308);
     if (pathname === '/chat' || pathname.startsWith('/agent-ui/')) return handleAgentUI(request, env, pathname);
     if (pathname === '/api/agent-runtime/config') return handleAgentRuntimeConfig(request, env);
+    if (pathname === '/api/sandbox/sessions' || pathname.startsWith('/api/sandbox/sessions/')) return handleSandboxApi(request, env, await currentSession(request, env));
     if (pathname.startsWith('/agents/') || pathname.startsWith('/oauth/')) return handleAgentRuntimeProxy(request, env, pathname);
 
     if (request.method === 'OPTIONS' && (pathname === '/api/chat' || pathname === '/api/image' || pathname === '/api/exa/search')) return new Response(null, { status: 204, headers: { 'access-control-allow-origin': url.origin, 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type' } });

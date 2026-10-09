@@ -1,0 +1,12 @@
+{
+  "name": "sdkspace-sandbox",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/webhook.js",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.147.0"
+  }
+}

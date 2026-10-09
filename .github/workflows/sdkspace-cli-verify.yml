@@ -24,3 +24,14 @@ jobs:
         run: |
           npm pack --dry-run --json > /tmp/sdkspace-pack.json
           node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('/tmp/sdkspace-pack.json'))[0];for(const f of ['templates/next/gitignore.template','templates/worker/gitignore.template','templates/next/app/api/chat/route.js','templates/worker/src/index.mjs']){if(!p.files.some(x=>x.path===f))process.exitCode=1}"
+      - name: Build a generated Next.js application
+        run: |
+          node packages/sdkspace-cli/bin/sdkspace-cli.mjs init ci-next --template next
+          cd ci-next
+          npm install --no-audit --no-fund
+          npm run build
+      - name: Validate a generated Cloudflare Worker
+        run: |
+          node packages/sdkspace-cli/bin/sdkspace-cli.mjs init ci-worker --template worker
+          node --check ci-worker/src/index.mjs
+          test -f ci-worker/.gitignore

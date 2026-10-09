@@ -165,8 +165,9 @@
       document.documentElement.classList.add('sdkspace-agent-reference');
       buildControls();
     }
+    // Never remove or rewrite React-managed children in the original header.
     const title = match.header.querySelector('h1');
-    if (title && title.textContent?.trim() !== 'SDKSPACE') title.textContent = 'SDKSPACE';
+    if (title) title.setAttribute('aria-label', 'SDKSPACE Agent Chat');
     decorateEmpty(match.viewport);
   }
 

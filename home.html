@@ -108,6 +108,7 @@
     cursor:pointer;transition:transform .2s ease, box-shadow .2s ease;
   }
   .btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(45,110,224,0.6);}
+  .btn-primary:disabled,.btn-primary:disabled:hover{opacity:.6;cursor:default;box-shadow:none;transform:none;}
   .btn-primary svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
 
   .btn-play{
@@ -295,9 +296,7 @@
       <p class="lede">Chat, create images and connect your application through the SDK. Start with the guide, then test a real request.</p>
 
       <div class="cta-row">
-        <a class="btn-primary" href="/chat">Open Agent Chat
-          <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-        </a>
+        <button class="btn-primary btn-primary-pending" type="button" disabled>Coming Soon</button>
         <a class="btn-play" href="/guide" aria-label="Open Playground">
           <svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg>
         </a>
@@ -338,13 +337,13 @@
     </div>
 
     <div class="grid2">
-      <div class="mini-card">
+      <a class="mini-card guide-link" href="/chat" aria-label="Build Faster — Open Agent Chat">
         <div class="mini-icon">
           <svg viewBox="0 0 24 24"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg>
         </div>
         <div class="mini-title">Build Faster</div>
-        <div class="mini-desc">Start with a real API request, then build the workflow you need.</div>
-      </div>
+        <div class="mini-desc">Open Agent Chat to build and test your workflow.</div>
+      </a>
       <a class="mini-card guide-link" href="/docs">
         <div class="mini-icon book">
           <svg viewBox="0 0 24 24"><path d="M4 4c2 0 5 .5 6 2 1-1.5 4-2 6-2 1 0 2 .3 2 .3v14s-1-.3-2-.3c-2 0-5 .5-6 2-1-1.5-4-2-6-2-1 0-2 .3-2 .3v-14S3 4 4 4z"/></svg>

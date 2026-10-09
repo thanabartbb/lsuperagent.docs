@@ -8,7 +8,8 @@ test.describe('native Next.js home migration', () => {
     expect(new URL(page.url()).hostname).toBe('127.0.0.1');
     await expect(page).toHaveTitle(/Home · SDKSPACE/i);
     await expect(page.getByRole('heading', { name: /Build with SDKSPACE/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Open Chat/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Build Faster — Open Agent Chat' })).toHaveAttribute('href', '/chat');
+    await expect(page.getByRole('button', { name: 'Coming Soon' })).toBeDisabled();
     await expect(page.getByText('BUILT FOR DEVELOPERS', { exact: true })).toHaveCount(0);
 
     const shell = page.locator('.home-phone');

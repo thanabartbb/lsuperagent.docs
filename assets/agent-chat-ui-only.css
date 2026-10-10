@@ -1,0 +1,279 @@
+/*
+ * SDKSPACE | Agent Chat mobile-first presentation, phase 1: UI ONLY.
+ *
+ * This stylesheet is inserted only into the existing signed-in Agent Starter
+ * HTML response by src/agent-ui.js. Nothing here sends messages, replaces
+ * components, mutates history, changes model/provider, or changes React state.
+ * Light-theme controls remain functional; dark palette is scoped to data-mode.
+ */
+
+#root > div {
+  height: 100dvh !important;
+  min-height: 0 !important;
+  overflow: hidden;
+}
+
+#root > div > header {
+  flex: 0 0 auto;
+  padding: 12px 16px !important;
+  z-index: 5;
+}
+
+#root > div > header > div {
+  max-width: 1080px !important;
+  width: 100%;
+  gap: 12px;
+  min-width: 0;
+}
+
+#root > div > header > div > div:first-child {
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+/* Retain all original Agent Starter controls: connected state, debug, theme, MCP, clear. */
+#root > div > header > div > div:last-child {
+  display: flex;
+  min-width: 0;
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+#root > div > header > div > div:last-child::-webkit-scrollbar {
+  display: none;
+}
+
+#root > div > header > div > div:last-child > * {
+  flex-shrink: 0;
+}
+
+#root > div > .flex-1.overflow-y-auto {
+  min-height: 0;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+#root > div > .flex-1.overflow-y-auto > div {
+  width: 100%;
+  max-width: 900px !important;
+  margin: 0 auto;
+  padding: 22px 18px 32px !important;
+}
+
+/* Keep the original React Empty, message, reasoning and tool components alive. */
+#root > div > .flex-1.overflow-y-auto button {
+  transition: border-color .16s ease, background .16s ease, color .16s ease;
+}
+
+#root > div > .flex-1.overflow-y-auto pre {
+  font-size: 12px;
+  line-height: 1.5;
+  max-height: min(33dvh, 260px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+/* Composer remains the exact same form, textarea and React event handlers. */
+#root > div > div.border-t {
+  flex: 0 0 auto;
+  padding: 8px 14px calc(12px + env(safe-area-inset-bottom)) !important;
+}
+
+#root > div > div.border-t > form {
+  max-width: 900px !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+}
+
+#root > div > div.border-t > form > div:has(textarea) {
+  display: grid !important;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  grid-template-rows: minmax(60px, auto) 40px;
+  align-items: end;
+  gap: 8px 9px !important;
+  min-height: 150px;
+  padding: 16px 15px 12px !important;
+  border-radius: 23px !important;
+}
+
+#root > div > div.border-t > form textarea {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  align-self: start;
+  width: 100%;
+  min-width: 0;
+  min-height: 62px;
+  max-height: 165px;
+  padding: 4px 3px !important;
+  resize: none;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+}
+
+#root > div > div.border-t > form button[aria-label="Attach images"] {
+  grid-row: 2;
+  grid-column: 1;
+  align-self: center;
+  justify-self: start;
+  border-radius: 12px;
+}
+
+#root > div > div.border-t > form button[aria-label="Send message"],
+#root > div > div.border-t > form button[aria-label="Stop generation"] {
+  grid-row: 2;
+  grid-column: 3;
+  align-self: center;
+  justify-self: end;
+  border-radius: 50% !important;
+}
+
+#root > div > div.border-t > div.flex.justify-center {
+  padding: 8px 0 2px !important;
+}
+
+/* Dark-only visual treatment. Do not override the user's theme toggle. */
+html[data-mode="dark"] #root > div {
+  background: #101010 !important;
+}
+
+html[data-mode="dark"] #root > div > header {
+  background: #131313 !important;
+  border-color: #222 !important;
+}
+
+html[data-mode="dark"] #root > div > header h1 {
+  font-size: 0 !important;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+html[data-mode="dark"] #root > div > header h1 > span {
+  display: none !important;
+}
+
+html[data-mode="dark"] #root > div > header h1::before {
+  content: "";
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  vertical-align: middle;
+  margin-right: 8px;
+  background: center / contain no-repeat url('/assets/sdkspace-logo.svg');
+}
+
+html[data-mode="dark"] #root > div > header h1::after {
+  content: "SDKSPACE";
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 16px !important;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  color: #f6f6f6;
+}
+
+html[data-mode="dark"] #root > div > header button,
+html[data-mode="dark"] #root > div > header [role="button"] {
+  border-color: #292929 !important;
+}
+
+html[data-mode="dark"] #root > div > .flex-1.overflow-y-auto {
+  background: #101010 !important;
+}
+
+html[data-mode="dark"] #root > div > .flex-1.overflow-y-auto button {
+  border-color: #303030 !important;
+  border-radius: 13px;
+}
+
+html[data-mode="dark"] #root > div > .flex-1.overflow-y-auto pre {
+  background: #1c1c1c !important;
+  color: #adadad !important;
+  border: 1px solid #303030;
+  border-radius: 13px;
+}
+
+html[data-mode="dark"] #root > div > div.border-t {
+  background: #101010 !important;
+  border-color: #101010 !important;
+}
+
+html[data-mode="dark"] #root > div > div.border-t > form > div:has(textarea) {
+  background: #191919 !important;
+  border: 1px solid #303030 !important;
+  box-shadow: 0 10px 38px #0005 !important;
+}
+
+html[data-mode="dark"] #root > div > div.border-t textarea {
+  color: #f5f5f5 !important;
+}
+
+html[data-mode="dark"] #root > div > div.border-t textarea::placeholder {
+  color: #858585;
+}
+
+html[data-mode="dark"] #root > div > div.border-t button[aria-label="Send message"] {
+  background: #252b37 !important;
+  color: #b4d6ff !important;
+}
+
+/* Mobile: prevent navigation from widening the page or covering the composer. */
+@media (max-width: 640px) {
+  #root > div > header {
+    padding: 10px 10px !important;
+  }
+  #root > div > header > div {
+    max-width: 100%;
+    gap: 5px;
+  }
+  #root > div > header > div > div:first-child {
+    max-width: 34vw;
+  }
+  #root > div > header > div > div:last-child {
+    max-width: 64vw;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+  }
+  #root > div > header h1::after {
+    font-size: 13px !important;
+  }
+  #root > div > header h1::before {
+    width: 20px !important;
+    height: 20px !important;
+    margin-right: 5px !important;
+  }
+  #root > div > .flex-1.overflow-y-auto > div {
+    padding: 14px 13px 26px !important;
+  }
+  #root > div > div.border-t {
+    padding: 6px 12px calc(10px + env(safe-area-inset-bottom)) !important;
+  }
+  #root > div > div.border-t > form > div:has(textarea) {
+    min-height: 142px;
+    padding: 13px 13px 10px !important;
+  }
+  #root > div > div.border-t textarea {
+    min-height: 55px;
+  }
+}
+
+/* Preserve focus outlines for keyboard and assistive technology. */
+#root > div :focus-visible {
+  outline: 2px solid #69afff;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #root > div * {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+}

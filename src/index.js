@@ -281,7 +281,7 @@ async function handleAgentRuntimeProxy(request, env, pathname) {
 async function handleAgentUI(request, env, pathname) {
   if (!['GET', 'HEAD'].includes(request.method)) return json({error:'method_not_allowed'}, 405, {allow:'GET, HEAD'});
   const session = await currentSession(request, env);
-  if (!session) return pathname === '/chat' ? legacyChatFallback(request, env) : json({error:'authentication_required'}, 401);
+  if (!session) return pathname === '/chat' ? legacyChatFallback(request, env, true) : json({error:'authentication_required'}, 401);
   // Resume the guest's draft in classic chat; signed-in /chat normally retains Agent Starter.
   if (pathname === '/chat' && new URL(request.url).searchParams.get('resume_draft') === '1') return legacyChatFallback(request, env);
   if (!agentRuntimeBindingReady(env)) return pathname === '/chat' ? legacyChatFallback(request, env) : json({error:'agent_runtime_unavailable'}, 503);
@@ -315,13 +315,25 @@ async function handleAgentUI(request, env, pathname) {
     return new Response(request.method === 'HEAD' ? null : body, {headers});
   } catch (_) { return pathname === '/chat' ? legacyChatFallback(request, env) : json({error:'agent_ui_build_incompatible', message:'Agent Starter UI requires a compatible build. Please try again later.'}, 503); }
 }
-async function legacyChatFallback(request, env) {
+async function legacyChatFallback(request, env, visitor = false) {
   if (!env.ASSETS || typeof env.ASSETS.fetch !== 'function') return json({ error: 'chat_unavailable' }, 503);
   const url = new URL(request.url);
   url.pathname = '/chat.html';
   const response = await env.ASSETS.fetch(new Request(url.toString(), { method: request.method, headers: request.headers }));
   const headers = htmlHeaders(response, 'legacy-chat-fallback-v1');
   headers.set('cache-control', 'private, no-store');
+  // Keep signed-in fallback unmodified. A logged-out visitor sees a visually
+  // compatible Agent-style shell but still uses the existing login-on-send
+  // client. No private Agent connection or credentials are provisioned.
+  if (visitor && request.method === 'GET' && response.ok && (response.headers.get('content-type') || '').includes('text/html')) {
+    const html = await response.text();
+    const marker = '<body class="sdk-layout sdk-chat">';
+    const body = html.includes(marker) && html.includes('</head>')
+      ? html.replace(marker, '<body class="sdk-layout sdk-chat sdkspace-visitor-chat">')
+          .replace('</head>', '<link rel="stylesheet" href="/assets/chat-visitor-reference.css?v=1"></head>')
+      : html;
+    return new Response(body, { status: response.status, statusText: response.statusText, headers });
+  }
   return new Response(request.method === 'HEAD' ? null : response.body, { status: response.status, statusText: response.statusText, headers });
 }
 

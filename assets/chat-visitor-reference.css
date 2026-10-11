@@ -1,0 +1,273 @@
+/* Public /chat visual shell. Only injected for unsigned visitors.
+   Existing #composer submit, login-on-send, quotas, attachments, mode selection
+   and all backend auth checks stay in the original chat.js. */
+html:has(body.sdkspace-visitor-chat) { background: #111; color-scheme: dark; }
+body.sdk-layout.sdk-chat.sdkspace-visitor-chat {
+  --bg: #111;
+  --surface: #1a1a1a;
+  --line: #252525;
+  --border: #2e2e2e;
+  --text: #f8f8f8;
+  --muted: #919191;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  max-height: 100dvh !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #111 !important;
+  overflow: hidden;
+}
+.sdkspace-visitor-chat .sdk-site-header {
+  flex: 0 0 62px; width: 100%;
+  min-height: 62px !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  background: #131313 !important;
+  border-bottom: 1px solid #222 !important;
+}
+.sdkspace-visitor-chat .sdk-site-header .sdk-header-row {
+  display: flex;
+  height: 61px;
+  align-items: center;
+  width: 100%;
+  max-width: none !important;
+  padding: 0 !important;
+  gap: 10px;
+}
+.sdkspace-visitor-chat .sdk-site-header .brand {
+  font-size: 15px; letter-spacing: -.02em; gap: 9px;
+}
+.sdkspace-visitor-chat .sdk-site-header .brand img { width: 24px; height: 24px; }
+.sdkspace-visitor-chat .sdk-site-header .nav { margin-left: auto; gap: 8px; }
+.sdkspace-visitor-chat .sdk-site-header .nav a { font-size: 12px; }
+.sdkspace-visitor-chat .sdk-site-header .nav #signout {
+  background: #202020; color: #e7e7e7; border: 1px solid #303030;
+  border-radius: 13px; font-size: 12px; padding: 8px 10px;
+}
+.sdkspace-visitor-chat .sdk-chat-content {
+  position: relative;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto;
+  min-height: 0 !important;
+  width: 100% !important;
+  max-width: 920px !important;
+  margin-inline: auto !important;
+  padding: 0 14px calc(12px + env(safe-area-inset-bottom)) !important;
+  overflow: hidden;
+}
+.sdkspace-visitor-chat .bar {
+  flex: 0 0 auto;
+  min-height: 51px;
+  margin: 0 !important;
+  padding: 8px 2px !important;
+  display: flex; gap: 8px; flex-wrap: nowrap;
+  border: 0; align-items: center;
+}
+.sdkspace-visitor-chat .bar .mode-label {
+  color: #999; font-size: 13px;
+}
+.sdkspace-visitor-chat .bar .quota { font-size: 11px; }
+.sdkspace-visitor-chat .bar .btn-ghost {
+  border: 1px solid #282828;
+  background: #191919;
+  border-radius: 13px;
+  min-height: 36px;
+  height: auto;
+  padding: 7px 13px;
+  white-space: nowrap;
+}
+.sdkspace-visitor-chat .bar #history-toggle {
+  font-size: 0;
+  padding: 7px 10px;
+}
+.sdkspace-visitor-chat .bar #history-toggle::before {
+  content: "ประวัติ"; font-size: 12px;
+}
+.sdkspace-visitor-chat .bar #clear {
+  margin-left: auto; font-size: 12px;
+}
+.sdkspace-visitor-chat #history.history:not([hidden]) {
+  position: absolute;
+  top: 50px; left: 14px; right: 14px;
+  z-index: 20;
+  width: min(390px, calc(100% - 28px));
+  max-height: min(65dvh, 550px);
+  overflow-y: auto;
+  border-radius: 18px; border: 1px solid #323232; background: #1c1c1c;
+  box-shadow: 0 22px 46px #0009;
+}
+.sdkspace-visitor-chat #chat.chat {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  width: 100%;
+  display: block;
+  background: #111 !important;
+  color: #f5f5f5;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 16px 4px 24px !important;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
+}
+.sdkspace-visitor-chat #chat.chat:has(> #empty:only-child) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sdkspace-visitor-chat #chat #empty {
+  width: 100%;
+  color: transparent;
+  padding: 10px 12px !important;
+  text-align: center;
+  line-height: 1.5;
+  font-size: 0;
+}
+.sdkspace-visitor-chat #chat #empty::before {
+  content: "ฉันสามารถช่วยอะไรได้บ้าง?";
+  display: block;
+  color: #f5f5f5;
+  font-size: clamp(25px, 5vw, 35px);
+  font-weight: 650;
+  letter-spacing: -.035em;
+  line-height: 1.35;
+}
+.sdkspace-visitor-chat #chat #empty::after {
+  content: "ตั้งคำถาม เขียนโค้ด หรือสำรวจไอเดียต่างๆ";
+  display: block;
+  margin-top: 16px;
+  color: #888;
+  font-size: 14px;
+  font-weight: 400;
+}
+.sdkspace-visitor-chat .bubble {
+  border-radius: 18px;
+  font-size: 15px;
+  margin-bottom: 12px;
+  max-width: min(85%, 690px);
+}
+.sdkspace-visitor-chat .bubble.u { background: #252525; }
+.sdkspace-visitor-chat .bubble.a {
+  border-color: #222;
+  background: #181818;
+}
+.sdkspace-visitor-chat #pending.pending:not([hidden]) {
+  flex: 0 0 auto;
+  margin: 0 0 6px;
+  max-height: 110px;
+  overflow-y: auto;
+}
+.sdkspace-visitor-chat #composer.composer {
+  display: grid !important;
+  flex: 0 0 auto;
+  grid-template-columns: 43px minmax(0, 1fr) 43px;
+  grid-template-rows: minmax(59px, auto) 36px;
+  column-gap: 8px;
+  row-gap: 5px;
+  align-items: center;
+  width: 100%;
+  margin: 0 !important;
+  min-height: 141px;
+  padding: 15px 13px 12px !important;
+  background: #1a1a1a !important;
+  border: 1px solid #303030 !important;
+  border-radius: 23px !important;
+  box-shadow: 0 8px 30px #0007;
+}
+.sdkspace-visitor-chat #composer #input {
+  display: block;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  min-height: 54px;
+  max-height: 150px;
+  width: 100%;
+  resize: none;
+  align-self: start;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #f5f5f5;
+  font-size: 16px;
+  padding: 3px 5px !important;
+  outline: none;
+  box-shadow: none !important;
+}
+.sdkspace-visitor-chat #composer #input::placeholder { color: #787878; }
+.sdkspace-visitor-chat #composer .chat-tools-wrap {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+  align-self: center;
+  position: relative;
+}
+.sdkspace-visitor-chat #composer #attach {
+  width: 40px;
+  height: 36px;
+  border: 0 !important;
+  border-radius: 12px;
+  background: transparent !important;
+  color: #b0b0b0;
+}
+.sdkspace-visitor-chat #composer #send {
+  grid-column: 3;
+  grid-row: 2;
+  place-self: center end;
+  display: grid;
+  place-items: center;
+  width: 39px;
+  min-width: 39px;
+  height: 39px;
+  padding: 0 !important;
+  border-radius: 100% !important;
+  background: #eaeaea;
+  color: #151515;
+  font-size: 0;
+}
+.sdkspace-visitor-chat #composer #send::before {
+  content: "↑";
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 1;
+}
+.sdkspace-visitor-chat #composer .chat-tools-menu {
+  position: absolute;
+  left: -5px;
+  bottom: 47px;
+  z-index: 40;
+  width: min(345px, calc(100vw - 48px));
+  max-height: min(62dvh, 550px);
+  overflow: auto;
+  background: #202020 !important;
+  border: 1px solid #353535 !important;
+  border-radius: 18px;
+  box-shadow: 0 18px 42px #0009;
+}
+.sdkspace-visitor-chat #composer .chat-tools-field select {
+  background: #151515;
+  color: #eee;
+  border-color: #363636;
+}
+.sdkspace-visitor-chat #hint.hint {
+  flex: 0 0 auto;
+  margin: 6px 2px 0;
+  color: #777;
+  font-size: 11px;
+  max-height: 2.7em;
+  overflow: hidden;
+}
+@media (max-width: 640px) {
+  .sdkspace-visitor-chat .sdk-site-header { min-height: 56px !important; flex-basis: 56px; }
+  .sdkspace-visitor-chat .sdk-site-header .sdk-header-row { height: 55px; }
+  .sdkspace-visitor-chat .sdk-site-header .brand { font-size: 13px; }
+  .sdkspace-visitor-chat .sdk-chat-content { padding: 0 13px calc(10px + env(safe-area-inset-bottom)) !important; }
+  .sdkspace-visitor-chat #chat.chat { padding: 9px 1px 20px !important; }
+  .sdkspace-visitor-chat #chat #empty::before { font-size: 26px; }
+  .sdkspace-visitor-chat #composer.composer { min-height: 148px; }
+  .sdkspace-visitor-chat .nav .who:empty { display: none; }
+}

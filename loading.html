@@ -251,7 +251,7 @@
   #who{font-size:12px;color:#8b96a8;margin-bottom:20px;overflow-wrap:anywhere;}
   [hidden]{display:none!important;}
 </style>
-<link rel="icon" href="/assets/sdkspace-logo.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/sdkspace-reference-modes.css?v=2"><link rel="stylesheet" href="/assets/sdkspace-hero-cube.css?v=1"></head>
+<link rel="icon" href="/assets/sdkspace-logo.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/sdkspace-reference-modes.css?v=2"><link rel="stylesheet" href="/assets/sdkspace-hero-cube.css?v=2"></head>
 <body data-sdkspace-page="intro">
 
 <div class="phone">
@@ -295,11 +295,10 @@
       </h1>
       <div class="hero-stage">
         <div class="hero-cube" aria-hidden="true">
-          <video autoplay muted loop playsinline preload="metadata" poster="/assets/sdkspace-cube-poster.png">
-            <source src="/assets/sdkspace-cube-512-hevc.mov" type='video/mp4; codecs="hvc1"'>
-            <source src="/assets/sdkspace-cube-512.webm" type="video/webm">
-          </video>
-          <img class="hero-cube-still" src="/assets/sdkspace-cube-poster.png" alt="" width="150" height="140">
+          <picture>
+            <source srcset="/assets/sdkspace-cube-hero-poster.webp" media="(prefers-reduced-motion: reduce)" type="image/webp">
+            <img src="/assets/sdkspace-cube-hero.webp" alt="" width="150" height="136" decoding="async">
+          </picture>
         </div>
         <p class="lede">Chat, create images and connect your application through the SDK. Start with the guide, then test a real request.</p>
       </div>

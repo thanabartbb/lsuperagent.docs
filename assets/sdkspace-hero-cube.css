@@ -6,15 +6,12 @@
   width:150px;height:136px;transform:translateX(-50%);
   opacity:.5;pointer-events:none;
 }
-.hero-cube video,.hero-cube img{width:100%;height:100%;object-fit:contain;display:block}
-.hero-cube .hero-cube-still{display:none}
-@media (prefers-reduced-motion: reduce){
-  .hero-cube video{display:none}
-  .hero-cube .hero-cube-still{display:block}
-}
+.hero-cube picture,.hero-cube img{width:100%;height:100%;object-fit:contain;display:block}
+/* Animated WebP for every browser (Safari included: transparent, no <video> black box, autoplays in iOS Low Power Mode).
+   prefers-reduced-motion is handled by the <picture> <source> -> static poster. */
 /* Alternative placement: cube as its own block between heading and lede. */
 .hero-stage--block{min-height:0;padding-top:0}
-.hero-stage--block .hero-cube{position:static;transform:none;margin:12px auto -6px;width:150px;height:130px;opacity:1}
+.hero-stage--block .hero-cube{position:static;transform:none;margin:12px auto -6px;width:150px;height:136px;opacity:1}
 .hero-stage--block .lede{text-shadow:none}
 
 /* Heading option A: wordmark only */

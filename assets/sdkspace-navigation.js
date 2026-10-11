@@ -4,11 +4,13 @@ if (toggle && nav) {
   toggle.addEventListener('click', () => {
     nav.hidden = !nav.hidden;
     toggle.setAttribute('aria-expanded', String(!nav.hidden));
+    if (document.body.dataset.sdkspacePage === 'home') toggle.setAttribute('aria-label', nav.hidden ? 'Open navigation' : 'Close navigation');
   });
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') {
+    if (event.key === 'Escape' && !nav.hidden) {
       nav.hidden = true;
       toggle.setAttribute('aria-expanded', 'false');
+      if (document.body.dataset.sdkspacePage === 'home') toggle.setAttribute('aria-label', 'Open navigation');
       toggle.focus();
     }
   });

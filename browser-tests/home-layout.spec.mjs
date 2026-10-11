@@ -36,7 +36,7 @@ for (const mode of ['normal', 'docs']) {
       await page.evaluate(() => document.fonts.ready);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(/SDKSPACE/);
       await expect(page.getByRole('link', { name: 'Quickstart', exact: true })).toHaveAttribute('href', '/docs/quickstart');
-      await expect(page.getByRole('button', { name: 'Coming Soon' })).toBeDisabled();
+      await expect(page.locator('.cta-row .btn-primary')).toHaveAttribute('href', '/tools');
       const metrics = await page.evaluate(() => ({
         viewport: innerWidth, scroll: document.documentElement.scrollWidth,
         shell: document.querySelector('.phone').getBoundingClientRect().width,
@@ -53,13 +53,13 @@ for (const mode of ['normal', 'docs']) {
       const toggle = page.getByRole('button', { name: 'Open navigation' });
       await toggle.focus();
       await page.keyboard.press('Enter');
-      await expect(page.getByRole('navigation')).toBeVisible();
+      await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Close navigation' })).toHaveAttribute('aria-expanded', 'true');
       await page.keyboard.press('Tab');
       const outline = await page.evaluate(() => getComputedStyle(document.activeElement).outlineStyle);
       expect(outline).not.toBe('none');
       await page.keyboard.press('Escape');
-      await expect(page.getByRole('navigation')).toBeHidden();
+      await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeHidden();
       await expect(page.getByRole('button', { name: 'Open navigation' })).toBeFocused();
       await page.getByRole('link', { name: 'Quickstart', exact: true }).focus();
       await page.keyboard.press('Escape');

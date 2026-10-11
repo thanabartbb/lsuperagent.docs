@@ -41,12 +41,21 @@ footer{margin-top:44px;color:var(--muted);font-size:.84rem;border-top:1px solid 
 </style>
 <link rel="stylesheet" href="/assets/layout.css?v=1">
 <link rel="stylesheet" href="/assets/theme.css?v=4"><link rel="stylesheet" href="/assets/editorial.css?v=1">
+<link rel="stylesheet" href="/assets/sdkspace-ui.css?v=1">
 </head>
-<body class="sdk-layout sdk-simple">
-<header class="sdk-site-header"><div class="sdk-frame sdk-header-row">
-    <a class="brand-link" href="/home" aria-label="SDKSPACE หน้าแรก"><strong><img src="/assets/sdkspace-logo.svg" alt="" width="22" height="22">SDKSPACE</strong></a>
-    <nav aria-label="เมนูหลัก"><a href="/home">หน้าแรก</a><a href="/chat">แชท</a><a href="/docs">เอกสาร</a><a href="/guide">Playground</a><a href="/news" aria-current="page">ข่าว AI</a><a href="/auth/logout">ออกจากระบบ</a></nav>
-  </div></header>
+<body class="sdk-layout sdk-simple" data-shell-page="news">
+<header class="product-header sdk-site-header sdk-workspace-header" data-app-shell>
+  <div class="sdk-frame sdk-header-row">
+    <a class="brand" href="/home"><img src="/assets/sdkspace-logo.svg" alt="" width="26" height="26"><span>SDKSPACE</span></a>
+    <nav class="shell-nav" aria-label="เมนูหลัก"><a class="shell-nav-link" href="/home" data-shell-nav="home">Home</a><a class="shell-nav-link" href="/chat" data-shell-nav="chat">Chat</a><a class="shell-nav-link" href="/tools" data-shell-nav="tools">Tools</a><a class="shell-nav-link" href="/docs" data-shell-nav="docs">Docs</a><a class="shell-nav-link" href="/guide" data-shell-nav="guide">Guide</a><a class="shell-nav-link" href="/news" data-shell-nav="news">News</a><a class="shell-nav-link" href="/exa" data-shell-nav="exa">Exa</a><a class="shell-nav-link" href="/keys" data-shell-nav="keys">Keys</a><a class="shell-nav-link" href="/dev" data-shell-nav="dev" hidden>Owner</a></nav>
+    <div class="shell-end">
+      <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">DOCS MODE</button>
+      <button class="shell-menu-btn" type="button" aria-expanded="false" aria-controls="shell-mobile-panel" aria-label="เปิดเมนู"><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      <a class="shell-logout" href="/auth/logout">Sign out</a>
+    </div>
+  </div>
+  <div class="shell-mobile-panel" id="shell-mobile-panel" hidden></div>
+</header>
 <main class="sdk-frame sdk-page-content">
 
 
@@ -54,20 +63,23 @@ footer{margin-top:44px;color:var(--muted);font-size:.84rem;border-top:1px solid 
   <p class="lead">เลือกแหล่งข่าว อ่านประเด็นที่เกี่ยวข้อง และเปิดบทความต้นฉบับเพื่อประเมินสิ่งที่จะนำไปใช้</p>
 
   <div class="tabs" role="tablist" aria-label="แหล่งข่าว">
-    <button class="tab" role="tab" data-source="all">ทั้งหมด</button>
-    <button class="tab" role="tab" data-source="openai">OpenAI</button>
-    <button class="tab" role="tab" data-source="anthropic">Anthropic</button>
-    <button class="tab" role="tab" data-source="claude">Claude</button>
-    <button class="tab" role="tab" data-source="grok">Grok</button>
-    <button class="tab" role="tab" data-source="ai">AI News</button>
-    <button class="tab" role="tab" data-source="community">Community</button>
+    <button class="tab" role="tab" data-source="all" id="news-tab-all" aria-controls="news-panel">ทั้งหมด</button>
+    <button class="tab" role="tab" data-source="openai" id="news-tab-openai" aria-controls="news-panel">OpenAI</button>
+    <button class="tab" role="tab" data-source="anthropic" id="news-tab-anthropic" aria-controls="news-panel">Anthropic</button>
+    <button class="tab" role="tab" data-source="claude" id="news-tab-claude" aria-controls="news-panel">Claude</button>
+    <button class="tab" role="tab" data-source="grok" id="news-tab-grok" aria-controls="news-panel">Grok</button>
+    <button class="tab" role="tab" data-source="ai" id="news-tab-ai" aria-controls="news-panel">AI News</button>
+    <button class="tab" role="tab" data-source="community" id="news-tab-community" aria-controls="news-panel">Community</button>
   </div>
   <p class="status" id="news-status" aria-live="polite">กำลังโหลด…</p>
-  <ul class="list" id="news-list" aria-label="รายการข่าว"></ul>
+  <section id="news-panel" role="tabpanel" aria-labelledby="news-tab-all"><ul class="list" id="news-list" aria-label="รายการข่าว"></ul></section>
 
   <footer>แหล่งข่าว: OpenAI RSS · GitHub releases ของ Claude Code · Hacker News (Anthropic, Grok, AI) · GitHub repos หัวข้อ <code>ai-agents</code> ที่สร้างใน 30 วันล่าสุด</footer>
 </main>
 <script src="/assets/news.js" defer></script>
+<script src="/app-shell.js" defer></script>
+<script src="/assets/theme-modes.js" defer></script>
+<script src="/assets/sdkspace-ui.js" defer></script>
 </body>
 </html>
 

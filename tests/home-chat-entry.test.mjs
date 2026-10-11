@@ -5,10 +5,10 @@ import { readFile } from 'node:fs/promises';
 const load = (path) => readFile(new URL('../' + path, import.meta.url), 'utf8');
 
 for (const path of ['home.html', 'loading.html']) {
-  test(path + ' routes the Build Faster card to chat and reserves the primary CTA', async () => {
+  test(path + ' keeps chat entry and opens an existing workspace or sign-in route', async () => {
     const html = await load(path);
     assert.match(html, /<a class="mini-card guide-link" href="\/chat" aria-label="Build Faster/);
-    assert.match(html, /<button class="btn-primary btn-primary-pending" type="button" disabled>Coming Soon<\/button>/);
+    assert.match(html, path === 'home.html' ? /<a class="btn-primary" href="\/tools">Open Workspace<\/a>/ : /<a class="btn-primary" href="\/login">Get started<\/a>/);
     assert.doesNotMatch(html, /<a class="btn-primary" href="\/chat"/);
     assert.match(html, /<a class="mini-card guide-link" href="\/docs"/);
   });

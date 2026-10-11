@@ -10,9 +10,21 @@
 </style>
 <link rel="stylesheet" href="/assets/layout.css?v=1">
 <link rel="stylesheet" href="/assets/theme.css?v=4"><link rel="stylesheet" href="/assets/editorial.css?v=1">
+<link rel="stylesheet" href="/assets/sdkspace-ui.css?v=1">
 </head>
-<body data-ls-code-drop="v2" class="sdk-layout sdk-standard">
-<header class="top sdk-site-header"><div class="sdk-frame sdk-header-row"><div class="brand"><img class="brand-mark" src="/assets/sdkspace-logo.svg" alt="" width="22" height="22"><div><div>SDKSPACE</div><div class="tag">CODE DROP · CLIENT-SIDE SECRET REDACTION</div></div></div><a class="back" href="/dev">กลับ /dev</a></div></header>
+<body data-ls-code-drop="v2" class="sdk-layout sdk-standard" data-shell-page="dev-code-drop">
+<header class="product-header sdk-site-header sdk-workspace-header" data-app-shell>
+  <div class="sdk-frame sdk-header-row">
+    <a class="brand" href="/home"><img src="/assets/sdkspace-logo.svg" alt="" width="26" height="26"><span>SDKSPACE</span></a>
+    <nav class="shell-nav" aria-label="เมนูหลัก"><a class="shell-nav-link" href="/home" data-shell-nav="home">Home</a><a class="shell-nav-link" href="/chat" data-shell-nav="chat">Chat</a><a class="shell-nav-link" href="/tools" data-shell-nav="tools">Tools</a><a class="shell-nav-link" href="/docs" data-shell-nav="docs">Docs</a><a class="shell-nav-link" href="/guide" data-shell-nav="guide">Guide</a><a class="shell-nav-link" href="/news" data-shell-nav="news">News</a><a class="shell-nav-link" href="/exa" data-shell-nav="exa">Exa</a><a class="shell-nav-link" href="/keys" data-shell-nav="keys">Keys</a><a class="shell-nav-link" href="/dev" data-shell-nav="dev" hidden>Owner</a></nav>
+    <div class="shell-end">
+      <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">DOCS MODE</button>
+      <button class="shell-menu-btn" type="button" aria-expanded="false" aria-controls="shell-mobile-panel" aria-label="เปิดเมนู"><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      <a class="shell-logout" href="/auth/logout">Sign out</a>
+    </div>
+  </div>
+  <div class="shell-mobile-panel" id="shell-mobile-panel" hidden></div>
+</header>
 <div class="bp" aria-hidden="true"></div>
 <main class="wrap sdk-frame">
 
@@ -25,11 +37,11 @@
 <section class="grid">
 <div class="card">
 <h2>Input</h2>
-<div class="row"><div><label>ชื่อไฟล์ / module</label><input id="name" value="openai-generation-bridge.ts"/></div><div><label>เป้าหมายที่อยากให้ตรวจ</label><input id="goal" value="review OpenAI API generation bridge and suggest integration path"/></div></div>
-<label>วางโค้ดที่นี่</label>
+<div class="row"><div><label for="name">ชื่อไฟล์ / module</label><input id="name" value="openai-generation-bridge.ts"/></div><div><label for="goal">เป้าหมายที่อยากให้ตรวจ</label><input id="goal" value="review OpenAI API generation bridge and suggest integration path"/></div></div>
+<label for="code">วางโค้ดที่นี่</label>
 <textarea id="code" spellcheck="false" placeholder="paste long code here..."></textarea>
 <div class="actions"><button class="btn primary" id="scan" type="button">Scan + Redact</button><button class="btn" id="copy" type="button">Copy review packet</button><button class="btn" id="download" type="button">Download .md</button><button class="btn danger" id="clear" type="button">Clear</button></div>
-<div class="status warn" id="status">พร้อมรับโค้ด · วางแล้วระบบจะสแกนอัตโนมัติ หรือกด Scan + Redact</div>
+<div class="status warn" id="status" role="status" aria-live="polite">พร้อมรับโค้ด · วางแล้วระบบจะสแกนอัตโนมัติ หรือกด Scan + Redact</div>
 <p class="small">ดาวน์โหลดชุดตรวจโค้ดหรือคัดลอกไปใช้กับผู้ช่วยพัฒนา</p>
 </div>
 <div class="card">
@@ -148,6 +160,9 @@
   });
 })();
 </script>
+<script src="/app-shell.js" defer></script>
+<script src="/assets/theme-modes.js" defer></script>
+<script src="/assets/sdkspace-ui.js" defer></script>
 </body>
 </html>
 

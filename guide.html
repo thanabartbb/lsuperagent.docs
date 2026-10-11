@@ -74,13 +74,21 @@ footer{margin-top:44px;color:var(--muted);font-size:.84rem;border-top:1px solid 
 <link rel="stylesheet" href="/assets/guide-core.css?v=4">
 <link rel="stylesheet" href="/assets/theme-modes.css?v=3">
 <link rel="stylesheet" href="/assets/editorial.css?v=1">
+<link rel="stylesheet" href="/assets/sdkspace-ui.css?v=1">
 </head>
-<body class="sdk-layout sdk-simple">
-<header class="sdk-site-header"><div class="sdk-frame sdk-header-row">
-    <a class="brand-link" href="/home" aria-label="SDKSPACE หน้าแรก"><strong><img src="/assets/sdkspace-logo.svg" alt="" width="22" height="22">SDKSPACE</strong></a>
-    <nav aria-label="เมนูหลัก"><a href="/home">หน้าแรก</a><a href="/chat">แชท</a><a href="/docs">เอกสาร</a><a href="/guide" aria-current="page">Playground</a><a href="/keys">API keys</a><a href="/auth/logout">ออกจากระบบ</a></nav>
-    <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">DOCS MODE</button>
-  </div></header>
+<body class="sdk-layout sdk-simple" data-shell-page="guide">
+<header class="product-header sdk-site-header sdk-workspace-header" data-app-shell>
+  <div class="sdk-frame sdk-header-row">
+    <a class="brand" href="/home"><img src="/assets/sdkspace-logo.svg" alt="" width="26" height="26"><span>SDKSPACE</span></a>
+    <nav class="shell-nav" aria-label="เมนูหลัก"><a class="shell-nav-link" href="/home" data-shell-nav="home">Home</a><a class="shell-nav-link" href="/chat" data-shell-nav="chat">Chat</a><a class="shell-nav-link" href="/tools" data-shell-nav="tools">Tools</a><a class="shell-nav-link" href="/docs" data-shell-nav="docs">Docs</a><a class="shell-nav-link" href="/guide" data-shell-nav="guide">Guide</a><a class="shell-nav-link" href="/news" data-shell-nav="news">News</a><a class="shell-nav-link" href="/exa" data-shell-nav="exa">Exa</a><a class="shell-nav-link" href="/keys" data-shell-nav="keys">Keys</a><a class="shell-nav-link" href="/dev" data-shell-nav="dev" hidden>Owner</a></nav>
+    <div class="shell-end">
+      <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">DOCS MODE</button>
+      <button class="shell-menu-btn" type="button" aria-expanded="false" aria-controls="shell-mobile-panel" aria-label="เปิดเมนู"><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      <a class="shell-logout" href="/auth/logout">Sign out</a>
+    </div>
+  </div>
+  <div class="shell-mobile-panel" id="shell-mobile-panel" hidden></div>
+</header>
 <main class="sdk-frame sdk-page-content">
 
 
@@ -228,12 +236,12 @@ try {
   <section class="step" id="runtimes">
     <div class="step-head"><div><div class="step-num">STEP 9</div><h2>ใช้ใน Node.js / Cloudflare Workers / curl</h2></div></div>
     <div class="tabs" role="tablist" aria-label="ตัวอย่างตาม runtime">
-      <button class="tab" role="tab" aria-selected="true" data-tab="node">Node.js (ESM)</button>
-      <button class="tab" role="tab" aria-selected="false" data-tab="cjs">CommonJS</button>
-      <button class="tab" role="tab" aria-selected="false" data-tab="worker">Cloudflare Worker</button>
-      <button class="tab" role="tab" aria-selected="false" data-tab="curl">curl</button>
+      <button class="tab" role="tab" aria-selected="true" data-tab="node" id="runtime-tab-node" aria-controls="runtime-panel-node">Node.js (ESM)</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="cjs" id="runtime-tab-cjs" aria-controls="runtime-panel-cjs">CommonJS</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="worker" id="runtime-tab-worker" aria-controls="runtime-panel-worker">Cloudflare Worker</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="curl" id="runtime-tab-curl" aria-controls="runtime-panel-curl">curl</button>
     </div>
-    <div class="code" data-panel="node"><pre data-template>// quickstart.mjs — รัน: LSUPERGEN_API_KEY=lsg_... node quickstart.mjs
+    <div class="code" data-panel="node" id="runtime-panel-node" role="tabpanel" aria-labelledby="runtime-tab-node"><pre data-template>// quickstart.mjs — รัน: LSUPERGEN_API_KEY=lsg_... node quickstart.mjs
 import { Lsupergen, APIError } from 'lsupergen-sdk';
 
 const client = new Lsupergen({ baseURL: '{{BASE}}' });
@@ -248,7 +256,7 @@ try {
   else throw err;
   process.exitCode = 1;
 }</pre></div>
-    <div class="code" data-panel="cjs" hidden><pre data-template>// quickstart.cjs
+    <div class="code" data-panel="cjs" id="runtime-panel-cjs" role="tabpanel" aria-labelledby="runtime-tab-cjs" hidden><pre data-template>// quickstart.cjs
 const { Lsupergen } = require('lsupergen-sdk');
 
 const client = new Lsupergen({ baseURL: '{{BASE}}' });
@@ -256,7 +264,7 @@ const client = new Lsupergen({ baseURL: '{{BASE}}' });
 client.post('/chat', { body: { message: 'สวัสดี' } })
   .then((reply) => console.log(reply.message))
   .catch((err) => { console.error(err.status, err.body); process.exitCode = 1; });</pre></div>
-    <div class="code" data-panel="worker" hidden><pre data-template>// src/index.js — เก็บ key ด้วย: npx wrangler secret put LSUPERGEN_API_KEY
+    <div class="code" data-panel="worker" id="runtime-panel-worker" role="tabpanel" aria-labelledby="runtime-tab-worker" hidden><pre data-template>// src/index.js — เก็บ key ด้วย: npx wrangler secret put LSUPERGEN_API_KEY
 import { Lsupergen, APIError } from 'lsupergen-sdk';
 
 export default {
@@ -276,7 +284,7 @@ export default {
     }
   },
 };</pre></div>
-    <div class="code" data-panel="curl" hidden><pre data-template>curl -sS {{BASE}}/health
+    <div class="code" data-panel="curl" id="runtime-panel-curl" role="tabpanel" aria-labelledby="runtime-tab-curl" hidden><pre data-template>curl -sS {{BASE}}/health
 
 curl -sS {{BASE}}/me \
   -H "Authorization: Bearer $LSUPERGEN_API_KEY"
@@ -321,6 +329,8 @@ curl -sS {{BASE}}/chat \
 </main>
 <script src="/assets/theme-modes.js?v=2" defer></script>
 <script type="module" src="/assets/guide.js"></script>
+<script src="/app-shell.js" defer></script>
+<script src="/assets/sdkspace-ui.js" defer></script>
 </body>
 </html>
 

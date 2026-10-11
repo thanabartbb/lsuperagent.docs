@@ -1,0 +1,63 @@
+@import url('/assets/fonts/space-grotesk.css');
+@import url('/assets/fonts/noto-sans-thai.css');
+
+/* Material 3 reference → system roles. Components use roles, not raw colors. */
+:root {
+  --sdk-ref-black: #000000;
+  --sdk-ref-blue: #0fa3d9;
+  --sdk-ref-ice: #8fc4ff;
+  --sdk-ref-purple: #c8b2e3;
+  --sdk-font: 'Space Grotesk', 'Noto Sans Thai', system-ui, sans-serif;
+  --sdk-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sdk-radius-sm: 12px;
+  --sdk-radius-md: 20px;
+  --sdk-target: 48px;
+  --sdk-space-1: 8px;
+  --sdk-space-2: 16px;
+  --sdk-space-3: 24px;
+  --sdk-space-4: 32px;
+  --sdk-motion: 160ms;
+}
+:root:not([data-theme='docs']), :root[data-theme='docs'] {
+  --sdk-sys-background: var(--sdk-ref-black);
+  --sdk-sys-surface: #070c16;
+  --sdk-sys-surface-container: #101828;
+  --sdk-sys-on-surface: #f3f6fc;
+  --sdk-sys-on-surface-variant: #b4bfd0;
+  --sdk-sys-primary: var(--sdk-ref-ice);
+  --sdk-sys-on-primary: #041426;
+  --sdk-sys-outline: #70839f;
+  --sdk-sys-outline-variant: #263751;
+  --sdk-sys-error: #ffb4ab;
+  --sdk-sys-success: #a0dfbc;
+  --bg: var(--sdk-sys-background) !important;
+  --surface: var(--sdk-sys-surface) !important;
+  --surface2: var(--sdk-sys-surface-container) !important;
+  --panel: var(--sdk-sys-surface) !important;
+  --panel2: var(--sdk-sys-surface-container) !important;
+  --text: var(--sdk-sys-on-surface) !important;
+  --fg: var(--sdk-sys-on-surface) !important;
+  --muted: var(--sdk-sys-on-surface-variant) !important;
+  --text-muted: var(--sdk-sys-on-surface-variant) !important;
+  --fg2: var(--sdk-sys-on-surface-variant) !important;
+  --fg3: var(--sdk-sys-on-surface-variant) !important;
+  --accent: var(--sdk-sys-primary) !important;
+  --acc: var(--sdk-sys-primary) !important;
+  --line: var(--sdk-sys-outline-variant) !important;
+  --border: var(--sdk-sys-outline-variant) !important;
+  --border-strong: var(--sdk-sys-outline) !important;
+  --sans: var(--sdk-font) !important;
+  --font: var(--sdk-font) !important;
+  --sdk-content-font: var(--sdk-font) !important;
+  --mono: var(--sdk-mono) !important;
+}
+:root[data-theme='docs'] {
+  --sdk-sys-surface: #0a0a0a;
+  --sdk-sys-surface-container: #111111;
+  --sdk-sys-on-surface-variant: #b8b2c1;
+  --sdk-sys-primary: var(--sdk-ref-purple);
+  --sdk-sys-on-primary: #201329;
+  --sdk-sys-outline: #8b7a9c;
+  --sdk-sys-outline-variant: #393341;
+}
+@media (prefers-reduced-motion: reduce) { :root { --sdk-motion: 0ms; } }

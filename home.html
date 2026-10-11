@@ -251,7 +251,8 @@
   #who{font-size:12px;color:#8b96a8;margin-bottom:20px;overflow-wrap:anywhere;}
   [hidden]{display:none!important;}
 </style>
-<link rel="icon" href="/assets/sdkspace-logo.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/sdkspace-reference-modes.css?v=2"><link rel="stylesheet" href="/assets/sdkspace-hero-cube.css?v=2"><link rel="stylesheet" href="/assets/sdkspace-home.css?v=1"></head>
+<link rel="icon" href="/assets/sdkspace-logo.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/sdkspace-reference-modes.css?v=2"><link rel="stylesheet" href="/assets/sdkspace-hero-cube.css?v=2"><link rel="stylesheet" href="/assets/sdkspace-home.css?v=1"><link rel="stylesheet" href="/assets/sdkspace-ui.css?v=1">
+</head>
 <body data-sdkspace-page="home">
 
 <div class="phone">
@@ -277,7 +278,7 @@
     <path d="M 40 260 A 220 220 0 0 1 480 260" fill="none" stroke="url(#flow)" stroke-width="2"/>
   </svg>
 
-  <div class="content">
+  <main class="content" id="main-content" tabindex="-1">
     <header>
       <a class="logo brand-link" href="/loading" aria-label="SDKSPACE introduction">
         <img class="cube-icon" src="/assets/sdkspace-logo.svg" alt="" width="22" height="22">
@@ -304,7 +305,7 @@
       </div>
 
       <div class="cta-row">
-        <button class="btn-primary btn-primary-pending" type="button" disabled>Coming Soon</button>
+        <a class="btn-primary" href="/tools">Open Workspace</a>
         <a class="btn-play" href="/guide" aria-label="Open Playground">
           <svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg>
         </a>
@@ -369,9 +370,10 @@ const client = new Lsupergen({
 });
 const me = await client.get('/me');
 const reply = await client.post('/chat', { body: { message: 'Hello' } });</code></pre></section>
-  </div>
+  </main>
 </div>
 <script type="module" src="/assets/code-window.js"></script>
 <script src="/assets/sdkspace-navigation.js?v=1" defer></script>
+<script src="/assets/sdkspace-ui.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,25 @@
+/* SDKSPACE animated cube: single hero visual on /home and /loading (additive). */
+.hero-stage{position:relative;min-height:136px;padding-top:4px}
+.hero-stage .lede{position:relative;z-index:1;text-shadow:0 1px 10px rgba(3,5,9,.85)}
+.hero-cube{
+  position:absolute;left:50%;top:0;z-index:0;
+  width:150px;height:136px;transform:translateX(-50%);
+  opacity:.5;pointer-events:none;
+}
+.hero-cube picture,.hero-cube img{width:100%;height:100%;object-fit:contain;display:block}
+/* Animated WebP for every browser (Safari included: transparent, no <video> black box, autoplays in iOS Low Power Mode).
+   prefers-reduced-motion is handled by the <picture> <source> -> static poster. */
+/* Alternative placement: cube as its own block between heading and lede. */
+.hero-stage--block{min-height:0;padding-top:0}
+.hero-stage--block .hero-cube{position:static;transform:none;margin:12px auto -6px;width:150px;height:136px;opacity:1}
+.hero-stage--block .lede{text-shadow:none}
+
+/* Heading option A: wordmark only */
+h1.hero-title--solo .line2{font-size:42px;line-height:1.05;letter-spacing:-1px}
+/* Heading option B: quiet lead-in + wordmark lockup */
+h1.hero-title--lockup .line1{font-size:16px;line-height:1.3;font-weight:500;letter-spacing:.3px;color:#aab6c8;margin-bottom:6px}
+h1.hero-title--lockup .line2{font-size:40px;line-height:1.05;letter-spacing:-1px}
+
+/* Docs (muted) theme: keep the cube subdued */
+html[data-theme="docs"] .hero-cube{opacity:.32;filter:saturate(.3)}
+html[data-theme="docs"] h1.hero-title--lockup .line1{color:#9a9a9a}

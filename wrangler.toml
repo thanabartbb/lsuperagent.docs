@@ -25,3 +25,25 @@ binding = "DB"
 database_name = "agentssdkspace"
 database_id = "cd8c2695-040b-443c-8bbd-6d798d72a0d5"
 migrations_dir = "migrations"
+
+# Mirrors dashboard-only config on the live Worker (version 340, 2026-10-11) so a
+# wrangler deploy/versions upload does not drop it.
+[[durable_objects.bindings]]
+name = "Durable_Ob_ject"
+class_name = "ChatAgent"
+script_name = "agent-starter"
+
+[observability]
+enabled = false
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = true
+persist = true
+head_sampling_rate = 1

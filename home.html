@@ -252,6 +252,7 @@
   [hidden]{display:none!important;}
 </style>
 <link rel="icon" href="/assets/sdkspace-logo.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/sdkspace-reference-modes.css?v=2"><link rel="stylesheet" href="/assets/sdkspace-hero-cube.css?v=2"><link rel="stylesheet" href="/assets/sdkspace-home.css?v=1"><link rel="stylesheet" href="/assets/sdkspace-ui.css?v=1">
+<link rel="stylesheet" href="/assets/blogs.css?v=1">
 </head>
 <body data-sdkspace-page="home">
 
@@ -286,7 +287,7 @@
       </a>
       <button class="burger" type="button" aria-label="Open navigation" aria-controls="site-nav" aria-expanded="false"><span></span><span></span><span></span></button>
     </header><p id="who" role="status" hidden></p>
-    <nav id="site-nav" hidden aria-label="Main navigation"><a href="/home">Open Workspace</a><a href="/chat">AI Chat</a><a class="login" href="/docs">Docs</a><a href="/guide">Step into the SDK</a><a href="/keys">API keys</a><a href="/tools">Tools</a><a href="/news">AI News</a><a href="/auth/logout" data-signout hidden>Sign out</a><button class="theme-toggle" type="button" data-theme-toggle>Docs mode</button></nav>
+    <nav id="site-nav" hidden aria-label="Main navigation"><a href="/home">Open Workspace</a><a href="/chat">AI Chat</a><a class="login" href="/docs">Docs</a><a href="/guide">Step into the SDK</a><a href="/keys">API keys</a><a href="/tools">Tools</a><a href="/news">AI News</a><a href="/blogs">Blogs</a><a href="/auth/logout" data-signout hidden>Sign out</a><button class="theme-toggle" type="button" data-theme-toggle>Docs mode</button></nav>
 
     <div class="hero">
       <div class="badge"><span class="dot"></span>BUILT FOR DEVELOPERS</div>
@@ -294,7 +295,7 @@
         <span class="line1">Build with</span>
         <span class="line2">SDKSPACE</span>
       </h1>
-      <div class="hero-stage">
+      <div class="hero-stage hero-stage--block">
         <div class="hero-cube" aria-hidden="true">
           <picture>
             <source srcset="/assets/sdkspace-cube-hero-poster.webp" media="(prefers-reduced-motion: reduce)" type="image/webp">
@@ -370,6 +371,7 @@ const client = new Lsupergen({
 });
 const me = await client.get('/me');
 const reply = await client.post('/chat', { body: { message: 'Hello' } });</code></pre></section>
+    <section class="blog-home-entry" aria-labelledby="home-blogs-title"><p class="blog-eyebrow">LEARN IN PUBLIC</p><h2 id="home-blogs-title">Developer notes จากงานจริง</h2><p>อ่านบทเรียน frontend เริ่มใช้ Responses API และติดตามข้อมูล OpenAI พร้อมแหล่งอ้างอิง</p><a class="blog-read" href="/blogs">เปิด Blogs <span aria-hidden="true">→</span></a><a class="blog-read" href="/blogs/css-cascade-contrast">อ่าน TIL ล่าสุด</a></section>
   </main>
 </div>
 <script type="module" src="/assets/code-window.js"></script>

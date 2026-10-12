@@ -3,7 +3,8 @@
 Production source for `https://agents-sdk.space` in `thanabartbb/lsuperagent.docs`.
 
 Last updated: 2026-10-12 (Asia/Bangkok)
-Latest frontend work: responsive shared UI on `feat/frontend-ui-20261012`; production publication is separate.
+Frontend PR #51 was merged into `main` on 2026-10-12. Its Cloudflare Workers build completed successfully; live service verification is separate.
+Current review work: public Blogs and first-page entry points on `feat/public-blogs-20261012`.
 
 ## Runtime
 
@@ -12,6 +13,7 @@ Latest frontend work: responsive shared UI on `feat/frontend-ui-20261012`; produ
 | Surface | Route / source |
 | --- | --- |
 | Public authentication | `/login`, `/signup`, `/forgot-password`; `firebase-auth.js` |
+| Public Blogs | `/blogs`, `/blogs/:slug`; server-rendered HTML or Markdown, no sign-in required |
 | Public introduction | `/loading`; Get started opens `/login` |
 | Public, session-aware home | `/home`; successful login and authenticated root default here; Open Workspace opens `/tools` |
 | Agent Starter chat | `/chat`; Agent Starter UI through the internal `AGENT_STARTER` service binding |
@@ -83,3 +85,9 @@ Cloudflare Access/WAF challenges are upstream of this Worker and require separat
 `/chat` presents the existing `agent-starter` UI on SDKSPACE using the internal service binding. `/agent-chat` and `/chat.html` redirect to `/chat`; if the binding is unavailable, the signed-in user receives the classic chat fallback. UI assets use `/agent-ui/assets/` and require a session. The adapter inserts the server-derived per-user Agent instance into the supported bundle; it never uses the shared default instance. Responses are private/no-store, and no auth cookie or token is passed when fetching UI assets. Unsupported upstream builds fall back to the classic chat page. Agent Starter retains its own provider/tool configuration and usage policy; the classic chat quota is not applied to its runtime.
 
 Docker Hub supplies images, not an execution environment. Running containers requires an explicitly provisioned Containers service or another isolated runner, plus per-user quotas, image policy and runtime limits. No Docker execution capability is claimed or enabled by this UI integration.
+
+## Developer Blogs
+
+Blogs use reviewed, versioned content in `src/blog-content.js` and the existing public Worker route flow through `src/blogs.js`. Search/category filters work without JavaScript. `/blog` redirects to `/blogs`; article URLs are included in the sitemap. Add editorial articles with a title, excerpt, category, dates, structured sections and primary source links. Dates describe editorial review, not automated daily updates.
+
+Run `node --test tests/blogs.test.mjs` and `npx playwright test browser-tests/blogs.spec.mjs --workers=1` in addition to existing checks. No CMS, email trigger, R2 ingestion, Vectorize pipeline or provider model change is enabled by this frontend work. See [the preserved Cloudflare workflow brief](docs/cloudflare-workflows-brief-20261012.md) for the owner requirements and prerequisites.

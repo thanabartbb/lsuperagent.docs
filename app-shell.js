@@ -35,10 +35,29 @@
   rebuildMobileNav();
 
   if (menuBtn && panel) {
+    function setMenu(open, returnFocus = false) {
+      menuBtn.setAttribute('aria-expanded', String(open));
+      menuBtn.setAttribute('aria-label', open ? 'ปิดเมนู' : 'เปิดเมนู');
+      panel.hidden = !open;
+      if (returnFocus) menuBtn.focus();
+    }
     menuBtn.addEventListener('click', () => {
       const open = menuBtn.getAttribute('aria-expanded') === 'true';
-      menuBtn.setAttribute('aria-expanded', open ? 'false' : 'true');
-      panel.hidden = open;
+      setMenu(!open);
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !panel.hidden) setMenu(false, true);
+    });
+    document.addEventListener('click', event => {
+      if (!panel.hidden && !root.contains(event.target)) setMenu(false);
+    });
+    panel.addEventListener('click', event => {
+      if (event.target.closest('a')) setMenu(false);
+    });
+    window.matchMedia('(min-width: 1100px)').addEventListener('change', () => {
+      const focusWasInPanel = panel.contains(document.activeElement);
+      setMenu(false);
+      if (focusWasInPanel) root.querySelector('.brand')?.focus();
     });
   }
 

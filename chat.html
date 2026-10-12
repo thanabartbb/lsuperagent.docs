@@ -269,6 +269,7 @@
   </style>
 <link rel="stylesheet" href="/assets/layout.css?v=1">
 <link rel="stylesheet" href="/assets/theme.css?v=4"><link rel="stylesheet" href="/assets/editorial.css?v=1"><link rel="stylesheet" href="/assets/chat-tools.css?v=1">
+<link rel="stylesheet" href="/assets/sdkspace-ui.css?v=1">
 </head>
 <body class="sdk-layout sdk-chat">
   <header class="top sdk-site-header"><div class="sdk-frame sdk-header-row">
@@ -279,7 +280,8 @@
       <button type="button" id="signout">Sign out</button>
     </nav>
   </div></header>
-<main class="sdk-frame sdk-chat-content">
+<main class="sdk-frame sdk-chat-content" aria-labelledby="chat-title">
+  <h1 class="sdk-sr-only" id="chat-title">SDKSPACE Chat</h1>
 
   <div class="bar">
     <span id="mode-label" class="mode-label">แชท</span>
@@ -336,5 +338,7 @@
 
 </main>
   <script src="/assets/chat.js?v=12"></script>
+<script src="/assets/sdkspace-ui.js" defer></script>
+<script src="/assets/theme-modes.js" defer></script>
 </body>
 </html>

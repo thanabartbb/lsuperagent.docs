@@ -98,10 +98,14 @@ async function show(slug, { push = false, hash = '' } = {}) {
   if (push) history.pushState({}, '', `/docs/${slug}${hash}`);
   renderSidebar(slug);
   setMenu(false);
+  content.setAttribute('aria-busy', 'true');
+  content.innerHTML = '<p class="muted" role="status">กำลังโหลดเอกสาร…</p>';
+  toc.innerHTML = '';
   if (!page) {
     document.title = 'ไม่พบหน้า · SDKSPACE Docs';
     content.innerHTML = `<h1>ไม่พบหน้านี้</h1><p class="lead">ไม่มีเอกสาร <code>${slug}</code> ลองเลือกจากเมนู หรือกลับไปที่ <a href="/docs/introduction">การแนะนำ</a></p>`;
     toc.innerHTML = '';
+    content.setAttribute('aria-busy', 'false');
     return;
   }
   let html = null;
@@ -117,6 +121,7 @@ async function show(slug, { push = false, hash = '' } = {}) {
   document.title = `${page.title} · SDKSPACE Docs`;
   enhance();
   renderPager(slug);
+  content.setAttribute('aria-busy', 'false');
   if (hash) document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView();
   else window.scrollTo(0, 0);
   if (push) content.focus({ preventScroll: true });
@@ -149,6 +154,7 @@ const background = [document.querySelector('.topbar'), document.querySelector('.
 let index = null;
 let selected = 0;
 let opener = null;
+let searchSequence = 0;
 
 async function buildIndex() {
   if (index) return index;
@@ -179,21 +185,30 @@ function escapeHtml(value) {
 }
 
 async function runSearch() {
+  const mine = ++searchSequence;
   const query = searchInput.value.trim().toLowerCase();
+  results.setAttribute('aria-busy', 'true');
+  results.innerHTML = '<li class="muted" role="status">กำลังค้นหา…</li>';
   const pages = await buildIndex();
+  if (mine !== searchSequence || searchEl.hidden) return;
   const hits = query
-    ? pages.filter((p) => p.title.toLowerCase().includes(query) || p.text.toLowerCase().includes(query))
-      .sort((a, b) => Number(b.title.toLowerCase().includes(query)) - Number(a.title.toLowerCase().includes(query)))
+    ? pages.filter((p) => p.slug.includes(query) || p.title.toLowerCase().includes(query) || p.text.toLowerCase().includes(query))
+      .sort((a, b) => {
+        const score = p => (p.slug === query ? 4 : 0) + (p.title.toLowerCase().includes(query) ? 2 : 0) + (p.slug.includes(query) ? 1 : 0);
+        return score(b) - score(a);
+      })
     : pages;
   selected = 0;
   results.innerHTML = hits.length
-    ? hits.slice(0, 12).map((p, i) => `<li><a href="/docs/${p.slug}"${i === 0 ? ' aria-selected="true"' : ''}>${escapeHtml(p.group)} › ${escapeHtml(p.title)}<small>${escapeHtml(snippet(p.text, query))}</small></a></li>`).join('')
+    ? hits.slice(0, 12).map((p, i) => `<li><a href="/docs/${p.slug}"${i === 0 ? ' data-selected="true"' : ''}>${escapeHtml(p.group)} › ${escapeHtml(p.title)}<small>${escapeHtml(snippet(p.text, query))}</small></a></li>`).join('')
     : '<li class="muted" style="padding:12px">ไม่พบผลลัพธ์</li>';
+  results.setAttribute('aria-busy', 'false');
 }
 
 function openSearch() {
   if (!searchEl.hidden) return;
   opener = document.activeElement;
+  setMenu(false);
   background.forEach((el) => { el.inert = true; });
   searchEl.hidden = false;
   searchInput.value = '';
@@ -204,14 +219,16 @@ function openSearch() {
 function closeSearch() {
   if (searchEl.hidden) return;
   searchEl.hidden = true;
+  searchSequence++;
   background.forEach((el) => { el.inert = false; });
-  if (opener && document.contains(opener)) opener.focus();
+  if (opener && document.contains(opener) && opener.getClientRects().length) opener.focus();
+  else $('#search-open').focus();
   opener = null;
 }
 
 // Keep Tab inside the dialog (the background is also inert).
 function trapFocus(event) {
-  const focusable = [searchInput, ...results.querySelectorAll('a')];
+  const focusable = [$('#search-close'), searchInput, ...results.querySelectorAll('a')];
   const first = focusable[0];
   const last = focusable[focusable.length - 1];
   if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
@@ -222,11 +239,12 @@ function moveSelection(step) {
   const links = [...results.querySelectorAll('a')];
   if (!links.length) return;
   selected = (selected + step + links.length) % links.length;
-  links.forEach((a, i) => a.setAttribute('aria-selected', String(i === selected)));
+  links.forEach((a, i) => a.dataset.selected = String(i === selected));
   links[selected].scrollIntoView({ block: 'nearest' });
 }
 
 $('#search-open').addEventListener('click', openSearch);
+$('#search-close').addEventListener('click', closeSearch);
 searchInput.addEventListener('input', runSearch);
 searchEl.addEventListener('click', (event) => { if (event.target === searchEl) closeSearch(); });
 document.addEventListener('keydown', (event) => {

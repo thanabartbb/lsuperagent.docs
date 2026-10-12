@@ -44,12 +44,21 @@ ol{padding-left:20px;margin:8px 0 0}
 <link rel="stylesheet" href="/assets/code-window.css">
 <link rel="stylesheet" href="/assets/layout.css?v=1">
 <link rel="stylesheet" href="/assets/theme.css?v=4"><link rel="stylesheet" href="/assets/editorial.css?v=1">
+<link rel="stylesheet" href="/assets/sdkspace-ui.css?v=1">
 </head>
-<body class="sdk-layout sdk-simple">
-<header class="sdk-site-header"><div class="sdk-frame sdk-header-row">
-    <a class="brand-link" href="/home" aria-label="SDKSPACE หน้าแรก"><strong><img src="/assets/sdkspace-logo.svg" alt="" width="22" height="22">SDKSPACE</strong></a>
-    <nav aria-label="เมนูหลัก"><a href="/home">หน้าแรก</a><a href="/docs">เอกสาร</a><a href="/guide">Playground</a><a href="/keys" aria-current="page">API keys</a><a href="/auth/logout">ออกจากระบบ</a></nav>
-  </div></header>
+<body class="sdk-layout sdk-simple" data-shell-page="keys">
+<header class="product-header sdk-site-header sdk-workspace-header" data-app-shell>
+  <div class="sdk-frame sdk-header-row">
+    <a class="brand" href="/home"><img src="/assets/sdkspace-logo.svg" alt="" width="26" height="26"><span>SDKSPACE</span></a>
+    <nav class="shell-nav" aria-label="เมนูหลัก"><a class="shell-nav-link" href="/home" data-shell-nav="home">Home</a><a class="shell-nav-link" href="/chat" data-shell-nav="chat">Chat</a><a class="shell-nav-link" href="/tools" data-shell-nav="tools">Tools</a><a class="shell-nav-link" href="/docs" data-shell-nav="docs">Docs</a><a class="shell-nav-link" href="/guide" data-shell-nav="guide">Guide</a><a class="shell-nav-link" href="/news" data-shell-nav="news">News</a><a class="shell-nav-link" href="/exa" data-shell-nav="exa">Exa</a><a class="shell-nav-link" href="/keys" data-shell-nav="keys">Keys</a><a class="shell-nav-link" href="/dev" data-shell-nav="dev" hidden>Owner</a></nav>
+    <div class="shell-end">
+      <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">DOCS MODE</button>
+      <button class="shell-menu-btn" type="button" aria-expanded="false" aria-controls="shell-mobile-panel" aria-label="เปิดเมนู"><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      <a class="shell-logout" href="/auth/logout">Sign out</a>
+    </div>
+  </div>
+  <div class="shell-mobile-panel" id="shell-mobile-panel" hidden></div>
+</header>
 <main class="sdk-frame sdk-page-content">
 
 
@@ -92,6 +101,9 @@ console.log(me.user.email, me.key.expires_at);</code></pre>
 </main>
 <script type="module" src="/assets/code-window.js"></script>
 <script type="module" src="/assets/keys.js"></script>
+<script src="/app-shell.js" defer></script>
+<script src="/assets/theme-modes.js" defer></script>
+<script src="/assets/sdkspace-ui.js" defer></script>
 </body>
 </html>
 

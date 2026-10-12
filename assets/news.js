@@ -54,6 +54,7 @@
 
   async function load() {
     const mine = ++seq;
+    list.setAttribute('aria-busy', 'true');
     status.className = 'status';
     status.textContent = 'กำลังโหลด…';
     try {
@@ -70,12 +71,19 @@
       if (mine !== seq) return;
       status.className = 'status bad';
       status.textContent = 'โหลดข่าวไม่สำเร็จ: ' + (err && err.message || err);
+    } finally {
+      if (mine === seq) list.setAttribute('aria-busy', 'false');
     }
   }
 
   function select(source) {
     current = source;
-    for (const t of tabs) t.setAttribute('aria-selected', String(t.dataset.source === source));
+    for (const t of tabs) {
+      const active = t.dataset.source === source;
+      t.setAttribute('aria-selected', String(active));
+      t.tabIndex = active ? 0 : -1;
+      if (active) document.getElementById('news-panel').setAttribute('aria-labelledby', t.id);
+    }
     try { localStorage.setItem(TAB_KEY, source); } catch (_) {}
     load();
     clearInterval(timer);

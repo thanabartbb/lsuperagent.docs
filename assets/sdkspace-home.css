@@ -1,0 +1,176 @@
+/* Responsive home and introduction. Shared system roles live in sdkspace-tokens.css. */
+@import url("/assets/fonts/space-grotesk.css");
+@import url("/assets/fonts/noto-sans-thai.css");
+
+body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) {
+  --home-canvas: #000;
+  --home-surface: #070c16;
+  --home-surface-raised: #101828;
+  --home-text: #f3f6fc;
+  --home-secondary: #b4bfd0;
+  --home-accent: #8fc4ff;
+  --home-outline: #263751;
+  --home-radius: 20px;
+  --home-gap: 24px;
+  --home-font: "Space Grotesk", "Noto Sans Thai", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+html[data-theme="docs"] body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) {
+  --home-surface: #0a0a0a;
+  --home-surface-raised: #111;
+  --home-secondary: #b8b2c1;
+  --home-accent: #c8b2e3;
+  --home-outline: #393341;
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) {
+  display: block;
+  padding: 0;
+  min-height: 100svh;
+  font-family: var(--home-font);
+  color: var(--home-text);
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) > .phone {
+  width: 100%;
+  max-width: none;
+  min-height: 100svh;
+  border: 0;
+  border-radius: 0;
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--home-gap);
+  width: min(100%, 1200px);
+  margin-inline: auto;
+  padding: 24px clamp(20px, 4vw, 48px) 48px;
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) :is(header, #who, #site-nav, .hero, .lib-card, .grid2, .sdk-package) {
+  min-width: 0;
+  margin: 0;
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) header { padding-bottom: 0; }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .burger {
+  width: 48px;
+  height: 48px;
+  padding: 14px 11px;
+  border: 1px solid var(--home-outline);
+  border-radius: 12px;
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) #site-nav:not([hidden]) {
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--home-outline);
+  border-radius: var(--home-radius);
+  background: var(--home-surface);
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) #site-nav :is(a, button) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 12px 16px;
+  font-family: var(--home-font);
+  font-size: 14px;
+  border-radius: 12px;
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) #site-nav a:hover { background: var(--home-surface-raised); }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .hero { padding-block: 24px; }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) h1.hero-title--lockup .line2 {
+  font-size: clamp(36px, 7vw, 64px);
+  line-height: 1.1;
+  background: none;
+  color: var(--home-accent);
+  overflow-wrap: anywhere;
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) h1.hero-title--lockup .line1 {
+  font-size: 18px;
+  color: var(--home-secondary);
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .hero-stage { min-height: 136px; }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .lede {
+  max-width: 42ch;
+  margin-inline: auto;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--home-secondary);
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) :is(.lib-desc, .mini-desc, .sdk-package, #who) {
+  color: var(--home-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) :is(.badge, .lib-label, .sdk-package a) { color: var(--home-accent); }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) :is(.btn-primary, .btn-ghost, .btn-play) {
+  min-height: 48px;
+  font-family: var(--home-font);
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .btn-play { width: 48px; height: 48px; }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .btn-primary:disabled {
+  opacity: 1;
+  color: var(--home-secondary);
+  background: var(--home-surface-raised);
+  border: 1px solid var(--home-outline);
+  box-shadow: none;
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) :is(.card, .mini-card) {
+  background: var(--home-surface);
+  border-color: var(--home-outline);
+  border-radius: var(--home-radius);
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .card { padding: 24px; margin: 0; min-height: 224px; }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .lib-title { font-size: 26px; }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .lib-desc { max-width: calc(100% - 144px); }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .illus { pointer-events: none; }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .grid2 {
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .mini-card { padding: 24px; }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .mini-title { font-size: 18px; line-height: 1.4; }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .sdk-package { padding-top: 24px; border-color: var(--home-outline); }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .sdk-package p { max-width: 70ch; }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) :is(pre, code, .cw, .cw *) {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .cw { --cw-dim: #a0adbf; --cw-accent: var(--home-accent); }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .cw-copy { min-height: 36px; min-width: 48px; }
+html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) :is(a, button):focus-visible {
+  outline: 3px solid var(--home-accent);
+  outline-offset: 4px;
+}
+@media (min-width: 840px) {
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .content {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 32px;
+  }
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) :is(header, #who, #site-nav, .sdk-package) { grid-column: 1 / -1; }
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .hero {
+    grid-column: 1;
+    grid-row: span 2;
+    text-align: left;
+    align-self: center;
+    padding-block: 48px;
+  }
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .hero-stage { min-height: 0; }
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .hero-stage .hero-cube {
+    position: static;
+    transform: none;
+    width: 150px;
+    height: 136px;
+    margin-block: 20px;
+    opacity: .65;
+  }
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .lede { margin-inline: 0; text-shadow: none; }
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .cta-row { justify-content: flex-start; }
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) :is(.lib-card, .grid2) { grid-column: 2; }
+}
+@media (max-width: 479px) {
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .grid2 { grid-template-columns: minmax(0, 1fr); }
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .lib-desc { max-width: 100%; }
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .card { padding-right: 24px; }
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .illus { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) *,
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) *::before,
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) *::after { animation: none !important; transition: none !important; }
+  html body:is([data-sdkspace-page="home"], [data-sdkspace-page="intro"]) .dome-glow { display: none; }
+}

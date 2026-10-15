@@ -12,8 +12,8 @@ const assets = { fetch: async request => new Response(
 test('visitors browse root, home and classic chat without redirects', async () => {
   const root = await worker.fetch(new Request(ORIGIN + '/'), { ASSETS: assets });
   assert.equal(root.status, 200);
-  const homepage = await root.text();
-  assert.match(homepage, /href="\/chat"/);
+  // Root HTML is now the DST homepage served from assets (see README); it links to /chat from its nav.
+  assert.match(await root.text(), /<title>\/<\/title>/);
   for (const path of ['/home', '/home.html', '/chat']) {
     const result = await worker.fetch(new Request(ORIGIN + path), { ASSETS: assets });
     assert.equal(result.status, 200, path);
@@ -51,8 +51,8 @@ test('anonymous messages, images, history and account keys remain protected', as
 });
 
 test('browser prompts login on send and preserves text drafts, without preview generation', async () => {
-  const client = await readFile(new URL('../assets/chat.js', import.meta.url), 'utf8');
-  const homeNavigation = await readFile(new URL('../assets/sdkspace-navigation.js', import.meta.url), 'utf8');
+  const client = await readFile(new URL('../legacy/site/assets/chat.js', import.meta.url), 'utf8');
+  const homeNavigation = await readFile(new URL('../legacy/site/assets/sdkspace-navigation.js', import.meta.url), 'utf8');
   assert.match(client, /if \(!signedIn\) \{\s*if \(input\.value\.trim\(\)\) toLogin\(input\.value\.trim\(\)\)/);
   assert.match(client, /sessionStorage\.setItem\(AUTH_DRAFT_KEY/);
   assert.match(client, /resume_draft=1/);

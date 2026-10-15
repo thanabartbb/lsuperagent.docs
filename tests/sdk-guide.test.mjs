@@ -1,13 +1,14 @@
+import { repoFile } from './_paths.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import worker from '../src/index.js';
-import { Lsupergen, APIError, VERSION } from '../vendor/lsupergen-sdk/0.1.0/index.js';
+import { Lsupergen, APIError, VERSION } from '../legacy/site/vendor/lsupergen-sdk/0.1.0/index.js';
 
 const SESSION_SECRET = 'test-session-secret';
 const ORIGIN = 'https://agents-sdk.space';
-const read = (path) => readFile(new URL(`../${path}`, import.meta.url));
+const read = (path) => readFile(repoFile(path));
 
 function b64url(value) {
   return btoa(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
@@ -165,7 +166,7 @@ test('/keys is login-gated, creates keys same-origin and never renders the full 
   assert.match(script, /\/api\/sdk\/keys/);
   assert.equal(/localStorage|sessionStorage|innerHTML/.test(script), false);
   assert.doesNotMatch(script, /textContent = secret|value = secret/, 'the key must only reach the clipboard');
-  const { maskKey } = await import('../assets/keys.js');
+  const { maskKey } = await import('../legacy/site/assets/keys.js');
   const { api_key } = await createKey(env);
   const masked = maskKey(api_key);
   assert.ok(masked.startsWith('lsg_') && masked.endsWith(api_key.slice(-4)));

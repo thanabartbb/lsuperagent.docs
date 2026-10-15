@@ -1,0 +1,112 @@
+guide/ai.md|AI
+guide/app-types.md|Supported App Types
+guide/auth.md|Authentication
+guide/database.md|Database
+guide/database/d1.md|D1 (SQLite)
+guide/database/mysql.md|MySQL
+guide/database/postgresql.md|PostgreSQL
+guide/deployment.md|Deployment
+guide/durable-state.md|Durable State
+guide/edge/headers.md|Custom Headers
+guide/edge/prerendering.md|Edge Prerendering
+guide/edge/redirects.md|Redirects
+guide/edge/revalidation.md|Revalidation (ISR)
+guide/edge/rewrites.md|Rewrites
+guide/edge/static-assets.md|Static Assets Caching
+guide/email.md|Email
+guide/email/domains.md|Email Domains and Setup
+guide/email/receiving.md|Receiving Email {#inbound}
+guide/email/sending.md|Sending Email
+guide/env-vars.md|Environment variables
+guide/index.md|What is Void?
+guide/jobs.md|Cron Jobs
+guide/kv.md|Key-Value Storage
+guide/live.md|Live Event Streams
+guide/pages-routing/actions-and-forms.md|Actions & Forms
+guide/pages-routing/head.md|Head Management
+guide/pages-routing/islands.md|Islands
+guide/pages-routing/layouts.md|Layouts & Shared Data
+guide/pages-routing/loaders.md|Loaders & Props
+guide/pages-routing/markdown.md|Markdown
+guide/pages-routing/overview.md|Pages Routing
+guide/pages-routing/view-transitions.md|View Transitions
+guide/platform-administration.md|Platform Administration
+guide/platform-development.md|Developing a Void Platform
+guide/platform/administration/access.md|Sign-in and Access
+guide/platform/administration/connected-apps.md|Connected apps
+guide/platform/administration/email.md|Email
+guide/platform/administration/operations.md|Operations
+guide/platform/administration/plans.md|Plans and Limits
+guide/platform/administration/projects.md|Users and Projects
+guide/platform/administration/zero-trust.md|Project Zero Trust
+guide/platform/development/local.md|Local Development
+guide/platform/development/runtime.md|Runtime and Source Builds
+guide/platform/development/schema-ci.md|Schema and CI
+guide/platform/installation/ci.md|Install from CI
+guide/platform/installation/credentials.md|Credentials
+guide/platform/installation/domains.md|Domains and Resources
+guide/platform/installation/first-deployment.md|First Deployment
+guide/platform/installation/maintenance.md|Maintenance and Recovery
+guide/platform/installation/prerequisites.md|Prerequisites
+guide/platform/installation/setup.md|Install and Configure Login
+guide/platform/installation/uninstall.md|Disable and Uninstall
+guide/project-collaboration.md|Project Collaboration
+guide/queues.md|Queues
+guide/quickstart.md|Quickstart
+guide/remote-dev.md|Remote Development
+guide/sandboxes.md|Sandboxes
+guide/self-hosted-platform.md|Install a Void Platform
+guide/server-routing.md|Server Routing
+guide/sse.md|Server-Sent Events
+guide/ssg.md|Static Site Generation (SSG)
+guide/ssr.md|Custom SSR
+guide/storage.md|Object Storage
+guide/type-safety.md|Type Safety
+guide/typed-fetch.md|Typed Fetch
+guide/websockets.md|WebSockets
+index.md|
+integrations/agents.md|Using Void with Coding Agents
+integrations/cloudflare.md|Cloudflare
+integrations/frameworks/analog.md|Analog
+integrations/frameworks/astro.md|Astro
+integrations/frameworks/nuxt.md|Nuxt
+integrations/frameworks/overview.md|Meta-Frameworks
+integrations/frameworks/react-router.md|React Router v7
+integrations/frameworks/sveltekit.md|SvelteKit
+integrations/frameworks/tanstack-start.md|TanStack Start
+integrations/hono.md|Hono
+integrations/nodejs-bun-deno.md|Node.js, Bun, and Deno
+reference/api.md|API Reference {#api-reference}
+reference/api/auth.md|Authentication {#auth}
+reference/api/client.md|Fetch Client {#fetch-client}
+reference/api/database.md|Database and Seeding {#database}
+reference/api/deploy.md|Deployment artifacts
+reference/api/durable.md|Durable State and WebSockets {#durable-state}
+reference/api/env.md|Environment Variables {#environment}
+reference/api/handlers.md|Handlers and Middleware {#handlers}
+reference/api/pages.md|Pages Adapters {#framework-adaptors}
+reference/api/plugin.md|Plugin and Configuration {#plugin}
+reference/api/resources.md|Resource Clients
+reference/api/rewrites.md|Rewrites {#rewrites}
+reference/api/types.md|Types {#types}
+reference/cli.md|CLI Reference {#cli}
+reference/cli/auth.md|Connections and Authentication {#connect}
+reference/cli/database.md|Database {#database}
+reference/cli/deploy.md|Deployment {#deploy}
+reference/cli/domains.md|Custom Domains {#custom-domains}
+reference/cli/email.md|Email {#email}
+reference/cli/generate.md|Code Generation {#code-generation}
+reference/cli/github.md|GitHub and Builds {#github}
+reference/cli/platform-config.md|Platform Configuration {#plan-configuration}
+reference/cli/platform-email.md|Platform Email {#operator-email}
+reference/cli/platform-installation.md|Platform Installation {#void-platform-install}
+reference/cli/platform-operations.md|Platform Operations {#operator-deployments}
+reference/cli/platform-users.md|Platform Users and Projects {#operator-users}
+reference/cli/platform-zero-trust.md|Project Zero Trust {#operator-zero-trust}
+reference/cli/platform.md|Platform Management {#platform-management}
+reference/cli/project.md|Projects {#project-commands}
+reference/cli/secrets.md|Secrets and Environment {#secrets}
+reference/cli/setup.md|Project Setup {#setup}
+reference/config.md|Config
+reference/resource-inference.md|Resource Inference
+reference/structure.md|Project Structure

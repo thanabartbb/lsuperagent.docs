@@ -1447,6 +1447,11 @@ export default {
     const pathname = url.pathname.replace(/\/+$/, '') || '/';
 
     if ((pathname === '/' || pathname === '/index.html') && !request.headers.get('accept')?.includes('text/markdown') && await currentSession(request, env)) return redirectTo('/home', 302);
+    // New DST homepage (sites/dst) is the HTML root; agents asking for markdown still get the public resource text.
+    if ((pathname === '/' || pathname === '/index.html') && (request.method === 'GET' || request.method === 'HEAD') && !request.headers.get('accept')?.includes('text/markdown') && env.ASSETS && typeof env.ASSETS.fetch === 'function') {
+      const rootUrl = new URL(request.url); rootUrl.pathname = '/';
+      return env.ASSETS.fetch(new Request(rootUrl.toString(), request));
+    }
     const publicResponse = publicResource(request, pathname);
     if (publicResponse) return publicResponse;
     const legacyPublic = new Set(['/auth-all','/auth-all.html','/examples','/examples.html','/getting-started','/getting-started.html','/api','/api.html','/guides','/guides.html','/changelog','/changelog.html','/workspace','/workspace.html','/provider-connect','/provider-connect.html','/secret-handoff','/secret-handoff.html','/endpoints','/endpoints.html','/system-registry','/system-registry.html']);

@@ -1,3 +1,26 @@
+# agents-sdk.space — repository layout (NEW vs OLD)
+
+| Folder | Status | What it is | Served at |
+|---|---|---|---|
+| `sites/dst/` | **NEW** | DST site (homepage, docs, credits); source from `agents-sdk-space/devstacks-corsur` `feat/site-v1` @ a57317c | `/`, `/docs/<section>/<page>`, `/credits` |
+| `legacy/site/` | **OLD (still live)** | Original static pages: login/signup/forgot-password, home, chat, keys, guide, tools, news, dev, docs shell | Same URLs as before: `/login`, `/home`, `/chat`, `/docs/<page>` … |
+| `legacy/site/index.html` | OLD | old root (redirect to `/home`) | `/legacy` |
+| `src/` | shared | Worker (auth/login, sessions, APIs, gating) — serves both sites | — |
+| `public/` | generated, git-ignored | assembled by `npm run build` | Worker assets dir |
+
+- The login system (`src/firebase-worker.js` + `src/index.js`, `/login`, `/auth/github`, `/auth/google`, `/api/auth/platform/*`) is unchanged. The DST nav links to Chat, Workspace (`/home`) and Sign in (`/login`); the login page links back to `/` and to the new docs.
+- `GET /` with `Accept: text/markdown` still returns the agent-readable SDKSPACE text (`src/public-resources.js`).
+- Credits: DST docs are adapted from Void (MIT, © Cloudflare, Inc.) — see `sites/dst/LICENSE-void` and `/credits`.
+
+## Build / deploy (Cloudflare Workers Builds)
+
+- Build command: `npm run build` (installs `sites/dst` deps, builds DST, assembles `public/`)
+- Deploy command: `npx wrangler deploy`
+- Root directory: `/` (repo root). Node 22. No secrets live in this repo; Worker secrets stay in the dashboard.
+- Local: `npm run build && npx wrangler dev`, then `node scripts/check-links.mjs http://127.0.0.1:8787`.
+
+---
+
 # SDKSPACE · LSUPERAGENT
 
 Production source for `https://agents-sdk.space` in `thanabartbb/lsuperagent.docs`.

@@ -1,0 +1,1 @@
+{"name":"agents-sdk-space","private":true,"type":"module","scripts":{"build":"node scripts/build.mjs","test":"node scripts/test.mjs","dev":"npm run build && wrangler dev","deploy:dry":"npm run build && wrangler deploy --dry-run"},"devDependencies":{"marked":"^14.1.4","wrangler":"^4"}}

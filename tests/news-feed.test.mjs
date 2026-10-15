@@ -1,3 +1,4 @@
+import { repoFile } from './_paths.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -5,7 +6,7 @@ import { parseRss, parseAtom, parseHn, parseGithub, getFeed, SOURCES } from '../
 import worker from '../src/index.js';
 
 const fx = (f) => readFileSync(new URL(`./fixtures/${f}`, import.meta.url), 'utf8');
-const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
+const read = (f) => readFileSync(repoFile(f), 'utf8');
 const SESSION_SECRET = 'test-session-secret';
 
 function b64url(value) {

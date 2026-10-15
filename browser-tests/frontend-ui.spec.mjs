@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { publicResource } from '../src/public-resources.js';
-import { NAV } from '../assets/docs-nav.js';
+import { NAV } from '../legacy/site/assets/docs-nav.js';
 
 // Local API fixtures exercise presentation only; no provider calls or real credentials.
 const root = resolve(fileURLToPath(new URL('../', import.meta.url)));

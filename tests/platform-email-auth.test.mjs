@@ -1,3 +1,4 @@
+import { repoFile } from './_paths.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -6,7 +7,7 @@ import {
   platformEmailSignUp,
 } from '../src/firebase-core.mjs';
 
-const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
+const read = (path) => readFile(repoFile(path), 'utf8');
 
 test('worker exposes platform email auth routes', async () => {
   const source = await read('src/firebase-worker.js');

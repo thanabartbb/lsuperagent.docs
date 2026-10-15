@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import worker from '../src/firebase-worker.js';
 
 const ORIGIN = 'https://agents-sdk.space';
-const HTML = readFile(new URL('../chat.html', import.meta.url), 'utf8');
+const HTML = readFile(new URL('../legacy/site/chat.html', import.meta.url), 'utf8');
 const ASSETS = {
   async fetch(req) {
     assert.equal(new URL(req.url).pathname, '/chat.html');
@@ -38,7 +38,7 @@ test('visitor HEAD /chat does not inject presentation HTML and has empty body', 
 });
 
 test('guest CSS is isolated from signed-in Agent Starter and all non-chat pages', async () => {
-  const css = await readFile(new URL('../assets/chat-visitor-reference.css', import.meta.url), 'utf8');
+  const css = await readFile(new URL('../legacy/site/assets/chat-visitor-reference.css', import.meta.url), 'utf8');
   const source = await readFile(new URL('../src/index.js', import.meta.url), 'utf8');
   assert.match(css, /sdkspace-visitor-chat/);
   assert.match(css, /#composer #send/);

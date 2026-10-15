@@ -1,12 +1,13 @@
+import { repoFile } from './_paths.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import worker from '../src/index.js';
-import { NAV, ICONS } from '../assets/docs-nav.js';
+import { NAV, ICONS } from '../legacy/site/assets/docs-nav.js';
 
 const ORIGIN = 'https://agents-sdk.space';
 const SESSION_SECRET = 'test-session-secret';
-const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
+const read = (path) => readFile(repoFile(path), 'utf8');
 
 function b64url(value) {
   return btoa(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
@@ -20,7 +21,7 @@ async function sessionCookie() {
 }
 
 test('every sidebar entry has a content file, a valid slug, and a known icon', async () => {
-  const files = new Set((await readdir(new URL('../docs-content/', import.meta.url))).filter((f) => f.endsWith('.html')));
+  const files = new Set((await readdir(new URL('../legacy/site/docs-content/', import.meta.url))).filter((f) => f.endsWith('.html')));
   const slugs = NAV.flatMap((group) => group.pages.map((page) => page.slug));
   assert.equal(new Set(slugs).size, slugs.length, 'duplicate slug in NAV');
   for (const group of NAV) {

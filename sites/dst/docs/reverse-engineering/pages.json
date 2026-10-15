@@ -1,0 +1,890 @@
+[
+ {
+  "src": "./guide/ai.md",
+  "void": "/guide/ai",
+  "route": "/docs/build/ai",
+  "sec": "build",
+  "label": "Build",
+  "title": "AI"
+ },
+ {
+  "src": "./guide/app-types.md",
+  "void": "/guide/app-types",
+  "route": "/docs/build/app-types",
+  "sec": "build",
+  "label": "Build",
+  "title": "Supported App Types"
+ },
+ {
+  "src": "./guide/auth.md",
+  "void": "/guide/auth",
+  "route": "/docs/build/auth",
+  "sec": "build",
+  "label": "Build",
+  "title": "Authentication"
+ },
+ {
+  "src": "./guide/database.md",
+  "void": "/guide/database",
+  "route": "/docs/build/database",
+  "sec": "build",
+  "label": "Build",
+  "title": "Database"
+ },
+ {
+  "src": "./guide/database/d1.md",
+  "void": "/guide/database/d1",
+  "route": "/docs/build/database/d1",
+  "sec": "build",
+  "label": "Build",
+  "title": "D1 (SQLite)"
+ },
+ {
+  "src": "./guide/database/mysql.md",
+  "void": "/guide/database/mysql",
+  "route": "/docs/build/database/mysql",
+  "sec": "build",
+  "label": "Build",
+  "title": "MySQL"
+ },
+ {
+  "src": "./guide/database/postgresql.md",
+  "void": "/guide/database/postgresql",
+  "route": "/docs/build/database/postgresql",
+  "sec": "build",
+  "label": "Build",
+  "title": "PostgreSQL"
+ },
+ {
+  "src": "./guide/deployment.md",
+  "void": "/guide/deployment",
+  "route": "/docs/build/deployment",
+  "sec": "build",
+  "label": "Build",
+  "title": "Deployment"
+ },
+ {
+  "src": "./guide/durable-state.md",
+  "void": "/guide/durable-state",
+  "route": "/docs/build/durable-state",
+  "sec": "build",
+  "label": "Build",
+  "title": "Durable State"
+ },
+ {
+  "src": "./guide/edge/headers.md",
+  "void": "/guide/edge/headers",
+  "route": "/docs/build/edge/headers",
+  "sec": "build",
+  "label": "Build",
+  "title": "Custom Headers"
+ },
+ {
+  "src": "./guide/edge/prerendering.md",
+  "void": "/guide/edge/prerendering",
+  "route": "/docs/build/edge/prerendering",
+  "sec": "build",
+  "label": "Build",
+  "title": "Edge Prerendering"
+ },
+ {
+  "src": "./guide/edge/redirects.md",
+  "void": "/guide/edge/redirects",
+  "route": "/docs/build/edge/redirects",
+  "sec": "build",
+  "label": "Build",
+  "title": "Redirects"
+ },
+ {
+  "src": "./guide/edge/revalidation.md",
+  "void": "/guide/edge/revalidation",
+  "route": "/docs/build/edge/revalidation",
+  "sec": "build",
+  "label": "Build",
+  "title": "Revalidation (ISR)"
+ },
+ {
+  "src": "./guide/edge/rewrites.md",
+  "void": "/guide/edge/rewrites",
+  "route": "/docs/build/edge/rewrites",
+  "sec": "build",
+  "label": "Build",
+  "title": "Rewrites"
+ },
+ {
+  "src": "./guide/edge/static-assets.md",
+  "void": "/guide/edge/static-assets",
+  "route": "/docs/build/edge/static-assets",
+  "sec": "build",
+  "label": "Build",
+  "title": "Static Assets Caching"
+ },
+ {
+  "src": "./guide/email.md",
+  "void": "/guide/email",
+  "route": "/docs/build/email",
+  "sec": "build",
+  "label": "Build",
+  "title": "Email"
+ },
+ {
+  "src": "./guide/email/domains.md",
+  "void": "/guide/email/domains",
+  "route": "/docs/build/email/domains",
+  "sec": "build",
+  "label": "Build",
+  "title": "Email Domains and Setup"
+ },
+ {
+  "src": "./guide/email/receiving.md",
+  "void": "/guide/email/receiving",
+  "route": "/docs/build/email/receiving",
+  "sec": "build",
+  "label": "Build",
+  "title": "Receiving Email"
+ },
+ {
+  "src": "./guide/email/sending.md",
+  "void": "/guide/email/sending",
+  "route": "/docs/build/email/sending",
+  "sec": "build",
+  "label": "Build",
+  "title": "Sending Email"
+ },
+ {
+  "src": "./guide/env-vars.md",
+  "void": "/guide/env-vars",
+  "route": "/docs/build/env-vars",
+  "sec": "build",
+  "label": "Build",
+  "title": "Environment variables"
+ },
+ {
+  "src": "./guide/index.md",
+  "void": "/guide/",
+  "route": "/docs/build/overview",
+  "sec": "build",
+  "label": "Build",
+  "title": "What is DST?"
+ },
+ {
+  "src": "./guide/jobs.md",
+  "void": "/guide/jobs",
+  "route": "/docs/build/jobs",
+  "sec": "build",
+  "label": "Build",
+  "title": "Cron Jobs"
+ },
+ {
+  "src": "./guide/kv.md",
+  "void": "/guide/kv",
+  "route": "/docs/build/kv",
+  "sec": "build",
+  "label": "Build",
+  "title": "Key-Value Storage"
+ },
+ {
+  "src": "./guide/live.md",
+  "void": "/guide/live",
+  "route": "/docs/build/live",
+  "sec": "build",
+  "label": "Build",
+  "title": "Live Event Streams"
+ },
+ {
+  "src": "./guide/pages-routing/actions-and-forms.md",
+  "void": "/guide/pages-routing/actions-and-forms",
+  "route": "/docs/build/pages-routing/actions-and-forms",
+  "sec": "build",
+  "label": "Build",
+  "title": "Actions & Forms"
+ },
+ {
+  "src": "./guide/pages-routing/head.md",
+  "void": "/guide/pages-routing/head",
+  "route": "/docs/build/pages-routing/head",
+  "sec": "build",
+  "label": "Build",
+  "title": "Head Management"
+ },
+ {
+  "src": "./guide/pages-routing/islands.md",
+  "void": "/guide/pages-routing/islands",
+  "route": "/docs/build/pages-routing/islands",
+  "sec": "build",
+  "label": "Build",
+  "title": "Islands"
+ },
+ {
+  "src": "./guide/pages-routing/layouts.md",
+  "void": "/guide/pages-routing/layouts",
+  "route": "/docs/build/pages-routing/layouts",
+  "sec": "build",
+  "label": "Build",
+  "title": "Layouts & Shared Data"
+ },
+ {
+  "src": "./guide/pages-routing/loaders.md",
+  "void": "/guide/pages-routing/loaders",
+  "route": "/docs/build/pages-routing/loaders",
+  "sec": "build",
+  "label": "Build",
+  "title": "Loaders & Props"
+ },
+ {
+  "src": "./guide/pages-routing/markdown.md",
+  "void": "/guide/pages-routing/markdown",
+  "route": "/docs/build/pages-routing/markdown",
+  "sec": "build",
+  "label": "Build",
+  "title": "Markdown"
+ },
+ {
+  "src": "./guide/pages-routing/overview.md",
+  "void": "/guide/pages-routing/overview",
+  "route": "/docs/build/pages-routing/overview",
+  "sec": "build",
+  "label": "Build",
+  "title": "Pages Routing"
+ },
+ {
+  "src": "./guide/pages-routing/view-transitions.md",
+  "void": "/guide/pages-routing/view-transitions",
+  "route": "/docs/build/pages-routing/view-transitions",
+  "sec": "build",
+  "label": "Build",
+  "title": "View Transitions"
+ },
+ {
+  "src": "./guide/platform-administration.md",
+  "void": "/guide/platform-administration",
+  "route": "/docs/control/platform-administration",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Platform Administration"
+ },
+ {
+  "src": "./guide/platform-development.md",
+  "void": "/guide/platform-development",
+  "route": "/docs/control/platform-development",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Developing a Control Plane"
+ },
+ {
+  "src": "./guide/platform/administration/access.md",
+  "void": "/guide/platform/administration/access",
+  "route": "/docs/control/administration/access",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Sign-in and Access"
+ },
+ {
+  "src": "./guide/platform/administration/connected-apps.md",
+  "void": "/guide/platform/administration/connected-apps",
+  "route": "/docs/control/administration/connected-apps",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Connected apps"
+ },
+ {
+  "src": "./guide/platform/administration/email.md",
+  "void": "/guide/platform/administration/email",
+  "route": "/docs/control/administration/email",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Email"
+ },
+ {
+  "src": "./guide/platform/administration/operations.md",
+  "void": "/guide/platform/administration/operations",
+  "route": "/docs/control/administration/operations",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Operations"
+ },
+ {
+  "src": "./guide/platform/administration/plans.md",
+  "void": "/guide/platform/administration/plans",
+  "route": "/docs/control/administration/plans",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Plans and Limits"
+ },
+ {
+  "src": "./guide/platform/administration/projects.md",
+  "void": "/guide/platform/administration/projects",
+  "route": "/docs/control/administration/projects",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Users and Projects"
+ },
+ {
+  "src": "./guide/platform/administration/zero-trust.md",
+  "void": "/guide/platform/administration/zero-trust",
+  "route": "/docs/control/administration/zero-trust",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Project Zero Trust"
+ },
+ {
+  "src": "./guide/platform/development/local.md",
+  "void": "/guide/platform/development/local",
+  "route": "/docs/control/development/local",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Local Development"
+ },
+ {
+  "src": "./guide/platform/development/runtime.md",
+  "void": "/guide/platform/development/runtime",
+  "route": "/docs/control/development/runtime",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Runtime and Source Builds"
+ },
+ {
+  "src": "./guide/platform/development/schema-ci.md",
+  "void": "/guide/platform/development/schema-ci",
+  "route": "/docs/control/development/schema-ci",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Schema and CI"
+ },
+ {
+  "src": "./guide/platform/installation/ci.md",
+  "void": "/guide/platform/installation/ci",
+  "route": "/docs/control/installation/ci",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Install from CI"
+ },
+ {
+  "src": "./guide/platform/installation/credentials.md",
+  "void": "/guide/platform/installation/credentials",
+  "route": "/docs/control/installation/credentials",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Credentials"
+ },
+ {
+  "src": "./guide/platform/installation/domains.md",
+  "void": "/guide/platform/installation/domains",
+  "route": "/docs/control/installation/domains",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Domains and Resources"
+ },
+ {
+  "src": "./guide/platform/installation/first-deployment.md",
+  "void": "/guide/platform/installation/first-deployment",
+  "route": "/docs/control/installation/first-deployment",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "First Deployment"
+ },
+ {
+  "src": "./guide/platform/installation/maintenance.md",
+  "void": "/guide/platform/installation/maintenance",
+  "route": "/docs/control/installation/maintenance",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Maintenance and Recovery"
+ },
+ {
+  "src": "./guide/platform/installation/prerequisites.md",
+  "void": "/guide/platform/installation/prerequisites",
+  "route": "/docs/control/installation/prerequisites",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Prerequisites"
+ },
+ {
+  "src": "./guide/platform/installation/setup.md",
+  "void": "/guide/platform/installation/setup",
+  "route": "/docs/control/installation/setup",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Install and Configure Login"
+ },
+ {
+  "src": "./guide/platform/installation/uninstall.md",
+  "void": "/guide/platform/installation/uninstall",
+  "route": "/docs/control/installation/uninstall",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Disable and Uninstall"
+ },
+ {
+  "src": "./guide/project-collaboration.md",
+  "void": "/guide/project-collaboration",
+  "route": "/docs/build/project-collaboration",
+  "sec": "build",
+  "label": "Build",
+  "title": "Project Collaboration"
+ },
+ {
+  "src": "./guide/queues.md",
+  "void": "/guide/queues",
+  "route": "/docs/build/queues",
+  "sec": "build",
+  "label": "Build",
+  "title": "Queues"
+ },
+ {
+  "src": "./guide/quickstart.md",
+  "void": "/guide/quickstart",
+  "route": "/docs/build/quickstart",
+  "sec": "build",
+  "label": "Build",
+  "title": "Quickstart"
+ },
+ {
+  "src": "./guide/remote-dev.md",
+  "void": "/guide/remote-dev",
+  "route": "/docs/build/remote-dev",
+  "sec": "build",
+  "label": "Build",
+  "title": "Remote Development"
+ },
+ {
+  "src": "./guide/sandboxes.md",
+  "void": "/guide/sandboxes",
+  "route": "/docs/build/sandboxes",
+  "sec": "build",
+  "label": "Build",
+  "title": "Sandboxes"
+ },
+ {
+  "src": "./guide/self-hosted-platform.md",
+  "void": "/guide/self-hosted-platform",
+  "route": "/docs/control/self-hosted-platform",
+  "sec": "control",
+  "label": "Control Plane",
+  "title": "Install a Control Plane"
+ },
+ {
+  "src": "./guide/server-routing.md",
+  "void": "/guide/server-routing",
+  "route": "/docs/build/server-routing",
+  "sec": "build",
+  "label": "Build",
+  "title": "Server Routing"
+ },
+ {
+  "src": "./guide/sse.md",
+  "void": "/guide/sse",
+  "route": "/docs/build/sse",
+  "sec": "build",
+  "label": "Build",
+  "title": "Server-Sent Events"
+ },
+ {
+  "src": "./guide/ssg.md",
+  "void": "/guide/ssg",
+  "route": "/docs/build/ssg",
+  "sec": "build",
+  "label": "Build",
+  "title": "Static Site Generation (SSG)"
+ },
+ {
+  "src": "./guide/ssr.md",
+  "void": "/guide/ssr",
+  "route": "/docs/build/ssr",
+  "sec": "build",
+  "label": "Build",
+  "title": "Custom SSR"
+ },
+ {
+  "src": "./guide/storage.md",
+  "void": "/guide/storage",
+  "route": "/docs/build/storage",
+  "sec": "build",
+  "label": "Build",
+  "title": "Object Storage"
+ },
+ {
+  "src": "./guide/type-safety.md",
+  "void": "/guide/type-safety",
+  "route": "/docs/build/type-safety",
+  "sec": "build",
+  "label": "Build",
+  "title": "Type Safety"
+ },
+ {
+  "src": "./guide/typed-fetch.md",
+  "void": "/guide/typed-fetch",
+  "route": "/docs/build/typed-fetch",
+  "sec": "build",
+  "label": "Build",
+  "title": "Typed Fetch"
+ },
+ {
+  "src": "./guide/websockets.md",
+  "void": "/guide/websockets",
+  "route": "/docs/build/websockets",
+  "sec": "build",
+  "label": "Build",
+  "title": "WebSockets"
+ },
+ {
+  "src": "./integrations/agents.md",
+  "void": "/integrations/agents",
+  "route": "/docs/connect/agents",
+  "sec": "connect",
+  "label": "Connect",
+  "title": "Using DST with Coding Agents"
+ },
+ {
+  "src": "./integrations/cloudflare.md",
+  "void": "/integrations/cloudflare",
+  "route": "/docs/connect/cloudflare",
+  "sec": "connect",
+  "label": "Connect",
+  "title": "Cloudflare"
+ },
+ {
+  "src": "./integrations/frameworks/analog.md",
+  "void": "/integrations/frameworks/analog",
+  "route": "/docs/connect/frameworks/analog",
+  "sec": "connect",
+  "label": "Connect",
+  "title": "Analog"
+ },
+ {
+  "src": "./integrations/frameworks/astro.md",
+  "void": "/integrations/frameworks/astro",
+  "route": "/docs/connect/frameworks/astro",
+  "sec": "connect",
+  "label": "Connect",
+  "title": "Astro"
+ },
+ {
+  "src": "./integrations/frameworks/nuxt.md",
+  "void": "/integrations/frameworks/nuxt",
+  "route": "/docs/connect/frameworks/nuxt",
+  "sec": "connect",
+  "label": "Connect",
+  "title": "Nuxt"
+ },
+ {
+  "src": "./integrations/frameworks/overview.md",
+  "void": "/integrations/frameworks/overview",
+  "route": "/docs/connect/frameworks/overview",
+  "sec": "connect",
+  "label": "Connect",
+  "title": "Meta-Frameworks"
+ },
+ {
+  "src": "./integrations/frameworks/react-router.md",
+  "void": "/integrations/frameworks/react-router",
+  "route": "/docs/connect/frameworks/react-router",
+  "sec": "connect",
+  "label": "Connect",
+  "title": "React Router v7"
+ },
+ {
+  "src": "./integrations/frameworks/sveltekit.md",
+  "void": "/integrations/frameworks/sveltekit",
+  "route": "/docs/connect/frameworks/sveltekit",
+  "sec": "connect",
+  "label": "Connect",
+  "title": "SvelteKit"
+ },
+ {
+  "src": "./integrations/frameworks/tanstack-start.md",
+  "void": "/integrations/frameworks/tanstack-start",
+  "route": "/docs/connect/frameworks/tanstack-start",
+  "sec": "connect",
+  "label": "Connect",
+  "title": "TanStack Start"
+ },
+ {
+  "src": "./integrations/hono.md",
+  "void": "/integrations/hono",
+  "route": "/docs/connect/hono",
+  "sec": "connect",
+  "label": "Connect",
+  "title": "Hono"
+ },
+ {
+  "src": "./integrations/nodejs-bun-deno.md",
+  "void": "/integrations/nodejs-bun-deno",
+  "route": "/docs/connect/nodejs-bun-deno",
+  "sec": "connect",
+  "label": "Connect",
+  "title": "Node.js, Bun, and Deno"
+ },
+ {
+  "src": "./reference/api.md",
+  "void": "/reference/api",
+  "route": "/docs/api/overview",
+  "sec": "api",
+  "label": "SDK API",
+  "title": "API Reference"
+ },
+ {
+  "src": "./reference/api/auth.md",
+  "void": "/reference/api/auth",
+  "route": "/docs/api/auth",
+  "sec": "api",
+  "label": "SDK API",
+  "title": "Authentication"
+ },
+ {
+  "src": "./reference/api/client.md",
+  "void": "/reference/api/client",
+  "route": "/docs/api/client",
+  "sec": "api",
+  "label": "SDK API",
+  "title": "Fetch Client"
+ },
+ {
+  "src": "./reference/api/database.md",
+  "void": "/reference/api/database",
+  "route": "/docs/api/database",
+  "sec": "api",
+  "label": "SDK API",
+  "title": "Database and Seeding"
+ },
+ {
+  "src": "./reference/api/deploy.md",
+  "void": "/reference/api/deploy",
+  "route": "/docs/api/deploy",
+  "sec": "api",
+  "label": "SDK API",
+  "title": "Deployment artifacts"
+ },
+ {
+  "src": "./reference/api/durable.md",
+  "void": "/reference/api/durable",
+  "route": "/docs/api/durable",
+  "sec": "api",
+  "label": "SDK API",
+  "title": "Durable State and WebSockets"
+ },
+ {
+  "src": "./reference/api/env.md",
+  "void": "/reference/api/env",
+  "route": "/docs/api/env",
+  "sec": "api",
+  "label": "SDK API",
+  "title": "Environment Variables"
+ },
+ {
+  "src": "./reference/api/handlers.md",
+  "void": "/reference/api/handlers",
+  "route": "/docs/api/handlers",
+  "sec": "api",
+  "label": "SDK API",
+  "title": "Handlers and Middleware"
+ },
+ {
+  "src": "./reference/api/pages.md",
+  "void": "/reference/api/pages",
+  "route": "/docs/api/pages",
+  "sec": "api",
+  "label": "SDK API",
+  "title": "Pages Adapters"
+ },
+ {
+  "src": "./reference/api/plugin.md",
+  "void": "/reference/api/plugin",
+  "route": "/docs/api/plugin",
+  "sec": "api",
+  "label": "SDK API",
+  "title": "Plugin and Configuration"
+ },
+ {
+  "src": "./reference/api/resources.md",
+  "void": "/reference/api/resources",
+  "route": "/docs/api/resources",
+  "sec": "api",
+  "label": "SDK API",
+  "title": "Resource Clients"
+ },
+ {
+  "src": "./reference/api/rewrites.md",
+  "void": "/reference/api/rewrites",
+  "route": "/docs/api/rewrites",
+  "sec": "api",
+  "label": "SDK API",
+  "title": "Rewrites"
+ },
+ {
+  "src": "./reference/api/types.md",
+  "void": "/reference/api/types",
+  "route": "/docs/api/types",
+  "sec": "api",
+  "label": "SDK API",
+  "title": "Types"
+ },
+ {
+  "src": "./reference/cli.md",
+  "void": "/reference/cli",
+  "route": "/docs/cli/overview",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "CLI Reference"
+ },
+ {
+  "src": "./reference/cli/auth.md",
+  "void": "/reference/cli/auth",
+  "route": "/docs/cli/auth",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Connections and Authentication"
+ },
+ {
+  "src": "./reference/cli/database.md",
+  "void": "/reference/cli/database",
+  "route": "/docs/cli/database",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Database"
+ },
+ {
+  "src": "./reference/cli/deploy.md",
+  "void": "/reference/cli/deploy",
+  "route": "/docs/cli/deploy",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Deployment"
+ },
+ {
+  "src": "./reference/cli/domains.md",
+  "void": "/reference/cli/domains",
+  "route": "/docs/cli/domains",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Custom Domains"
+ },
+ {
+  "src": "./reference/cli/email.md",
+  "void": "/reference/cli/email",
+  "route": "/docs/cli/email",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Email"
+ },
+ {
+  "src": "./reference/cli/generate.md",
+  "void": "/reference/cli/generate",
+  "route": "/docs/cli/generate",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Code Generation"
+ },
+ {
+  "src": "./reference/cli/github.md",
+  "void": "/reference/cli/github",
+  "route": "/docs/cli/github",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "GitHub and Builds"
+ },
+ {
+  "src": "./reference/cli/platform-config.md",
+  "void": "/reference/cli/platform-config",
+  "route": "/docs/cli/platform-config",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Platform Configuration"
+ },
+ {
+  "src": "./reference/cli/platform-email.md",
+  "void": "/reference/cli/platform-email",
+  "route": "/docs/cli/platform-email",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Platform Email"
+ },
+ {
+  "src": "./reference/cli/platform-installation.md",
+  "void": "/reference/cli/platform-installation",
+  "route": "/docs/cli/platform-installation",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Platform Installation"
+ },
+ {
+  "src": "./reference/cli/platform-operations.md",
+  "void": "/reference/cli/platform-operations",
+  "route": "/docs/cli/platform-operations",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Platform Operations"
+ },
+ {
+  "src": "./reference/cli/platform-users.md",
+  "void": "/reference/cli/platform-users",
+  "route": "/docs/cli/platform-users",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Platform Users and Projects"
+ },
+ {
+  "src": "./reference/cli/platform-zero-trust.md",
+  "void": "/reference/cli/platform-zero-trust",
+  "route": "/docs/cli/platform-zero-trust",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Project Zero Trust"
+ },
+ {
+  "src": "./reference/cli/platform.md",
+  "void": "/reference/cli/platform",
+  "route": "/docs/cli/platform",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Platform Management"
+ },
+ {
+  "src": "./reference/cli/project.md",
+  "void": "/reference/cli/project",
+  "route": "/docs/cli/project",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Projects"
+ },
+ {
+  "src": "./reference/cli/secrets.md",
+  "void": "/reference/cli/secrets",
+  "route": "/docs/cli/secrets",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Secrets and Environment"
+ },
+ {
+  "src": "./reference/cli/setup.md",
+  "void": "/reference/cli/setup",
+  "route": "/docs/cli/setup",
+  "sec": "cli",
+  "label": "CLI",
+  "title": "Project Setup"
+ },
+ {
+  "src": "./reference/config.md",
+  "void": "/reference/config",
+  "route": "/docs/ref/config",
+  "sec": "ref",
+  "label": "Reference",
+  "title": "Config"
+ },
+ {
+  "src": "./reference/resource-inference.md",
+  "void": "/reference/resource-inference",
+  "route": "/docs/ref/resource-inference",
+  "sec": "ref",
+  "label": "Reference",
+  "title": "Resource Inference"
+ },
+ {
+  "src": "./reference/structure.md",
+  "void": "/reference/structure",
+  "route": "/docs/ref/structure",
+  "sec": "ref",
+  "label": "Reference",
+  "title": "Project Structure"
+ }
+]

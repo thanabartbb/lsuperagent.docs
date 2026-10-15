@@ -1,9 +1,10 @@
+import { repoFile } from './_paths.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { adaptAgentHtml, adaptAgentScript, agentAssetPath } from '../src/agent-ui.js';
 
-const read = path => readFile(new URL('../' + path, import.meta.url), 'utf8');
+const read = path => readFile(repoFile(path), 'utf8');
 const entry = '<!doctype html><html><head><title>Agent Starter</title></head><body><div id="root"></div><script type="module" src="/assets/index-build.js"></script></body></html>';
 
 test('agent chat loads a presentation-only layer on the existing same-origin Agent Starter', () => {

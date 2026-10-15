@@ -4,12 +4,12 @@ import { readFile } from 'node:fs/promises';
 import worker from '../src/firebase-worker.js';
 
 test('chat browser script is valid JavaScript', async () => {
-  const source = await readFile(new URL('../assets/chat.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../legacy/site/assets/chat.js', import.meta.url), 'utf8');
   assert.doesNotThrow(() => new Function(source));
 });
 
 test('chat keeps the intended LLM development hint', async () => {
-  const source = await readFile(new URL('../assets/chat.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../legacy/site/assets/chat.js', import.meta.url), 'utf8');
   assert.match(source, /\$\('hint'\)\.textContent = 'กำลังพัฒนา ระบบ LLM';/);
 });
 

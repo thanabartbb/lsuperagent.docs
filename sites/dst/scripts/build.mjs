@@ -1,7 +1,7 @@
-// Static site generator for agents-sdk.space.developer/bugbot/cursur
+// Static site generator for DEVXSTACKS
 // Page map is derived from the structure of voidzero-dev/void (MIT); all copy here is original.
 import fs from 'node:fs'; import { marked } from 'marked'; import path from 'node:path';
-const SITE='agents-sdk.space.developer/bugbot/cursur';
+const SITE='DEVXSTACKS';
 const out='dist'; fs.rmSync(out,{recursive:true,force:true}); fs.mkdirSync(out);
 fs.cpSync('public',out,{recursive:true});
 const clean=t=>t.replace(/\s*\{#.*\}/,'').replace(/Void Platform/g,'Control Plane').replace(/Void/g,'DST').trim();
@@ -47,7 +47,7 @@ const shell=(title,body)=>`<!doctype html><html lang="en"><head><meta charset="u
 <script>try{const t=localStorage.theme;if(t)document.documentElement.dataset.theme=t}catch{}</script></head><body>
 <header><a href="/"><img class="lg" src="/logo-dst.svg" alt="DST"></a><span class="name">${SITE}</span><nav><a href="/docs/build/overview">Docs</a><a href="/docs/cli/overview">CLI</a><a href="/docs/control/self-hosted-platform">Control Plane</a><a href="/credits">Credits</a><a href="/chat">Chat</a><a href="/home">Workspace</a><a href="/login">Sign in</a></nav>
 <button class="t" onclick="const d=document.documentElement,n=(d.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))==='dark'?'light':'dark';d.dataset.theme=n;localStorage.theme=n" aria-label="Toggle theme">◐</button></header>
-${body}<footer>© 2026 agents-sdk.space · DST · Structure inspired by <a href="https://github.com/voidzero-dev/void">Void</a> (MIT, © Cloudflare, Inc.) — <a href="/credits">credits</a></footer></body></html>`;
+${body}<footer>© 2026 DEVXSTACKS · Structure inspired by <a href="https://github.com/voidzero-dev/void">Void</a> (MIT, © Cloudflare, Inc.) — <a href="/credits">credits</a></footer></body></html>`;
 const write=(r,h)=>{const d=path.join(out,r);fs.mkdirSync(d,{recursive:true});fs.writeFileSync(path.join(d,'index.html'),h)};
 const feats=[['One import, real resources','Pull in a database, a bucket or a queue from the SDK and DST provisions it on Cloudflare when you ship.'],['Types end to end','Schema, server loaders and UI share one set of types, so mistakes show up in your editor, not production.'],['Bring any framework','Keep Astro, Nuxt, SvelteKit, React Router or plain Hono. DST sits underneath.'],['Shared workspace for teams','Let teammates and agents ship previews safely, with access rules you control.'],['Your own control plane','Run the project dashboard on your Cloudflare account. Nothing leaves it.'],['Agent-ready docs','Every page is plain HTML with predictable routes so coding agents can read it.']];
 write('/',shell('Home',`<section class="hero"><img class="lg" src="/logo-dst.svg" alt="DST" style="height:72px"><h1>Ship agents and apps<br>from one terminal.</h1><p>DST is a CLI and SDK for building full-stack apps on Cloudflare Workers, plus a control plane your team can run themselves.</p>
